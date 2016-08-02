@@ -1,0 +1,31 @@
+{% extends "cirs/base.html" %}
+
+{% block head %}
+	{{ block.super }}
+	<link rel="stylesheet" type="text/css" href={{ STATIC_URL }}css/signin.css />
+{% endblock %}
+{% block content %}
+	{% load i18n %}
+	<div class="container">
+		<form class="form-signin" role="form" action="" method="post">{% csrf_token %}
+			{% if next %}
+				<input type="hidden" name="next" value="{{ next }}" />
+			{% endif %}
+			<h2 class="form-signin-heading">{%trans "Please log in..." %}</h2>
+			{% if message|length > 0 %}
+				<div class="alert alert-{{ message_class }}">{{ message }}</div>
+			{% endif %}
+			<input class="form-control" type="text" name="username" value="{{ username }}" placeholder="{% trans "User name" %}" required="" autofocus="">
+			<input class="form-control" type="password" name="password" value="" placeholder="{% trans "Password" %}" required="">
+			<button class="btn btn-lg btn-danger btn-block" type="submit">{% trans "Log in" %}</button>
+			<br>
+			<div class="alert alert-success">
+				{% if LANGUAGE_CODE == "de" %}
+					{{ labcirs_config.login_info_de }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text_de }}</a>
+				{% else %}
+					{{ labcirs_config.login_info_en }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text_en }}</a>
+				{% endif %}
+			</div>
+		</form>	
+	</div>
+{% endblock %}

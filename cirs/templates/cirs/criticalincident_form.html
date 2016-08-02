@@ -1,0 +1,42 @@
+{% extends "cirs/base.html" %}
+
+{% block head %}
+	{{ block.super }}
+	{% load i18n %}
+	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.11.4.min.js"></script>
+	{# local JavaScript files are included automatically, but have to be present in the static/js directory #}
+	{% get_language_info_list for LANGUAGES as languages %}
+	{% for language in languages %}
+	    {% ifnotequal language.code "en" %}
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ language.code }}.js"></script>
+	    {% endifnotequal %}
+	{% endfor %}
+	<link rel="stylesheet" type="text/css" href={{ STATIC_URL }}css/jquery-ui.min.css />
+	
+	{% get_current_language as LANGUAGE_CODE %}
+	
+	<script type="text/javascript">
+	    $(document).ready(function(){
+		{% if LANGUAGE_CODE == "en" %}
+			$("#id_date").datepicker( $.datepicker.regional[ "" ] );
+		{% else %}
+			$("#id_date").datepicker( $.datepicker.regional[ "{{ LANGUAGE_CODE }}" ] );
+		{% endif %}
+	    });
+	</script>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="container">
+		<form action="" method="post" enctype="multipart/form-data" >{% csrf_token %}
+			{# very ugly hack to force the choice of real public! #}
+			<input type="hidden" value="{% trans "Empty" %}" name="public"></input>
+			<table class="table">
+				{{ form }}
+			</table>
+			<p>{% trans "Anonymous report will be send. There is no possibility to change the report." %}</p>
+			<button type="submit" class="btn btn-danger">{% trans "Send" %}</button> 
+		</form>
+    </div>
+{% endblock %}

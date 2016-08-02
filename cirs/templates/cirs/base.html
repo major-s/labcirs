@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+{% load i18n %}
+
+<html lang="{{ LANGUAGE_CODE }}">
+
+<head>
+    {% block head %}
+        <meta charset="utf-8">
+        <title>{% block head_title %}LabCIRS {% trans "for" %} {{ ORGANIZATION|default:"LabCIRS" }}{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="author" content="Sebastian Major">
+       
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap -->
+        <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}css/sticky-footer-navbar.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->    
+            
+        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.12.4.min.js"></script>
+    {% endblock %}
+</head>
+
+<body>
+    {% block nav %}
+    <nav class="navbar navbar-default" role="navigation">        
+        <ul class="nav navbar-nav nav-pills">
+            <li class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</li>
+            {% if user.is_authenticated == True %}
+                {% url 'incidents_list' as url %}
+                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "View incidents" %}</a></li>
+                {% url 'create_incident' as url %}
+                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "Add incident" %}</a></li>
+            {% endif %}
+            {% if user.is_superuser %}
+                <li><a href="{% url 'admin:index' %}">Admin</a></li>
+            {% endif %}
+            <li class="navbar-brand"><span class="label label-danger">Anonymous Lab Critical Incident Reporting System</span></li>
+        </ul>
+        {% if user.is_authenticated == True %}
+            <ul class="nav navbar-nav navbar-right nav-pills">    
+                <li><a href="{% url 'logout' %}">{% trans "Log out" %}</a></li>
+            </ul>
+        {% endif %}
+        
+            <form name="select_language" class="navbar-form navbar-right" action="{% url 'set_language' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ redirect_to }}" />
+                <div class="form-group">
+                    <select name="language" class="form-control" onchange="this.form.submit();">
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
+                                {{ language.name_local }} ({{ language.code }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        {% if user.is_authenticated == True %}
+            <p class="navbar-text navbar-right nav-pills">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }}</em></p>
+        {% endif %}
+    </nav>
+    {% endblock %}
+    {% block content %}
+    
+    {% endblock %}
+    
+
+    <footer id="footer">
+        <div class="container">
+            <p class="text-muted">
+                LabCIRS v{{ APP_VERSION }} by <a href="mailto:{{ AUTHOR_EMAIL }}">{{ AUTHOR }}</a>
+            </p>
+        </div>
+    </footer>
+    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+</body>
+</html>

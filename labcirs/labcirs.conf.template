@@ -1,0 +1,30 @@
+# Configuration for labcirs for apache 2.4
+
+Define LABCIRS_PATH /opt/labcirs
+# If labcirs is mounted at the root of the web server "/"
+# The variable should be empty, but WSGIScriptAlias should be changed to /
+Define LABCIRS_ROOT /labcirs
+
+Alias ${LABCIRS_ROOT}/media ${LABCIRS_PATH}/static/media
+<Directory ${LABCIRS_PATH}/media>
+    Require all granted
+</Directory>
+
+Alias ${LABCIRS_ROOT}/static ${LABCIRS_PATH}/static
+<Directory ${LABCIRS_PATH}/static>
+    Require all granted
+</Directory>
+
+# WSGI Daemon mode
+# the path to the virutal environment has to be set correctly
+WSGIDaemonProcess labcirs python-path=${LABCIRS_PATH}/labcirs:${LABCIRS_PATH}/venv_labcirs/lib/python2.7/site-packages
+WSGIProcessGroup labcirs
+
+# the alias has to match the ROOT_URL without leading /
+# if mounted on root of the web server change to /
+WSGIScriptAlias ${LABCIRS_ROOT} ${LABCIRS_PATH}/labcirs/labcirs/wsgi.py
+<Directory ${LABCIRS_PATH}/labcirs/labcirs>
+    <Files wsgi.py>
+        Require all granted
+    </Files>
+</Directory>

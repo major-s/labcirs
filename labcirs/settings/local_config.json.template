@@ -1,0 +1,19 @@
+ {
+    "FILENAME": "local_config.json",
+    "SECRET_KEY": "secret_key",
+    "ALLOWED_HOSTS": [],
+    "ROOT_URL": "",
+    "DB_ENGINE": "",
+    "DB_NAME": "",
+    "DB_USER": "",
+    "DB_PASSWORD": "",
+    "DB_HOST": "",
+    "DB_PORT": "",
+    "ORGANIZATION": "",
+    "TIME_ZONE": "",
+    "EMAIL_HOST": "",
+    "EMAIL_HOST_PASSWORD": "",
+    "EMAIL_HOST_USER": "",
+    "EMAIL_PORT": ""
+ }
+ 
