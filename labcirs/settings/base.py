@@ -164,7 +164,7 @@ ORGANIZATION = get_local_setting('ORGANIZATION', 'LabCIRS')
 
 # Email settings
 EMAIL_HOST = get_local_setting('EMAIL_HOST', 'localhost')
-EMAIL_HOST_PASSWORD = get_local_setting('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = get_local_setting('EMAIL_HOST_PASSWORD')
 EMAIL_HOST_USER = get_local_setting('EMAIL_HOST_USER')
 EMAIL_PORT = get_local_setting('EMAIL_PORT', 25)
 EMAIL_SUBJECT_PREFIX = '[LabCIRS] '
