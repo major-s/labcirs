@@ -155,8 +155,6 @@ SESSION_COOKIE_AGE = 60 * 60 # one hour, not logged out users will leave a ghost
 SESSION_SAVE_EVERY_REQUEST = True
 # SESSION_COOKIE_SECURE = True # will not work if the server has no https!!!
 
-EXPNEURO_FORUM_URL = 'http://exneuro13.charite.de/forum/viewtopic.php?f=41&t=994#p2464'
-
 MEDIA_ROOT = join_path(dirname(BASE_DIR), 'media')
 MEDIA_URL = ROOT_URL + '/media/'
 # get local name of the organization. Default is LabCIRS if the value in the json file is empty
