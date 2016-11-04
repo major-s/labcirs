@@ -120,7 +120,6 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                'message_class': message_class,
                'username': username,
                redirect_field_name: redirect_url,
-               'EXPNEURO_FORUM_URL': settings.EXPNEURO_FORUM_URL,
                'labcirs_config': LabCIRSConfig.objects.first()
                }
     return render(request, 'cirs/login.html', context)

@@ -2,7 +2,7 @@
 LabCIRS
 =======
 
-LabCIRS is a lightweight anonymous Critical Incidence Reporting System (CIRS) developed for research laboratories/departments.
+LabCIRS is a lightweight anonymous Critical Incident Reporting System (CIRS) developed for research laboratories/departments.
 
 It builds upon the `Django <http://www.djangoproject.com>`_ framework as a stand alone web application and is not intended to be a reusable app.
 
