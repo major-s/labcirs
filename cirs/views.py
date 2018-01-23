@@ -21,6 +21,7 @@
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core import mail
 from django.core.urlresolvers import reverse_lazy
 from django.forms import ModelForm, Textarea, TextInput, RadioSelect
@@ -70,14 +71,21 @@ class IncidentCreateForm(ModelForm):
         return result
 
 
-class IncidentCreate(CreateView):
+class IncidentCreate(SuccessMessageMixin, CreateView):
     model = CriticalIncident
     form_class = IncidentCreateForm
     success_url = 'success'
+    success_message = "%(comment_code)s"
 
     @method_decorator(permission_required('cirs.add_criticalincident'))
     def dispatch(self, *args, **kwargs):
         return super(IncidentCreate, self).dispatch(*args, **kwargs)
+    
+    def get_success_message(self, cleaned_data):
+        return self.success_message % dict(
+            cleaned_data,
+            comment_code=self.object.comment_code,
+        )
 
 
 class PublishableIncidentList(ListView):

@@ -25,6 +25,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from multiselectfield import MultiSelectField
@@ -78,6 +79,7 @@ class CriticalIncident(models.Model):
         _("Photo"), upload_to="photos/%Y/%m/%d", null=True, blank=True)
     public = models.BooleanField(
         _("Publication"), choices=PUBLIC_CHOICES, default=None)
+    comment_code = models.CharField(max_length=16, blank=True)
     # QMB review, unvisible for reporter
     reported = models.DateField(_("Date of report"), auto_now_add=True)
     action = models.TextField(_("Action"), blank=True)
@@ -128,7 +130,14 @@ class CriticalIncident(models.Model):
     def __unicode__(self):
         info = (self.incident[:25] + '..') if len(self.incident) > 25 else self.incident
         return info
-
+    
+    def save(self, *agrs, **kwargs):
+        chars = 'abcdefghijklmnopqrstuvwxyz0123456789@#$%&*-_=+'
+        while not self.comment_code:
+            random_string = get_random_string(8, chars)
+            if CriticalIncident.objects.filter(comment_code=random_string).count() == 0:
+                self.comment_code = random_string
+        super(CriticalIncident, self).save()
 
 class PublishableIncident(models.Model):
     critical_incident = models.OneToOneField(CriticalIncident,

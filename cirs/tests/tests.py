@@ -67,6 +67,19 @@ class CriticalIncidentModelTest(TestCase):
         my_incident = CriticalIncident.objects.get(pk=1)
         self.assertIn('other', my_incident.category)
 
+    def test_comment_code_is_generated_on_creation(self):
+        # create incident
+        first_incident = CriticalIncident()
+        first_incident.date = date(2012, 2, 26)
+        first_incident.public = True
+        first_incident.category = 'other'
+        first_incident.save()
+        
+        #retreive incident and check for existing comment_code
+        my_incident = CriticalIncident.objects.get(pk=1)
+        self.assertNotEqual('', my_incident.comment_code, "Comment code should not be empty")
+        
+        # TODO: test for unique code
 
 class CriticalIncidentFormTest(TestCase):
 
