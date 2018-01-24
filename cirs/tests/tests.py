@@ -21,7 +21,7 @@
 from collections import OrderedDict
 from datetime import date
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core import mail
@@ -91,6 +91,35 @@ class CriticalIncidentFormTest(TestCase):
         self.assertIn('id_photo', form.as_p())
 
     # TODO: def test_all_necessary_fields_in
+
+
+class CriticalIncidentCreateViewTest(TestCase):
+  
+    def test_create_view_returns_message(self):
+        self.username = 'reporter'
+        self.email = 'reporter@test.edu'
+        self.password = 'reporter'
+        self.reporter = User.objects.create_user(self.username, self.email, self.password)
+        user = User.objects.get(pk=1)
+        permission = Permission.objects.get(codename='add_criticalincident')
+        user.user_permissions.add(permission)
+          
+        incident_date = date(2015, 7, 31)
+        test_incident = {'date': '07/24/2015',
+                         'incident': 'A strang incident happened',
+                         'reason': 'No one knows',
+                         'immediate_action': 'No action possible',
+                         'preventability': 'indistinct',
+                         'public': True,
+                         }
+          
+        login = self.client.login(username=self.username, password=self.password)
+        LabCIRSConfig.objects.create(send_notification=False)
+
+        response = self.client.post('/incidents/create/',  test_incident, follow=True)
+        comment_code = CriticalIncident.objects.last().comment_code
+        messages = list(response.context['messages'])
+        self.assertEqual(comment_code, messages[0].message, "Comment code should be sent as message")
 
 
 class SendNotificationEmailTest(TestCase):
