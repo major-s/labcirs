@@ -1,0 +1,34 @@
+{% extends "cirs/base.html" %}
+
+{% block content %}
+{% load i18n %}
+{% load comments %}
+{% load comments_xtd %}
+	<div class="container">
+	    <h4>{% trans "Incident!" %}</h4>
+	    <p>{{ object }}</p>
+	    <p>Date: {{ object.date }}</p>
+	    <p>Incident: {{ object.incident }}</p>
+	    <p>Reason: {{ object.reason }}</p>
+	    <p>Immediate action: {{ object.immediate_action }}</p>
+	    <p>Preventability: {{ object.preventability }}</p>
+
+    
+    	{% get_comment_count for object as comment_count %}
+    	{% if comment_count %}
+    		<hr/>
+    		<div class="comments">
+	    		<h4 class="text-center">{% trans "Comments:" %}</h4>
+	    		<ul class="media-list">
+    				{% render_xtdcomment_tree for object %}
+    			</ul>
+	    	</div>
+    	{% endif %}
+    	<div class="comment">
+  			<h4 class="text-center">{% trans "Your comment" %}</h4>
+  			<div class="well">
+  				{% render_comment_form for object %}
+  			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -21,17 +21,19 @@
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import mail
 from django.core.urlresolvers import reverse_lazy
+from django import forms
 from django.forms import ModelForm, Textarea, TextInput, RadioSelect
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import ListView
-from django.views.generic.edit import CreateView
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, FormView
 
 from .models import CriticalIncident, PublishableIncident, LabCIRSConfig
 
@@ -87,6 +89,24 @@ class IncidentCreate(SuccessMessageMixin, CreateView):
             comment_code=self.object.comment_code,
         )
 
+
+class IncidentSearchForm(forms.Form):
+    incident_code = forms.CharField()
+
+
+class IncidentSearch(LoginRequiredMixin, FormView):
+    form_class = IncidentSearchForm
+    template_name = 'cirs/incident_search_form.html'
+
+    def form_valid(self, form):
+        comment_code = form.cleaned_data.get('incident_code')
+        incident_id = CriticalIncident.objects.get(comment_code=comment_code).id
+        return redirect('incident_with_comments', pk=incident_id)
+
+
+class IncidentDetailView(LoginRequiredMixin, DetailView):
+    model = CriticalIncident
+    
 
 class PublishableIncidentList(ListView):
     """

@@ -20,7 +20,8 @@ urlpatterns = [
     url(r'^login/$',  login_user, name='login'),
     url(r'^logout/$', logout_user, name='logout'),
     url(r'^i18n/', include('django.conf.urls.i18n')),
-    url(r'^demo_data.html$', TemplateView.as_view(), name='demo_login_data_page')
+    url(r'^demo_data.html$', TemplateView.as_view(), name='demo_login_data_page'),
+    url(r'^comments/', include('django_comments_xtd.urls')),
 ]
 
 # TODO: has to change to construct commented below as this

@@ -19,7 +19,7 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from collections import OrderedDict
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
@@ -50,14 +50,19 @@ class AddCriticalIncidentTest(TestCase):
 
 
 class CriticalIncidentModelTest(TestCase):
-
+    
+    def setUp(self):
+        # create first incident
+        # TODO: change to objects.create()
+        self.first_incident = CriticalIncident()
+        self.first_incident.date = date(2012, 2, 26)
+        self.first_incident.public = True
+        self.first_incident.category = 'other'
+        self.first_incident.save()
+    
     def test_saving_and_retriving_incidents(self):
-        first_incident = CriticalIncident()
-        first_incident.date = date(2012, 2, 26)
-        first_incident.public = True
-        first_incident.category = 'other'
-        first_incident.photo = File(open("cirs/tests/test.jpg"))
-        first_incident.save()
+        self.first_incident.photo = File(open("cirs/tests/test.jpg"))
+        self.first_incident.save()
 
         p = CriticalIncident.objects.get(id=1).photo.path
 
@@ -67,19 +72,22 @@ class CriticalIncidentModelTest(TestCase):
         my_incident = CriticalIncident.objects.get(pk=1)
         self.assertIn('other', my_incident.category)
 
+    def test_cannot_save_future_incidents(self):
+        self.first_incident.date = date.today() + timedelta(days=10)
+        self.first_incident.status = 'in process'
+        self.first_incident.save()
+        self.assertRaises(ValidationError, self.first_incident.clean)
+    
     def test_comment_code_is_generated_on_creation(self):
-        # create incident
-        first_incident = CriticalIncident()
-        first_incident.date = date(2012, 2, 26)
-        first_incident.public = True
-        first_incident.category = 'other'
-        first_incident.save()
-        
         #retreive incident and check for existing comment_code
         my_incident = CriticalIncident.objects.get(pk=1)
         self.assertNotEqual('', my_incident.comment_code, "Comment code should not be empty")
         
         # TODO: test for unique code
+        
+    def test_get_absolute_url_returns_valid_url(self):
+        my_incident = CriticalIncident.objects.get(pk=1)
+        self.assertEqual(my_incident.get_absolute_url(), '/incidents/1/')
 
 class CriticalIncidentFormTest(TestCase):
 
