@@ -24,11 +24,13 @@ from datetime import date
 
 from django.conf import settings
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.test import override_settings
-from selenium import webdriver
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as EC
 
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig
 from cirs.tests.tests import generate_three_incidents
@@ -47,12 +49,25 @@ test_incident = {'date': incident_date,
                  }
 
 
-class CriticalIncidentListTest(FunctionalTest):
+class FunctionalTestWithBackendLogin(FunctionalTest):
 
+    def go_to_test_incident_as_reviewer(self):
+        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
+        self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
+        self.assertIn("/admin/", self.browser.current_url)
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Critical incidents")))
+        self.browser.find_element_by_link_text("Critical incidents").click()
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, test_incident['incident'])))
+        self.browser.find_element_by_link_text(test_incident['incident']).click()
+
+
+class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
+    
     def test_login(self):
         self.login_user()
         # # TODO: check if user is authenticated
         # # instead checking for the title of the table
+        self.wait.until(EC.presence_of_element_located((By.ID, 'tableInventory')))
         table_title = self.browser.find_element_by_tag_name('h2').text
         self.assertEqual('Critical incidents', table_title)
 
@@ -60,7 +75,7 @@ class CriticalIncidentListTest(FunctionalTest):
     def test_user_can_add_incident_with_photo(self):
         LabCIRSConfig.objects.create(send_notification=True)
         self.login_user()
-
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add incident")))
         self.browser.find_element_by_link_text("Add incident").click()
 
         # change to besser test
@@ -82,9 +97,7 @@ class CriticalIncidentListTest(FunctionalTest):
         self.browser.find_element_by_id('id_public_0').click()  # true
         # upload photo
         photo_field = self.browser.find_element_by_id('id_photo')
-        # TODO: change cwd to SETTINGS variable? or put test image to test folder.
-        # TODO: make it os independent
-        photo_field.send_keys(os.getcwd()+"/cirs/tests/test.jpg")
+        photo_field.send_keys(os.path.join(os.getcwd(), "cirs", "tests", "test.jpg"))
         # submit
         for button in self.browser.find_elements_by_class_name("btn-danger"):
             if "Send" in button.text:
@@ -94,12 +107,8 @@ class CriticalIncidentListTest(FunctionalTest):
         self.assertIn("/incidents/create/success/", self.browser.current_url)
 
         # the reporter has to logout and the reviewer has to "publish" the incident
-        time.sleep(2)
-        self.browser.find_element_by_link_text("Log out").click()
-        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
-        self.assertIn("/admin/", self.browser.current_url)
-        self.browser.find_element_by_link_text("Critical incidents").click()
-        self.browser.find_element_by_link_text("A strang incident happened").click()
+        self.logout()
+        self.go_to_test_incident_as_reviewer()
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
         for field in ('incident', 'description', 'measures_and_consequences'):
@@ -111,8 +120,7 @@ class CriticalIncidentListTest(FunctionalTest):
         headers1 = self.browser.find_elements_by_tag_name('h1')
         self.assertIn("Select Critical incident to change", [header1.text for header1 in headers1])
         # logout and check as normal user if photo is visible
-        time.sleep(5)
-        self.browser.find_element_by_link_text("LOG OUT").click()  # Django 1.9 is capitalized
+        self.logout()
         self.login_user()
         # check if all expected fields are present in the table
         table = self.browser.find_element_by_id('tableInventory')
@@ -177,13 +185,11 @@ class CriticalIncidentListTest(FunctionalTest):
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
 
 
-class CriticalIncidentBackendTest(FunctionalTest):
+class CriticalIncidentBackendTest(FunctionalTestWithBackendLogin):
 
     def test_reviewer_can_chose_category_of_incident(self):
         CriticalIncident.objects.create(**test_incident)
-        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
-        self.browser.find_element_by_link_text("Critical incidents").click()
-        self.browser.find_element_by_link_text("A strang incident happened").click()
+        self.go_to_test_incident_as_reviewer()
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
         category_field = self.browser.find_element_by_id('id_category')
