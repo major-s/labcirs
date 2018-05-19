@@ -100,13 +100,26 @@ class IncidentSearch(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         comment_code = form.cleaned_data.get('incident_code')
+        # TODO: handle nonexistend codes
         incident_id = CriticalIncident.objects.get(comment_code=comment_code).id
-        return redirect('incident_with_comments', pk=incident_id)
+        self.request.session['accessible_incident'] = incident_id
+        return redirect('incident_detail', pk=incident_id)
 
 
 class IncidentDetailView(LoginRequiredMixin, DetailView):
     model = CriticalIncident
-    
+    # TODO: add message if redirected
+    def render_to_response(self, context, **kwargs):
+        accessible_incident_id = None
+        try:
+            accessible_incident_id = self.request.session['accessible_incident']
+        except KeyError as e:
+            return redirect('incident_search')
+        if accessible_incident_id != self.object.id:
+            return redirect('incident_search')
+        else:
+            return super(IncidentDetailView, self).render_to_response(context, **kwargs)
+
 
 class PublishableIncidentList(ListView):
     """

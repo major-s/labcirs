@@ -25,9 +25,13 @@ from datetime import date
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from django.core.urlresolvers import reverse
+
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as EC
 
 from cirs.models import CriticalIncident, LabCIRSConfig
 from .base import FunctionalTest
@@ -91,3 +95,36 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
         comment_code = ci.comment_code
         
         self.assertIn(comment_code, code_info.text)
+
+
+class SecurityTest(FunctionalTest):
+    
+    def test_anon_user_cannot_access_incident(self):
+        incident = CriticalIncident.objects.create(**test_incident)
+        incident_url = incident.get_absolute_url()
+        redirect_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'),  incident_url)
+        # should go to login page
+        self.browser.get('%s%s' % (self.live_server_url, incident_url))
+
+        self.assertEqual(self.browser.current_url, redirect_url)
+    
+    def test_reporter_cannot_access_incident_without_comment_code(self):
+        # User logs in as reporter and tries to access directly detail view of an incident
+        # this redirects him to the incident search page.
+        incident = CriticalIncident.objects.create(**test_incident)
+        incident_url = incident.get_absolute_url()
+        self.login_user()
+        time.sleep(2)
+        redirect_url = '%s%s' % (self.live_server_url, reverse('incident_search'))
+        self.browser.get('%s%s' % (self.live_server_url, incident_url))
+
+        self.assertEqual(self.browser.current_url, redirect_url)
+        
+    @override_settings(DEBUG=True)
+    def test_reporter_can_access_incident_with_correct_comment_code(self):
+        incident = CriticalIncident.objects.create(**test_incident)
+        self.login_user()
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Comments"))).click()
+        self.wait.until(EC.presence_of_element_located((By.ID, "id_incident_code"))).send_keys(incident.comment_code)
+        self.browser.find_element_by_class_name("btn-info").click()
+        self.assertEqual(self.browser.current_url, self.live_server_url+incident.get_absolute_url())
