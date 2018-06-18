@@ -126,3 +126,4 @@ class ConfigurationAdmin(admin.ModelAdmin):
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
+admin.site.register(Comment)

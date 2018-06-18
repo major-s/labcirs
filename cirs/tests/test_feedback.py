@@ -19,20 +19,19 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from collections import OrderedDict
-from datetime import date
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cirs.models import CriticalIncident, PublishableIncident
+from cirs.models import CriticalIncident, PublishableIncident, Comment
 from cirs.views import IncidentDetailView
+import datetime as dt
 
 from .tests import generate_three_incidents 
 
 
-class SecurityTest(TestCase):
-
+class BaseFeedbackTest(TestCase):
     def setUp(self):
         self.username = 'reporter'
         self.email = 'reporter@test.edu'
@@ -41,6 +40,9 @@ class SecurityTest(TestCase):
                                                  self.password)
         generate_three_incidents()
         self.ci = CriticalIncident.objects.first()
+
+
+class SecurityTest(BaseFeedbackTest):
 
     def test_reporter_cannot_acces_incident_directly(self):
         """Tests if reporter gets redirected to the search page
@@ -65,3 +67,20 @@ class SecurityTest(TestCase):
         session.save()
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
         self.assertEqual(response.status_code, 200)
+
+
+class CommentModelTest(BaseFeedbackTest):
+    def setUp(self):
+        super(CommentModelTest,self).setUp()
+        self.test_comment = {'critical_incident': self.ci,
+                             'text': 'I have a comment on it',
+                             'author': self.reporter,
+                             'status': 'open'} 
+    
+    def test_comment_save_and_retrieve(self):
+        comment = Comment.objects.create(**self.test_comment)
+        self.assertEqual(Comment.objects.first().critical_incident, self.ci)
+
+    def test_comment_has_creation_date_of_today(self):
+        comment = Comment.objects.create(**self.test_comment)
+        self.assertEqual(Comment.objects.first().created, dt.date.today())

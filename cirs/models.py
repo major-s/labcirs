@@ -227,3 +227,21 @@ class LabCIRSConfig(models.Model):
                 raise ValidationError(_('You have to choose at least one notification recipient.'))
             if self.notification_sender_email == '':
                 raise ValidationError(_('You have to enter valid sender email.'))
+
+COMMENT_STATUS_CHOICES = (('open', _('open')), ('in process', _('in process')),
+                  ('closed', _('closed')))
+            
+class Comment(models.Model):
+    critical_incident = models.ForeignKey(CriticalIncident, 
+                                          verbose_name=_("Critical incident"),
+                                          related_name='comments',
+                                          on_delete=models.PROTECT)
+    author = models.ForeignKey(User, verbose_name=_("Author"), 
+                               on_delete=models.PROTECT)
+    created = models.DateField(_("Created at"), auto_now_add=True)
+    text =  models.TextField(_("Text"))
+    status = models.CharField(
+        _("Status"), help_text=_("Status of the comment"), max_length=255,
+        choices=COMMENT_STATUS_CHOICES, default=COMMENT_STATUS_CHOICES[0][0])
+    
+    

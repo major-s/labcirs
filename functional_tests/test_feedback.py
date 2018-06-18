@@ -97,6 +97,40 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
         self.assertIn(comment_code, code_info.text)
 
 
+class CommentTest(FunctionalTest):
+
+    def setUp(self):
+        super(CommentTest, self).setUp()
+        self.incident = CriticalIncident.objects.create(**test_incident)
+
+    def view_incident_detail(self):
+        '''Need this function because setting session from functional test
+        did not work.'''
+        incident = self.incident
+        # TODO: let log in different users
+        self.login_user()
+        self.wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, "Comments"))).click()
+        self.wait.until(
+            EC.presence_of_element_located((By.ID, "id_incident_code"))
+        ).send_keys(incident.comment_code)
+        self.browser.find_element_by_class_name("btn-info").click()
+
+    @override_settings(DEBUG=True)        
+    def test_reporter_can_add_comment(self):
+        LabCIRSConfig.objects.create(send_notification=True)
+        incident = CriticalIncident.objects.create(**test_incident)
+        incident_url = incident.get_absolute_url()
+        self.login_user()
+        self.wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, "Comments"))).click()
+        self.wait.until(
+            EC.presence_of_element_located((By.ID, "id_incident_code"))
+            ).send_keys(incident.comment_code)
+        self.browser.find_element_by_class_name("btn-info").click()
+        self.wait.until(
+            EC.presence_of_element_located((By.ID, "id_comment_text")))
+
 class SecurityTest(FunctionalTest):
     
     def test_anon_user_cannot_access_incident(self):

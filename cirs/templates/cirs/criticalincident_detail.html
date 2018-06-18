@@ -2,8 +2,6 @@
 
 {% block content %}
 {% load i18n %}
-{% load comments %}
-{% load comments_xtd %}
 	<div class="container">
 	    <h4>{% trans "Incident!" %}</h4>
 	    <p>{{ object }}</p>
@@ -13,7 +11,19 @@
 	    <p>Immediate action: {{ object.immediate_action }}</p>
 	    <p>Preventability: {{ object.preventability }}</p>
 
+		{% if object.comments.all|length > 0 %}
+			<hr/>
+			<div class="comments">
+	    		<h4 class="text-center">{% trans "Comments:" %}</h4>
+	    		<ul class="media-list">
+					{% for comment in object.comments.all %}
+						<li>{{ comment }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
     
+    	{% comment %}
     	{% get_comment_count for object as comment_count %}
     	{% if comment_count %}
     		<hr/>
@@ -24,10 +34,11 @@
     			</ul>
 	    	</div>
     	{% endif %}
+    	{% endcomment %}
     	<div class="comment">
   			<h4 class="text-center">{% trans "Your comment" %}</h4>
   			<div class="well">
-  				{% render_comment_form for object %}
+  				{% comment %}{% render_comment_form for object %}{% endcomment %}
   			</div>
 		</div>
 	</div>
