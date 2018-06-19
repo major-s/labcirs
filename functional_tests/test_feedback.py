@@ -56,7 +56,8 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
         LabCIRSConfig.objects.create(send_notification=True)
         self.login_user()
 
-        self.browser.find_element_by_link_text("Add incident").click()
+        self.wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, "Add incident"))).click()
 
         # change to better test
         self.assertIn("incidents/create", self.browser.current_url)
@@ -91,7 +92,7 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
         code_info = self.browser.find_element_by_class_name("alert-info")
            
         #there should be only one object in the database
-        ci = CriticalIncident.objects.get(pk=1)
+        ci = CriticalIncident.objects.first()
         comment_code = ci.comment_code
         
         self.assertIn(comment_code, code_info.text)
