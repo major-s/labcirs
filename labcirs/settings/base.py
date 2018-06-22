@@ -170,12 +170,3 @@ EMAIL_HOST_USER = get_local_setting('EMAIL_HOST_USER')
 EMAIL_PORT = get_local_setting('EMAIL_PORT', 25)
 EMAIL_SUBJECT_PREFIX = '[LabCIRS] '
 
-# Test django-comments
-SITE_ID = 1
-COMMENTS_APP = 'django_comments_xtd'
-COMMENTS_XTD_MAX_THREAD_LEVEL = 8
-COMMENTS_XTD_CONFIRM_EMAIL = False
-# A "From:" email in needed to send build in notifications
-# TODO: reuse email send function from CriticalIncident model as there is anyway
-# no notification on first comment.
-COMMENTS_XTD_FROM_EMAIL = get_local_setting('COMMENTS_XTD_FROM_EMAIL', '')

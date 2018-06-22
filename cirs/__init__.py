@@ -1,4 +1,4 @@
-VERSION = (4, 0, 2, "dev", 1)
+VERSION = (4, 0, 2, "dev", 2)
 __AUTHOR__ = "Sebastian Major"
 __AUTHOR_EMAIL__ = "sebastian.major@charite.de"
 
