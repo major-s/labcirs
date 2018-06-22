@@ -3,42 +3,38 @@
 {% block content %}
 {% load i18n %}
 	<div class="container">
-	    <h4>{% trans "Incident!" %}</h4>
-	    <p>{{ object }}</p>
-	    <p>Date: {{ object.date }}</p>
-	    <p>Incident: {{ object.incident }}</p>
-	    <p>Reason: {{ object.reason }}</p>
-	    <p>Immediate action: {{ object.immediate_action }}</p>
-	    <p>Preventability: {{ object.preventability }}</p>
+	    <h4>{% trans "Incident" %}:</h4>
+	    <p>{% trans "Date" %}: {{ incident.date }}</p>
+	    <p>{% trans "Incident" %}: {{ incident.incident }}</p>
+	    <p>{% trans "Cause" %}: {{ incident.reason }}</p>
+	    <p>{% trans "Immediate action" %}: {{ incident.immediate_action }}</p>
+	    <p>{% trans "Preventability" %}: {{ incident.preventability }}</p>
 
-		{% if object.comments.all|length > 0 %}
+		{% if incident.comments.all|length > 0 %}
 			<hr/>
 			<div class="comments">
 	    		<h4 class="text-center">{% trans "Comments:" %}</h4>
-	    		<ul class="media-list">
-					{% for comment in object.comments.all %}
-						<li>{{ comment }}</li>
+	    		<div class="table-responsive">
+	    		<table id="id_comment_table" class="table table-striped table-bordered">
+					{% for comment in incident.comments.all %}
+						<tr>
+							<td class="col-md-2">{{ comment.created }}</td>
+							<td class="col-md-1">{{ comment.author }}</td>
+							<td>{{ comment.text }}</td>
+						</tr>
 					{% endfor %}
-				</ul>
+				</table>
+				</div>
 			</div>
 		{% endif %}
     
-    	{% comment %}
-    	{% get_comment_count for object as comment_count %}
-    	{% if comment_count %}
-    		<hr/>
-    		<div class="comments">
-	    		<h4 class="text-center">{% trans "Comments:" %}</h4>
-	    		<ul class="media-list">
-    				{% render_xtdcomment_tree for object %}
-    			</ul>
-	    	</div>
-    	{% endif %}
-    	{% endcomment %}
     	<div class="comment">
   			<h4 class="text-center">{% trans "Your comment" %}</h4>
   			<div class="well">
-  				{% comment %}{% render_comment_form for object %}{% endcomment %}
+  				<form action="" method="post">{% csrf_token %}
+  					{{ form.as_p }}
+  					<button type="submit" class="btn btn-danger">{% trans "Save" %}</button> 
+  				</form>
   			</div>
 		</div>
 	</div>

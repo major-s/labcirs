@@ -35,7 +35,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, FormView
 
-from .models import CriticalIncident, PublishableIncident, LabCIRSConfig
+from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig
 
 
 class IncidentCreateForm(ModelForm):
@@ -68,6 +68,35 @@ class IncidentCreateForm(ModelForm):
                 for user in config.notification_recipients.all():
                     to_list.append(user.email)
                 mail.send_mail('New critical incident', mail_body,
+                               config.notification_sender_email,
+                               to_list, fail_silently=False)
+        return result
+
+
+class CommentForm(ModelForm):
+    
+    class Meta:
+        model = Comment
+        fields = ['text']
+        widgets = {"text": Textarea(attrs={'cols': 80, 'rows': 5, 
+                                           'class': "form-control"})
+        }
+
+    def save(self):
+        result = super(CommentForm, self).save()
+        config = LabCIRSConfig.objects.first()
+        if config.send_notification:
+            # send only if incident was saved
+            if self.instance.pk is not None:
+                try:
+                    # TODO: add comment notification
+                    mail_body = config.notification_text
+                except:
+                    mail_body = ""
+                to_list = []
+                for user in config.notification_recipients.all().exclude(id=self.instance.author.id):
+                    to_list.append(user.email)
+                mail.send_mail('New LabCIRS comment', mail_body,
                                config.notification_sender_email,
                                to_list, fail_silently=False)
         return result
@@ -106,16 +135,38 @@ class IncidentSearch(LoginRequiredMixin, FormView):
         return redirect('incident_detail', pk=incident_id)
 
 
-class IncidentDetailView(LoginRequiredMixin, DetailView):
-    model = CriticalIncident
-    # TODO: add message if redirected
+class IncidentDetailView(LoginRequiredMixin, CreateView):
+    """
+    Delivers detail view of an incident for commenting. Simple form for comments
+    is included and followed by a list of comments for this incident
+    """
+    model = Comment
+    form_class = CommentForm
+    template_name = 'cirs/criticalincident_detail.html'
+
+    def get_success_url(self):
+        # returns the absolute URL of the parent (and current incident)
+        return CriticalIncident.objects.get(pk=self.kwargs['pk']).get_absolute_url()
+  
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.critical_incident = CriticalIncident.objects.get(pk=self.kwargs['pk'])
+        return super(IncidentDetailView, self).form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(IncidentDetailView, self).get_context_data(**kwargs)
+        context['incident'] = CriticalIncident.objects.get(pk=self.kwargs['pk'])
+        return context
+
     def render_to_response(self, context, **kwargs):
+        if self.request.user.has_perm('cirs.change_criticalincident'):
+            return super(IncidentDetailView, self).render_to_response(context, **kwargs)
         accessible_incident_id = None
         try:
             accessible_incident_id = self.request.session['accessible_incident']
         except KeyError as e:
             return redirect('incident_search')
-        if accessible_incident_id != self.object.id:
+        if accessible_incident_id != context['incident'].pk:
             return redirect('incident_search')
         else:
             return super(IncidentDetailView, self).render_to_response(context, **kwargs)

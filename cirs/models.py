@@ -244,4 +244,5 @@ class Comment(models.Model):
         _("Status"), help_text=_("Status of the comment"), max_length=255,
         choices=COMMENT_STATUS_CHOICES, default=COMMENT_STATUS_CHOICES[0][0])
     
-    
+    def __unicode__(self):
+        return self.text[:64]

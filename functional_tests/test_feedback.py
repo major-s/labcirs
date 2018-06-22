@@ -33,7 +33,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import CriticalIncident, LabCIRSConfig
+from cirs.models import Comment, CriticalIncident, LabCIRSConfig
 from .base import FunctionalTest
 
 DEFAULT_WAIT = 5
@@ -103,6 +103,7 @@ class CommentTest(FunctionalTest):
     def setUp(self):
         super(CommentTest, self).setUp()
         self.incident = CriticalIncident.objects.create(**test_incident)
+        LabCIRSConfig.objects.create(send_notification=True)
 
     def view_incident_detail(self):
         '''Need this function because setting session from functional test
@@ -117,23 +118,76 @@ class CommentTest(FunctionalTest):
         ).send_keys(incident.comment_code)
         self.browser.find_element_by_class_name("btn-info").click()
 
+    def create_comment(self, comment_text=None):
+        # wait until text field present
+        self.wait.until(
+            EC.presence_of_element_located((By.ID, "id_text"))
+            ).send_keys(comment_text)
+        # and clicks the "Save" button.
+        self.browser.find_element_by_class_name("btn-danger").click()
+
+    def check_if_comment_in_the_last_row(self, comment_text=None):
+        table = self.wait.until(
+            EC.presence_of_element_located((By.ID, "id_comment_table")))
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(comment_text, rows[-1].text)
+
     @override_settings(DEBUG=True)        
     def test_reporter_can_add_comment(self):
-        LabCIRSConfig.objects.create(send_notification=True)
-        incident = CriticalIncident.objects.create(**test_incident)
-        incident_url = incident.get_absolute_url()
-        self.login_user()
-        self.wait.until(
-            EC.element_to_be_clickable((By.LINK_TEXT, "Comments"))).click()
-        self.wait.until(
-            EC.presence_of_element_located((By.ID, "id_incident_code"))
-            ).send_keys(incident.comment_code)
-        self.browser.find_element_by_class_name("btn-info").click()
-        self.wait.until(
-            EC.presence_of_element_located((By.ID, "id_comment_text")))
+        absolute_incident_url = self.live_server_url + self.incident.get_absolute_url()
+        self.view_incident_detail()
+
+        # reporter enters a comment into the comment text field
+        comment_text = "I have some remarks on this incident!"
+        self.create_comment(comment_text)
+        
+        # and lands afterwards on the same page
+        self.assertEqual(self.browser.current_url, absolute_incident_url)
+        # the new comment is below
+        self.check_if_comment_in_the_last_row(comment_text)
+
+    @override_settings(DEBUG=True) 
+    def test_reviewer_can_comment_on_incident(self):
+        absolute_incident_url = self.live_server_url + self.incident.get_absolute_url()
+        # reporter entered his comment already
+        comment_text = "I have some remarks on this incident!"
+        comment = Comment.objects.create(
+            critical_incident=self.incident, author=self.reporter, text=comment_text)
+        # reviewer logs in and goes to the incident page
+        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
+        time.sleep(1)
+        self.browser.get(absolute_incident_url)
+
+        # and sees the coment made by the reporter
+        self.check_if_comment_in_the_last_row(comment_text)
+
+        # now he can comment himself
+        comment_text = "I still have some questions:"
+        self.create_comment(comment_text)
+
+        # check if the new comment is the last one
+        self.check_if_comment_in_the_last_row(comment_text)
+        
+        # but now there is no email as reviewer made a comment himself
+        self.assertEqual(len(mail.outbox), 0)
+        
+        # TODO: check what happens if therer are multiple recipients. It should send email then
+
+    @override_settings(EMAIL_HOST='smtp.example.com')
+    def test_send_email_after_reporter_creates_a_comment(self):
+        config = LabCIRSConfig.objects.first()
+        config.notification_recipients.add(self.reviewer)
+        config.notification_sender_email = 'labcirs@labcirs.edu'
+        config.save()
+        self.view_incident_detail()
+        comment_text = "I have some remarks on this incident!"
+        self.create_comment(comment_text)
+        # check if incident was sent by email
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'New LabCIRS comment')
 
 class SecurityTest(FunctionalTest):
-    
+
     def test_anon_user_cannot_access_incident(self):
         incident = CriticalIncident.objects.create(**test_incident)
         incident_url = incident.get_absolute_url()
@@ -163,3 +217,11 @@ class SecurityTest(FunctionalTest):
         self.wait.until(EC.presence_of_element_located((By.ID, "id_incident_code"))).send_keys(incident.comment_code)
         self.browser.find_element_by_class_name("btn-info").click()
         self.assertEqual(self.browser.current_url, self.live_server_url+incident.get_absolute_url())
+
+    def reviewer_can_access_incident_without_code(self):
+        incident = CriticalIncident.objects.create(**test_incident)
+        absolute_incident_url = self.live_server_url + incident.get_absolute_url()
+        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
+        self.browser.get(absolute_incident_url)
+        self.assertEqual(self.browser.current_url, absolute_incident_url)
+
