@@ -1,0 +1,15 @@
+{% extends "cirs/base.html" %}
+
+{% block content %}
+    {{ block.super }}
+    {% load i18n %}
+    <div class="container">
+		<form action="" method="post" enctype="multipart/form-data" >{% csrf_token %}
+			<p>{% trans "Please enter the code which you received after submitting the incident." %}</p>
+			
+			<p>{{ form }}</p>
+			
+			<button type="submit" class="btn btn-info">{% trans "Search" %}</button> 
+		</form>
+    </div>
+{% endblock %}

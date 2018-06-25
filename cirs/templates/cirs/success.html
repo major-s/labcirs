@@ -5,6 +5,12 @@
     <div class="jumbotron">
 	<div class="container">
 	    <h1>{% trans "Thank you!" %}</h1>
+	    <br>
+	    <p class="alert alert-info">If you want to comment on this report in future, plesase write down this code: 
+	    {% for message in messages %}
+	    {{ message }}
+	    {% endfor %}
+	    </p>
 	    <a href="{% url 'logout' %}" class="btn btn-primary btn-lg" role="button">{% trans "Log out" %}</a>
 	    <a href="{% url 'incidents_list'%}" class="btn btn-primary btn-lg" role="button">{% trans "View incidents" %}</a>
 	    <a href="{% url 'create_incident'%}" class="btn btn-primary btn-lg" role="button">{% trans "One more" %}</a>

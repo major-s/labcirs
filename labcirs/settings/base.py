@@ -32,8 +32,8 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                 else:
                     return setting_value
             except KeyError:
-                error_msg = "Set the {0} environment variable".format(
-                    setting_item)
+                error_msg = "Set the {0} environment variable in {1}".format(
+                    setting_item, local_config_file)
                 raise ImproperlyConfigured(error_msg)
         except ValueError as (msg):
             raise Exception("JSON error: {0}".format(msg))
@@ -66,6 +66,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #'django.contrib.sites',
+    #'django_comments_xtd',
+    #'django_comments',
     'cirs',
     'multiselectfield',
 ]
@@ -166,3 +169,4 @@ EMAIL_HOST_PASSWORD = get_local_setting('EMAIL_HOST_PASSWORD')
 EMAIL_HOST_USER = get_local_setting('EMAIL_HOST_USER')
 EMAIL_PORT = get_local_setting('EMAIL_PORT', 25)
 EMAIL_SUBJECT_PREFIX = '[LabCIRS] '
+

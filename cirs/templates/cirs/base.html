@@ -36,6 +36,8 @@
                 <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "View incidents" %}</a></li>
                 {% url 'create_incident' as url %}
                 <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "Add incident" %}</a></li>
+                {% url 'incident_search' as url %}
+                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "Comments" %}</a></li>
             {% endif %}
             {% if user.is_superuser %}
                 <li><a href="{% url 'admin:index' %}">Admin</a></li>

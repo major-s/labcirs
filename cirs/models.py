@@ -25,6 +25,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from multiselectfield import MultiSelectField
@@ -78,6 +79,7 @@ class CriticalIncident(models.Model):
         _("Photo"), upload_to="photos/%Y/%m/%d", null=True, blank=True)
     public = models.BooleanField(
         _("Publication"), choices=PUBLIC_CHOICES, default=None)
+    comment_code = models.CharField(max_length=16, blank=True)
     # QMB review, unvisible for reporter
     reported = models.DateField(_("Date of report"), auto_now_add=True)
     action = models.TextField(_("Action"), blank=True)
@@ -124,11 +126,21 @@ class CriticalIncident(models.Model):
                 for field in ('action', 'responsibilty', 'review_date', 'risk', 'frequency'):
                     if field != '':
                         raise ValidationError(_('If anything was changed in the QMB block, please set status at least to "in process".'))
-
+    
+    def get_absolute_url(self):
+        return reverse('incident_detail', args=[str(self.id)])
+    
     def __unicode__(self):
         info = (self.incident[:25] + '..') if len(self.incident) > 25 else self.incident
         return info
-
+    
+    def save(self, *agrs, **kwargs):
+        chars = 'abcdefghijklmnopqrstuvwxyz0123456789@#$%&*-_=+'
+        while not self.comment_code:
+            random_string = get_random_string(8, chars)
+            if CriticalIncident.objects.filter(comment_code=random_string).count() == 0:
+                self.comment_code = random_string
+        super(CriticalIncident, self).save()
 
 class PublishableIncident(models.Model):
     critical_incident = models.OneToOneField(CriticalIncident,
@@ -215,3 +227,22 @@ class LabCIRSConfig(models.Model):
                 raise ValidationError(_('You have to choose at least one notification recipient.'))
             if self.notification_sender_email == '':
                 raise ValidationError(_('You have to enter valid sender email.'))
+
+COMMENT_STATUS_CHOICES = (('open', _('open')), ('in process', _('in process')),
+                  ('closed', _('closed')))
+            
+class Comment(models.Model):
+    critical_incident = models.ForeignKey(CriticalIncident, 
+                                          verbose_name=_("Critical incident"),
+                                          related_name='comments',
+                                          on_delete=models.PROTECT)
+    author = models.ForeignKey(User, verbose_name=_("Author"), 
+                               on_delete=models.PROTECT)
+    created = models.DateField(_("Created at"), auto_now_add=True)
+    text =  models.TextField(_("Text"))
+    status = models.CharField(
+        _("Status"), help_text=_("Status of the comment"), max_length=255,
+        choices=COMMENT_STATUS_CHOICES, default=COMMENT_STATUS_CHOICES[0][0])
+    
+    def __unicode__(self):
+        return self.text[:64]

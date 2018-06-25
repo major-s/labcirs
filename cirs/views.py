@@ -21,63 +21,84 @@
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core import mail
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
-from django.forms import ModelForm, Textarea, TextInput, RadioSelect
-from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 
-from .models import CriticalIncident, PublishableIncident, LabCIRSConfig
-
-
-class IncidentCreateForm(ModelForm):
-    error_css_class = "error alert alert-danger"
-
-    class Meta:
-        model = CriticalIncident
-        fields = ['date', 'incident', 'reason', 'immediate_action',
-                  'preventability', 'photo', 'public']
-        widgets = {"incident": Textarea(attrs={'cols': 80, 'rows': 5,
-                                               'class': "form-control"}),
-                   "reason": Textarea(attrs={'cols': 80, 'rows': 5,
-                                             'class': "form-control"}),
-                   "immediate_action": Textarea(attrs={'cols': 80, 'rows': 5,
-                                                       'class': "form-control"}),
-                   "public": RadioSelect()
-                   }
-
-    def save(self):
-        result = super(IncidentCreateForm, self).save()
-        config = LabCIRSConfig.objects.first()
-        if config.send_notification:
-            # send only if incident was saved
-            if self.instance.pk is not None:
-                try:
-                    mail_body = config.notification_text
-                except:
-                    mail_body = ""
-                to_list = []
-                for user in config.notification_recipients.all():
-                    to_list.append(user.email)
-                mail.send_mail('New critical incident', mail_body,
-                               config.notification_sender_email,
-                               to_list, fail_silently=False)
-        return result
+from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
+from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig
 
 
-class IncidentCreate(CreateView):
+class IncidentCreate(SuccessMessageMixin, CreateView):
     model = CriticalIncident
     form_class = IncidentCreateForm
     success_url = 'success'
+    success_message = "%(comment_code)s"
 
     @method_decorator(permission_required('cirs.add_criticalincident'))
     def dispatch(self, *args, **kwargs):
         return super(IncidentCreate, self).dispatch(*args, **kwargs)
+    
+    def get_success_message(self, cleaned_data):
+        return self.success_message % dict(
+            cleaned_data,
+            comment_code=self.object.comment_code,
+        )
+
+
+class IncidentSearch(LoginRequiredMixin, FormView):
+    form_class = IncidentSearchForm
+    template_name = 'cirs/incident_search_form.html'
+
+    def form_valid(self, form):
+        comment_code = form.cleaned_data.get('incident_code')
+        # TODO: handle nonexistend codes
+        incident_id = CriticalIncident.objects.get(comment_code=comment_code).id
+        self.request.session['accessible_incident'] = incident_id
+        return redirect('incident_detail', pk=incident_id)
+
+
+class IncidentDetailView(LoginRequiredMixin, CreateView):
+    """
+    Delivers detail view of an incident for commenting. Simple form for comments
+    is included and followed by a list of comments for this incident
+    """
+    model = Comment
+    form_class = CommentForm
+    template_name = 'cirs/criticalincident_detail.html'
+
+    def get_success_url(self):
+        # returns the absolute URL of the parent (and current incident)
+        return CriticalIncident.objects.get(pk=self.kwargs['pk']).get_absolute_url()
+  
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.critical_incident = CriticalIncident.objects.get(pk=self.kwargs['pk'])
+        return super(IncidentDetailView, self).form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(IncidentDetailView, self).get_context_data(**kwargs)
+        context['incident'] = CriticalIncident.objects.get(pk=self.kwargs['pk'])
+        return context
+
+    def render_to_response(self, context, **kwargs):
+        if self.request.user.has_perm('cirs.change_criticalincident'):
+            return super(IncidentDetailView, self).render_to_response(context, **kwargs)
+        accessible_incident_id = None
+        try:
+            accessible_incident_id = self.request.session['accessible_incident']
+        except KeyError as e:
+            return redirect('incident_search')
+        if accessible_incident_id != context['incident'].pk:
+            return redirect('incident_search')
+        else:
+            return super(IncidentDetailView, self).render_to_response(context, **kwargs)
 
 
 class PublishableIncidentList(ListView):
