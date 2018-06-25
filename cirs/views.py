@@ -23,83 +23,16 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core import mail
 from django.core.urlresolvers import reverse_lazy
-from django import forms
-from django.forms import ModelForm, Textarea, TextInput, RadioSelect
-from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 
+from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
 from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig
-
-
-class IncidentCreateForm(ModelForm):
-    error_css_class = "error alert alert-danger"
-
-    class Meta:
-        model = CriticalIncident
-        fields = ['date', 'incident', 'reason', 'immediate_action',
-                  'preventability', 'photo', 'public']
-        widgets = {"incident": Textarea(attrs={'cols': 80, 'rows': 5,
-                                               'class': "form-control"}),
-                   "reason": Textarea(attrs={'cols': 80, 'rows': 5,
-                                             'class': "form-control"}),
-                   "immediate_action": Textarea(attrs={'cols': 80, 'rows': 5,
-                                                       'class': "form-control"}),
-                   "public": RadioSelect()
-                   }
-
-    def save(self):
-        result = super(IncidentCreateForm, self).save()
-        config = LabCIRSConfig.objects.first()
-        if config.send_notification:
-            # send only if incident was saved
-            if self.instance.pk is not None:
-                try:
-                    mail_body = config.notification_text
-                except:
-                    mail_body = ""
-                to_list = []
-                for user in config.notification_recipients.all():
-                    to_list.append(user.email)
-                mail.send_mail('New critical incident', mail_body,
-                               config.notification_sender_email,
-                               to_list, fail_silently=False)
-        return result
-
-
-class CommentForm(ModelForm):
-    
-    class Meta:
-        model = Comment
-        fields = ['text']
-        widgets = {"text": Textarea(attrs={'cols': 80, 'rows': 5, 
-                                           'class': "form-control"})
-        }
-
-    def save(self):
-        result = super(CommentForm, self).save()
-        config = LabCIRSConfig.objects.first()
-        if config.send_notification:
-            # send only if incident was saved
-            if self.instance.pk is not None:
-                try:
-                    # TODO: add comment notification
-                    mail_body = config.notification_text
-                except:
-                    mail_body = ""
-                to_list = []
-                for user in config.notification_recipients.all().exclude(id=self.instance.author.id):
-                    to_list.append(user.email)
-                mail.send_mail('New LabCIRS comment', mail_body,
-                               config.notification_sender_email,
-                               to_list, fail_silently=False)
-        return result
 
 
 class IncidentCreate(SuccessMessageMixin, CreateView):
@@ -117,10 +50,6 @@ class IncidentCreate(SuccessMessageMixin, CreateView):
             cleaned_data,
             comment_code=self.object.comment_code,
         )
-
-
-class IncidentSearchForm(forms.Form):
-    incident_code = forms.CharField()
 
 
 class IncidentSearch(LoginRequiredMixin, FormView):
