@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-28 18:52+0200\n"
+"POT-Creation-Date: 2018-06-28 13:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: .\admin.py:30
@@ -30,67 +30,67 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-#: .\admin.py:116
+#: .\admin.py:121
 msgid "Login infos"
 msgstr "Anmeldedaten"
 
-#: .\admin.py:121
+#: .\admin.py:126
 msgid "Notification settings"
 msgstr "Benachrichtigungseinstellungen"
 
-#: .\models.py:32
+#: .\models.py:33
 msgid "singular case (for the first time)"
 msgstr "einzellfall (erstmalig)"
 
-#: .\models.py:33
+#: .\models.py:34
 msgid "seldom (once per year)"
 msgstr "selten (1 pro Jahr)"
 
-#: .\models.py:34
+#: .\models.py:35
 msgid "occasional (once per month)"
 msgstr "gelegentlich (1 pro Monat)"
 
-#: .\models.py:35
+#: .\models.py:36
 msgid "frequent (once per Week)"
 msgstr "häufig (1 pro Woche)"
 
-#: .\models.py:36
+#: .\models.py:37
 msgid "regular (daily)"
 msgstr "ständig (täglich)"
 
-#: .\models.py:37
+#: .\models.py:38
 msgid "very low"
 msgstr "sehr niedrig"
 
-#: .\models.py:37 .\models.py:45
+#: .\models.py:38 .\models.py:46
 msgid "low"
 msgstr "niedrig"
 
-#: .\models.py:38
+#: .\models.py:39
 msgid "moderate"
 msgstr "moderat"
 
-#: .\models.py:38 .\models.py:45
+#: .\models.py:39 .\models.py:46
 msgid "high"
 msgstr "hoch"
 
-#: .\models.py:39
+#: .\models.py:40
 msgid "very high"
 msgstr "sehr hoch"
 
-#: .\models.py:40
+#: .\models.py:41
 msgid "appraisal not possible"
 msgstr "Beurteilung nicht möglich"
 
-#: .\models.py:41
+#: .\models.py:42
 msgid "The incident was avoidable"
 msgstr "Das Ereignis war vermeidbar"
 
-#: .\models.py:42
+#: .\models.py:43
 msgid "The incident was not avoidable"
 msgstr "Das Ereignis war nicht vermeidbar"
 
-#: .\models.py:43
+#: .\models.py:44
 msgid ""
 "I agree that this report will be made public to people outside the quality "
 "management team after copyedit."
@@ -98,7 +98,7 @@ msgstr ""
 "Ich bin mit einer Veröffentlichung dieses Ereignisses, sichtbar für alle "
 "Mitarbeiter,  einverstanden."
 
-#: .\models.py:44
+#: .\models.py:45
 msgid ""
 "I DO NOT agree that this report will be made public to people outside the "
 "quality management team even after copyedit."
@@ -106,236 +106,236 @@ msgstr ""
 "Ich bin mit einer Veröffentlichung dieses Ereignisses, sichtbar für alle "
 "Mitarbeiter,  NICHT einverstanden."
 
-#: .\models.py:45
+#: .\models.py:46
 msgid "middle"
 msgstr "mittel"
 
-#: .\models.py:46
+#: .\models.py:47
 msgid "new"
 msgstr "neu"
 
-#: .\models.py:46
+#: .\models.py:47 .\models.py:231
 msgid "in process"
 msgstr "in Bearbeitung"
 
-#: .\models.py:47
+#: .\models.py:48
 msgid "under supervision"
 msgstr "unter Beobachtung"
 
-#: .\models.py:48
+#: .\models.py:49
 msgid "completed"
 msgstr "erledigt"
 
-#: .\models.py:49
+#: .\models.py:50
 msgid "organisation/communication"
 msgstr "Organisation/Kommunikation"
 
-#: .\models.py:50
+#: .\models.py:51
 msgid "technique/methods"
 msgstr "Technik/Methoden"
 
-#: .\models.py:51
+#: .\models.py:52
 msgid "knowledge/training"
 msgstr "Wissen/Training"
 
-#: .\models.py:53
+#: .\models.py:54
 msgid "concentration/attention (mistake/slip)"
 msgstr "Konzentration/Aufmerksamkeit (Versehen/Ausrutscher)"
 
-#: .\models.py:54
+#: .\models.py:55
 msgid "infrastructure"
 msgstr "Infrastruktur"
 
-#: .\models.py:55
+#: .\models.py:56
 msgid "other"
 msgstr "Sonstige"
 
-#: .\models.py:66
+#: .\models.py:67
 msgid "Date of incident"
 msgstr "Datum des Ereignises"
 
-#: .\models.py:67
+#: .\models.py:68
 msgid "Mistake / problem / critical incident"
 msgstr "Fehler / Problem / kritisches Ereignis"
 
-#: .\models.py:68
+#: .\models.py:69
 msgid "Cause of failure"
 msgstr "Fehlerursache / Verursacherbereich"
 
-#: .\models.py:70
-msgid "Immediate action"
-msgstr "Sofortmaßnahme"
+#: .\models.py:71 .\templates\cirs\criticalincident_detail.html:10
+msgid "Immediate action / suggestion"
+msgstr "Sofortmaßnahmen / Vorschläge"
 
-#: .\models.py:71
+#: .\models.py:72
 msgid "Immediate action or suggestion regarding prevention / troubleshooting"
 msgstr "Sofortmaßnahme ggf. Vorschlag zur Vermeidung / Behebung"
 
-#: .\models.py:75
+#: .\models.py:76 .\templates\cirs\criticalincident_detail.html:11
 msgid "Preventability"
 msgstr "Vermeidbarkeit"
 
-#: .\models.py:76
+#: .\models.py:77
 msgid "In your opinion, was the incident avoidable or not?"
 msgstr ""
 "War das Ereignis Deiner Meinung nach vermeidbar oder nicht vermeidbar "
 "gewesen ?"
 
-#: .\models.py:78 .\models.py:111
+#: .\models.py:79 .\models.py:113
 #: .\templates\cirs\publishableincident_list.html:38
 msgid "Photo"
 msgstr "Foto"
 
-#: .\models.py:80
+#: .\models.py:81
 msgid "Publication"
 msgstr "Veröffentlichung"
 
-#: .\models.py:82
+#: .\models.py:84
 msgid "Date of report"
 msgstr "Datum der Meldung"
 
-#: .\models.py:83
+#: .\models.py:85
 msgid "Action"
 msgstr "Maßnahme"
 
-#: .\models.py:85
+#: .\models.py:87
 msgid "Responsibility"
 msgstr "Verantwortung"
 
-#: .\models.py:86
+#: .\models.py:88
 msgid "Review date"
 msgstr "Termin"
 
-#: .\models.py:88
+#: .\models.py:90 .\models.py:244
 msgid "Status"
 msgstr "Status"
 
-#: .\models.py:90
+#: .\models.py:92
 msgid "Risk classification"
 msgstr "Risikoklasse"
 
-#: .\models.py:92
+#: .\models.py:94
 msgid "Frequency"
 msgstr "Häufigkeit"
 
-#: .\models.py:94
+#: .\models.py:96
 msgid "Hazard"
 msgstr "Gefährdung"
 
-#: .\models.py:94
+#: .\models.py:96
 msgid "For emploees or science"
 msgstr "Für Mitarbeiter oder Forschungsprozess"
 
-#: .\models.py:97
+#: .\models.py:99
 msgid "Category"
 msgstr "Kategorie"
 
-#: .\models.py:100 .\models.py:135
+#: .\models.py:102 .\models.py:147 .\models.py:236
 msgid "Critical incident"
 msgstr "Kritisches Ereignis"
 
-#: .\models.py:101 .\templates\cirs\publishableincident_list.html:30
+#: .\models.py:103 .\templates\cirs\publishableincident_list.html:30
 msgid "Critical incidents"
 msgstr "Kritische Ereignise"
 
-#: .\models.py:109 .\models.py:112
+#: .\models.py:111 .\models.py:114
 msgid "Click to see full size in new window/tab"
 msgstr "Für volle Größe bitte klicken. Das Bild erscheint in neuem Fenster/Tab"
 
-#: .\models.py:118
+#: .\models.py:120
 msgid "Please report only incidents which already happened."
 msgstr "Bitte nur vergangene Ereignise melden"
 
-#: .\models.py:121
+#: .\models.py:123
 msgid "Please decide if this report may be published in the lab."
 msgstr "Darf die Meldung nach Redaktion im Labor veröffentlicht werden?"
 
-#: .\models.py:126
+#: .\models.py:128
 msgid ""
 "If anything was changed in the QMB block, please set status at least to \"in "
 "process\"."
 msgstr ""
-"Nach jegllicher Änderung im QMB-Block muss der Status zumindest auf \"in "
+"Nach jeglicher Änderung im QMB-Block muss der Status zumindest auf \"in "
 "Bearbeitung\" gesetzt werden."
 
-#: .\models.py:136
+#: .\models.py:148
 msgid "Incident (in German)"
 msgstr "Ereignis (auf Deutsch)"
 
-#: .\models.py:137
+#: .\models.py:149
 msgid "Incident (in English)"
 msgstr "Ereignis (auf Englisch)"
 
-#: .\models.py:138
+#: .\models.py:150
 msgid "Description (in German)"
 msgstr "Beschreibung (auf Deutsch)"
 
-#: .\models.py:139
+#: .\models.py:151
 msgid "Description (in English)"
 msgstr "Beschreibung (auf Englisch)"
 
-#: .\models.py:141
+#: .\models.py:153
 msgid "Measures and consequences (in German)"
 msgstr "Maßnahmen und Konsequenzen (auf Deutsch)"
 
-#: .\models.py:143
+#: .\models.py:155
 msgid "Measures and consequences (in English)"
 msgstr "Maßnahmen und Konsequenzen (auf Englisch)"
 
-#: .\models.py:144
+#: .\models.py:156
 msgid "Publish"
 msgstr "Veröffentlichen"
 
-#: .\models.py:147
+#: .\models.py:159
 msgid "Publishable incident"
 msgstr "Publizierbares Ereignis"
 
-#: .\models.py:148
+#: .\models.py:160
 msgid "Publishable incidents"
 msgstr "Publizierbare Ereignisse"
 
-#: .\models.py:157
+#: .\models.py:169
 msgid "The reporter did not agreed to publish this incident!"
 msgstr "Der Eintragende hat einer Veröffentlichung nicht zugestimmt!"
 
-#: .\models.py:161
+#: .\models.py:173
 msgid "All fields (in all languages) are mandatory for publication!"
 msgstr "Alle Felder (in allen Sprachen) müssen ausgefüllt werden!"
 
-#: .\models.py:169
+#: .\models.py:181
 msgid ""
 "If you want to send notifications, an existing email server distinct from "
 "localhost has to be set by the server administrator in the local server "
 "configuration."
 msgstr ""
 "Benachrichtigungen könne nur verschickt werden, wenn der Serveradministrator "
-"einen existierenden Emailserver (unterschiedlich vom localhost) in der lokalen "
-"Konfigurationsdatei eingetragen hat."
+"einen existierenden Emailserver (unterschiedlich vom localhost) in der "
+"lokalen Konfigurationsdatei eingetragen hat."
 
-#: .\models.py:174
+#: .\models.py:186
 msgid "Login info (in English)"
 msgstr "Anmeldeinformation (auf Englisch)"
 
-#: .\models.py:175
+#: .\models.py:187
 msgid "Login info (in German)"
 msgstr "Anmeldeinformation (auf Deutsch)"
 
-#: .\models.py:176
+#: .\models.py:188
 msgid "URL for login info"
 msgstr "URL für die Anmeldedaten"
 
-#: .\models.py:177
+#: .\models.py:189
 msgid "Link text (in English)"
 msgstr "Linktext(auf Englisch)"
 
-#: .\models.py:179
+#: .\models.py:191
 msgid "Link text (in German)"
 msgstr "Linktext (auf Deutsch)"
 
-#: .\models.py:183
+#: .\models.py:195
 msgid "Send notification"
 msgstr "Benachrichtigungen senden"
 
-#: .\models.py:185
+#: .\models.py:197
 msgid ""
 "Check if you wish to be informed about new incidents per email.<br>\n"
 "            IMPORTANT: Sender email has to exist and at least one recipient "
@@ -345,50 +345,76 @@ msgid ""
 "            please choose at least one and save.<br>\n"
 "            Not till then you can activate sending of notifications."
 msgstr ""
-"Aktivieren wenn bei neuen Fehlermeldungen eine Benachrichtigung verschickt werden soll.<br>\n"
+"Aktivieren wenn bei neuen Fehlermeldungen eine Benachrichtigung verschickt "
+"werden soll.<br>\n"
 "            WICHTIG: Eine Absenderaddresse und mindestens ein Empfänger "
 "müssen eingetragen werden.<br>\n"
 "            FEHLER: Wenn bis jetzt noch keine Empfänger ausgewählt wurden,\n"
 "            bitte eine Empfänger auswählen und speichern.<br>\n"
-"            Erst danach kann das Senden von Benachrichtigungen aktiviert werden."
+"            Erst danach kann das Senden von Benachrichtigungen aktiviert "
+"werden."
 
-#: .\models.py:192
+#: .\models.py:204
 msgid "Notification sender email address"
 msgstr "Absenderadresse für Benachrichtigungen"
 
-#: .\models.py:193
+#: .\models.py:205
 msgid "Enter a valid email address you want to use as a sender"
 msgstr "Bitte eine existierende Emailadresse als Absender eintragen"
 
-#: .\models.py:196
+#: .\models.py:208
 msgid "Notification recipients"
 msgstr "Benachrichtigungsempfänger"
 
-#: .\models.py:197
+#: .\models.py:209
 msgid "Choose recipients of the notification email"
 msgstr "Bitte einen Benachrichtigugnsempfänger wählen"
 
-#: .\models.py:200
+#: .\models.py:212
 msgid "Notification text"
 msgstr "Benachrichtigungstext"
 
-#: .\models.py:206 .\models.py:207
+#: .\models.py:218 .\models.py:219
 msgid "LabCIRS configuration"
 msgstr "LabCIRS-Einstellungen"
 
-#: .\models.py:215
+#: .\models.py:227
 msgid "You have to choose at least one notification recipient."
 msgstr "Sie müssen mindenstens einen Benachrichtigungsempfänger auswählen"
 
-#: .\models.py:217
+#: .\models.py:229
 msgid "You have to enter valid sender email."
 msgstr "Sie müssen eine existierende Absenderrmailadresse eingeben"
+
+#: .\models.py:231
+msgid "open"
+msgstr "offen"
+
+#: .\models.py:232
+msgid "closed"
+msgstr "abgeschlossen"
+
+#: .\models.py:239
+msgid "Author"
+msgstr "Autor"
+
+#: .\models.py:241
+msgid "Created at"
+msgstr "Erstellt am"
+
+#: .\models.py:242
+msgid "Text"
+msgstr "Text"
+
+#: .\models.py:244
+msgid "Status of the comment"
+msgstr "Status des Kommentars"
 
 #: .\templates\cirs\base.html:10
 msgid "for"
 msgstr "für"
 
-#: .\templates\cirs\base.html:36 .\templates\cirs\success.html:9
+#: .\templates\cirs\base.html:36 .\templates\cirs\success.html:15
 msgid "View incidents"
 msgstr "Ereignisliste"
 
@@ -396,13 +422,40 @@ msgstr "Ereignisliste"
 msgid "Add incident"
 msgstr "Neues Ereignis"
 
-#: .\templates\cirs\base.html:47 .\templates\cirs\success.html:8
+#: .\templates\cirs\base.html:40
+#: .\templates\cirs\criticalincident_detail.html:16
+msgid "Comments"
+msgstr "Kommentare"
+
+#: .\templates\cirs\base.html:49 .\templates\cirs\success.html:14
 msgid "Log out"
 msgstr "Abmelden"
 
-#: .\templates\cirs\base.html:66
+#: .\templates\cirs\base.html:68
 msgid "Welcome,"
 msgstr "Wilkommen"
+
+#: .\templates\cirs\criticalincident_detail.html:6
+#: .\templates\cirs\criticalincident_detail.html:8
+#: .\templates\cirs\publishableincident_list.html:35
+msgid "Incident"
+msgstr "Ereignis"
+
+#: .\templates\cirs\criticalincident_detail.html:7
+msgid "Date"
+msgstr "Datum"
+
+#: .\templates\cirs\criticalincident_detail.html:9
+msgid "Cause"
+msgstr "Grund"
+
+#: .\templates\cirs\criticalincident_detail.html:32
+msgid "Your comment"
+msgstr "Ihr Kommentar"
+
+#: .\templates\cirs\criticalincident_detail.html:36
+msgid "Save"
+msgstr "Sichern"
 
 #: .\templates\cirs\criticalincident_form.html:34
 msgid "Empty"
@@ -419,6 +472,15 @@ msgstr ""
 msgid "Send"
 msgstr "Senden"
 
+#: .\templates\cirs\incident_search_form.html:8
+msgid "Please enter the code which you received after submitting the incident."
+msgstr ""
+"Bitte den Code eingeben, der nach Erstellung des Kommentars angezeigt wurde."
+
+#: .\templates\cirs\incident_search_form.html:12
+msgid "Search"
+msgstr "Suchen"
+
 #: .\templates\cirs\login.html:14
 msgid "Please log in..."
 msgstr "Bitte anmelden..."
@@ -434,10 +496,6 @@ msgstr "Passwort"
 #: .\templates\cirs\login.html:20
 msgid "Log in"
 msgstr "Anmelden"
-
-#: .\templates\cirs\publishableincident_list.html:35
-msgid "Incident"
-msgstr "Ereignis"
 
 #: .\templates\cirs\publishableincident_list.html:36
 msgid "Description"
@@ -460,15 +518,15 @@ msgstr "Neues Ereignis hinzufügen"
 msgid "Thank you!"
 msgstr "Danke!"
 
-#: .\templates\cirs\success.html:10
+#: .\templates\cirs\success.html:16
 msgid "One more"
 msgstr "Noch eins"
 
-#: .\views.py:112
+#: .\views.py:133
 msgid "Your account is not active, please contact the admin."
 msgstr "Ihr Zugang ist nicht mehr aktiv. Bitte den Administrator kontaktieren."
 
-#: .\views.py:115
+#: .\views.py:136
 msgid ""
 "Your username and/or password were incorrect.\n"
 "                        Please check the information below!"
@@ -476,5 +534,3 @@ msgstr ""
 "Der Benutzername und/oder Passwort waren inkorrekt. Bitte die Informationen "
 "darunter lesen!"
 
-#~ msgid "Change"
-#~ msgstr "Ändern"

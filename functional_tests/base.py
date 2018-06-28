@@ -21,7 +21,11 @@
 import time
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
@@ -78,17 +82,29 @@ class FunctionalTest(StaticLiveServerTestCase):
 
         self.browser.implicitly_wait(DEFAULT_WAIT)
         self.maxDiff = None
+        self.wait = WebDriverWait(self.browser, 20)
 
     def tearDown(self):
-
+        time.sleep(1)
         self.browser.quit()
-        time.sleep(3)
+        time.sleep(1)
 
     def login_user(self, username=REPORTER, password=REPORTER_PASSWORD):
         """Loggs user into the frontend of the webproject"""
         self.browser.get(self.live_server_url)
+        self.wait.until(EC.presence_of_element_located((By.NAME, "username")))
         username_input = self.browser.find_element_by_name("username")
         username_input.send_keys(username)
         password_input = self.browser.find_element_by_name("password")
         password_input.send_keys(password)
         password_input.send_keys(Keys.RETURN)
+        
+    def logout(self):
+        # Depending on Django or Firefox version CSS (upper or lower case) 
+        # seems to be sometimes neglected.
+        try:
+            self.wait.until(
+                EC.element_to_be_clickable((By.LINK_TEXT, "Log out"))).click()
+        except:
+            self.browser.find_element_by_link_text("Log out".upper()).click()
+ 

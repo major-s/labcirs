@@ -59,6 +59,11 @@ class PublishableIncidentInline(admin.StackedInline):
     formfield_overrides = pi_form_overrides
 
 
+class CommentInline(admin.TabularInline):
+    model = Comment
+    extra = 1
+    readonly_fields = ('author', 'text',)
+
 class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
                        'public', 'reported', 'preventability', 'photo',
@@ -79,7 +84,7 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
                        'responsibilty', 'action', 'category')
         })
     )
-    inlines = [PublishableIncidentInline, ]
+    inlines = [PublishableIncidentInline, CommentInline]
 
     def get_formsets(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -126,3 +131,4 @@ class ConfigurationAdmin(admin.ModelAdmin):
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
+admin.site.register(Comment)
