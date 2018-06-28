@@ -7,7 +7,7 @@
 	    <p>{% trans "Date" %}: {{ incident.date }}</p>
 	    <p>{% trans "Incident" %}: {{ incident.incident }}</p>
 	    <p>{% trans "Cause" %}: {{ incident.reason }}</p>
-	    <p>{% trans "Immediate action" %}: {{ incident.immediate_action }}</p>
+	    <p>{% trans "Immediate action / suggestion" %}: {{ incident.immediate_action }}</p>
 	    <p>{% trans "Preventability" %}: {{ incident.preventability }}</p>
 
 		{% if incident.comments.all|length > 0 %}

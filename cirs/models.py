@@ -68,7 +68,7 @@ class CriticalIncident(models.Model):
     incident = models.TextField(_("Mistake / problem / critical incident"))
     reason = models.TextField(_("Cause of failure"))
     immediate_action = models.TextField(
-        _("Immediate action"), help_text=_(
+        _("Immediate action / suggestion"), help_text=_(
             "Immediate action or suggestion regarding prevention / troubleshooting"
             )
         )

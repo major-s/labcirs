@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-22 21:27+0200\n"
+"POT-Creation-Date: 2018-06-28 13:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,8 +163,8 @@ msgid "Cause of failure"
 msgstr "Fehlerursache / Verursacherbereich"
 
 #: .\models.py:71 .\templates\cirs\criticalincident_detail.html:10
-msgid "Immediate action"
-msgstr "Sofortmaßnahme"
+msgid "Immediate action / suggestion"
+msgstr "Sofortmaßnahmen / Vorschläge"
 
 #: .\models.py:72
 msgid "Immediate action or suggestion regarding prevention / troubleshooting"
@@ -254,7 +254,7 @@ msgid ""
 "If anything was changed in the QMB block, please set status at least to \"in "
 "process\"."
 msgstr ""
-"Nach jegllicher Änderung im QMB-Block muss der Status zumindest auf \"in "
+"Nach jeglicher Änderung im QMB-Block muss der Status zumindest auf \"in "
 "Bearbeitung\" gesetzt werden."
 
 #: .\models.py:148
@@ -522,11 +522,11 @@ msgstr "Danke!"
 msgid "One more"
 msgstr "Noch eins"
 
-#: .\views.py:204
+#: .\views.py:133
 msgid "Your account is not active, please contact the admin."
 msgstr "Ihr Zugang ist nicht mehr aktiv. Bitte den Administrator kontaktieren."
 
-#: .\views.py:207
+#: .\views.py:136
 msgid ""
 "Your username and/or password were incorrect.\n"
 "                        Please check the information below!"
@@ -534,5 +534,3 @@ msgstr ""
 "Der Benutzername und/oder Passwort waren inkorrekt. Bitte die Informationen "
 "darunter lesen!"
 
-#~ msgid "Change"
-#~ msgstr "Ändern"
