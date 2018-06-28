@@ -54,7 +54,6 @@ class SecurityTest(BaseFeedbackTest):
 
         login = self.client.login(username=self.username, password=self.password)
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
-        print response.redirect_chain
         self.assertRedirects(response, reverse('incident_search'))
             
     def test_incident_search_sets_session_var_on_success(self):

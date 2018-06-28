@@ -74,9 +74,12 @@ class ConfigurationInBackend(FunctionalTest):
         login_url = self.live_server_url + reverse('demo_login_data_page')
 
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "LabCIRS configuration")))
-        self.browser.find_element_by_link_text("LabCIRS configuration").click()
-        self.browser.find_element_by_link_text("Add LabCIRS configuration").click() #.upper()).click()
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "LabCIRS configuration"))).click()
+        #self.browser.find_element_by_link_text("LabCIRS configuration").click()
+        try:
+            self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add LabCIRS configuration"))).click()
+        except:
+            self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add LabCIRS configuration".upper()))).click()
         self.browser.find_element_by_id('id_login_info_en').send_keys(self.LOGIN_INFO)
         self.browser.find_element_by_id('id_login_info_de').send_keys(self.LOGIN_INFO)
         self.browser.find_element_by_id('id_login_info_url').send_keys(login_url)

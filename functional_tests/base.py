@@ -82,7 +82,7 @@ class FunctionalTest(StaticLiveServerTestCase):
 
         self.browser.implicitly_wait(DEFAULT_WAIT)
         self.maxDiff = None
-        self.wait = WebDriverWait(self.browser, 120)
+        self.wait = WebDriverWait(self.browser, 20)
 
     def tearDown(self):
         time.sleep(1)
@@ -100,6 +100,11 @@ class FunctionalTest(StaticLiveServerTestCase):
         password_input.send_keys(Keys.RETURN)
         
     def logout(self):
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Log out")))
-        self.browser.find_element_by_link_text("Log out").click()
+        # Depending on Django or Firefox version CSS (upper or lower case) 
+        # seems to be sometimes neglected.
+        try:
+            self.wait.until(
+                EC.element_to_be_clickable((By.LINK_TEXT, "Log out"))).click()
+        except:
+            self.browser.find_element_by_link_text("Log out".upper()).click()
  
