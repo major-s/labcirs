@@ -57,7 +57,7 @@ class CriticalIncidentModelTest(TestCase):
         self.first_incident = CriticalIncident()
         self.first_incident.date = date(2012, 2, 26)
         self.first_incident.public = True
-        self.first_incident.category = 'other'
+        self.first_incident.category = ['other']
         self.first_incident.save()
     
     def test_saving_and_retriving_incidents(self):
