@@ -53,7 +53,7 @@
 						<td>
 						{% if incident.critical_incident.photo %}
 							<a href="#" data-toggle="modal" data-target="#id_{{ incident.critical_incident.photo|slugify }}">
-								<img src="{{ MEDIA_URL}}{{ incident.critical_incident.photo }}" class="img-responsive img-thumbnail center-block" width=150 alt="{% trans "Sorry, this photo is missing" %}" />
+								<img src="{{ MEDIA_URL}}{{ incident.critical_incident.photo }}" class="img-fluid img-thumbnail center-block" width=150 alt="{% trans "Sorry, this photo is missing" %}" />
 							</a>
 						{% endif %}
 						</td>
@@ -65,19 +65,19 @@
 		<!--  Modals for all incidents with images -->
 		{% for incident in object_list %}
 			{% if incident.critical_incident.photo %}
-				<div class="modal fade" id="id_{{ incident.critical_incident.photo|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{{ incident.critical_incident.photo|slugify }}">
+				<div class="modal fade" id="id_{{ incident.critical_incident.photo|slugify }}" tabindex="-1" role="dialog">
 					<div class="modal-dialog modal-lg" role="document">
 						<div class="modal-content">
 							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-								</button>
-								<h4 class="modal-title" id="{{ incident.critical_incident.photo|slugify }}">
+								<h5 class="modal-title" id="{{ incident.critical_incident.photo|slugify }}">
 									{{ incident.critical_incident.photo }}
-								</h4>
+								</h5>
+								<button type="button" class="close" data-dismiss="modal">
+									<span>&times;</span>
+								</button>
 							</div>
 							<div class="modal-body">
-								<img src="{{ MEDIA_URL}}{{ incident.critical_incident.photo }}" class="img-responsive center-block" alt="{% trans "Sorry, this photo is missing" %}" />
+								<img src="{{ MEDIA_URL}}{{ incident.critical_incident.photo }}" class="img-fluid center-block" alt="{% trans "Sorry, this photo is missing" %}" />
 							</div>
 						</div>
 					</div>

@@ -15,42 +15,51 @@
         <!-- Bootstrap -->
         <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}css/sticky-footer-navbar.css" rel="stylesheet">
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-        <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->    
-            
-        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.12.4.min.js"></script>
+        
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-3.3.1.min.js"></script>
     {% endblock %}
 </head>
 
 <body>
     {% block nav %}
-    <nav class="navbar navbar-default" role="navigation">        
-        <ul class="nav navbar-nav nav-pills">
-            <li class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</li>
-            {% if user.is_authenticated == True %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    	<span class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</span>
+    	{% if user.is_authenticated == True %}
+        	<ul class="navbar-nav nav-pills">
                 {% url 'incidents_list' as url %}
-                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "View incidents" %}</a></li>
+                <li class="nav-item">
+                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
+                		{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
+                </li>
                 {% url 'create_incident' as url %}
-                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "Add incident" %}</a></li>
+                <li class="nav-item">
+                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
+                		{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
+                </li>
                 {% url 'incident_search' as url %}
-                <li {% if request.path == url %} class="active" {% endif %}><a href="{{ url }}">{% trans "Comments" %}</a></li>
-            {% endif %}
-            {% if user.is_superuser %}
-                <li><a href="{% url 'admin:index' %}">Admin</a></li>
-            {% endif %}
-            <li class="navbar-brand"><span class="label label-danger">Anonymous Lab Critical Incident Reporting System</span></li>
-        </ul>
+                <li class="nav-item">
+                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
+                		{% endif %}" href="{{ url }}">{% trans "Comments" %}</a>
+                </li>
+            	{% if user.is_superuser %}
+	                <li class="nav-item">
+	                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+	                </li>
+            	{% endif %}
+        	</ul>
+
+		{% endif %}
+		
+        <h5 class="mx-auto">
+        	<span class="nav-item badge badge-danger d-none d-lg-block">Anonymous Lab Critical Incident Reporting System</span>
+        	<span class="nav-item badge badge-danger d-block d-lg-none">Anonymous LabCIRS</span>
+        </h5>
+		
         {% if user.is_authenticated == True %}
-            <ul class="nav navbar-nav navbar-right nav-pills">    
-                <li><a href="{% url 'logout' %}">{% trans "Log out" %}</a></li>
-            </ul>
+            <span class="navbar-text mr-sm-2 d-none d-md-block">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }}</em></span>
         {% endif %}
         
-            <form name="select_language" class="navbar-form navbar-right" action="{% url 'set_language' %}" method="post">
+            <form name="select_language" class="form-inline" action="{% url 'set_language' %}" method="post">
                 {% csrf_token %}
                 <input name="next" type="hidden" value="{{ redirect_to }}" />
                 <div class="form-group">
@@ -65,7 +74,9 @@
                 </div>
             </form>
         {% if user.is_authenticated == True %}
-            <p class="navbar-text navbar-right nav-pills">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }}</em></p>
+            <ul class="navbar-nav nav-pills">    
+                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">{% trans "Log out" %}</a></li>
+            </ul>
         {% endif %}
     </nav>
     {% endblock %}
@@ -74,13 +85,13 @@
     {% endblock %}
     
 
-    <footer id="footer">
+    <footer class="footer">
         <div class="container">
             <p class="text-muted">
                 LabCIRS v{{ APP_VERSION }} by <a href="mailto:{{ AUTHOR_EMAIL }}">{{ AUTHOR }}</a>
             </p>
         </div>
     </footer>
-    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

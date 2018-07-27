@@ -3,7 +3,7 @@
 {% block head %}
 	{{ block.super }}
 	{% load i18n %}
-	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.11.4.min.js"></script>
+	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.12.1.min.js"></script>
 	{# local JavaScript files are included automatically, but have to be present in the static/js directory #}
 	{% get_language_info_list for LANGUAGES as languages %}
 	{% for language in languages %}
