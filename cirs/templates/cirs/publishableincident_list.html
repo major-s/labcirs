@@ -11,7 +11,7 @@
 	
 	<script type="text/javascript">
 		$(document).ready( function () {
-		    $('#tableInventory').DataTable( {
+		    $('#tableIncidents').DataTable( {
 				"ordering": false,
 				{% if not LANGUAGE_CODE == "en" %}
 					"language": {
@@ -29,7 +29,7 @@
     <div class="container">
 	    <h2>{% trans "Critical incidents" %}</h2>
 		<div class="table-responsive">
-		    <table class="table table-striped table-bordered" id="tableInventory">
+		    <table class="table table-striped table-bordered" id="tableIncidents">
 				<thead>
 					<tr>
 					    <th>{% trans "Incident" %}</th>

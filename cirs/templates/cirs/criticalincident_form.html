@@ -4,13 +4,15 @@
 	{{ block.super }}
 	{% load i18n %}
 	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.12.1.min.js"></script>
-	{# local JavaScript files are included automatically, but have to be present in the static/js directory #}
+
 	{% get_language_info_list for LANGUAGES as languages %}
+
 	{% for language in languages %}
 	    {% ifnotequal language.code "en" %}
-		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ language.code }}.js"></script>
+			<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ language.code }}.js"></script>
 	    {% endifnotequal %}
 	{% endfor %}
+
 	<link rel="stylesheet" type="text/css" href={{ STATIC_URL }}css/jquery-ui.min.css />
 	
 	{% get_current_language as LANGUAGE_CODE %}

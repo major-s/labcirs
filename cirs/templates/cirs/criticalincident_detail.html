@@ -3,39 +3,68 @@
 {% block content %}
 {% load i18n %}
 	<div class="container">
-	    <h4>{% trans "Incident" %}:</h4>
-	    <p>{% trans "Date" %}: {{ incident.date }}</p>
-	    <p>{% trans "Incident" %}: {{ incident.incident }}</p>
-	    <p>{% trans "Cause" %}: {{ incident.reason }}</p>
-	    <p>{% trans "Immediate action / suggestion" %}: {{ incident.immediate_action }}</p>
-	    <p>{% trans "Preventability" %}: {{ incident.preventability }}</p>
+	    <h4 class="text-center">{% trans "Incident" %}:</h4>
+	    <div class="clearfix">
+		    <div class="float-left">
+			    <table class="table table-borderless">
+				    <tbody>
+				    	<tr>
+				    		<th scope="row" class="align-text-top text-right">
+				    			{% trans "Date" %}:
+				    		</th>
+				    		<td>{{ incident.date }}</td>
+				    	</tr>
+				    	<tr>
+				    		<th scope="row" class="align-text-top text-right">
+				    			{% trans "Incident" %}:
+				    		</th>
+				    		<td class="border-top">{{ incident.incident }}</td>
+				    	</tr>
+				    	<tr>
+				    		<th scope="row" class="align-text-top text-right">
+				    			{% trans "Cause" %}:
+				    		</th>
+				    		<td class="border-top">{{ incident.reason }}</td>
+				    	</tr>
+				    	<tr>
+				    		<th scope="row" class="align-text-top text-right">
+				    			{% trans "Immediate action / suggestion" %}:
+				    		</th>
+				    		<td class="border-top">{{ incident.immediate_action }}</td>
+				    	</tr>
+				    	<tr>
+				    		<th scope="row" class="align-text-top text-right">{% trans "Preventability" %}:</th>
+				    		<td class="border-top">{% trans incident.preventability %}</td>
+				    	</tr>
+				    </tbody>
+				</table>
+			</div>
+		</div>
 
 		{% if incident.comments.all|length > 0 %}
 			<hr/>
 			<div class="comments">
 	    		<h4 class="text-center">{% trans "Comments" %}:</h4>
 	    		<div class="table-responsive">
-	    		<table id="id_comment_table" class="table table-striped table-bordered">
-					{% for comment in incident.comments.all %}
-						<tr>
-							<td class="col-md-2">{{ comment.created }}</td>
-							<td class="col-md-1">{{ comment.author }}</td>
-							<td>{{ comment.text }}</td>
-						</tr>
-					{% endfor %}
-				</table>
+		    		<table id="id_comment_table" class="table table-striped table-bordered">
+						{% for comment in incident.comments.all %}
+							<tr>
+								<td class="col-md-2">{{ comment.created }}</td>
+								<td class="col-md-1">{{ comment.author }}</td>
+								<td>{{ comment.text }}</td>
+							</tr>
+						{% endfor %}
+					</table>
 				</div>
 			</div>
 		{% endif %}
-    
+
     	<div class="comment">
   			<h4 class="text-center">{% trans "Your comment" %}</h4>
-  			<div class="well">
-  				<form action="" method="post">{% csrf_token %}
-  					{{ form.as_p }}
-  					<button type="submit" class="btn btn-danger">{% trans "Save" %}</button> 
-  				</form>
-  			</div>
+			<form action="" method="post">{% csrf_token %}
+				{{ form.as_p }}
+				<button type="submit" class="btn btn-danger">{% trans "Save" %}</button> 
+			</form>
 		</div>
 	</div>
 {% endblock %}

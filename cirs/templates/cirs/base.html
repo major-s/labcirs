@@ -10,80 +10,91 @@
         <title>{% block head_title %}LabCIRS {% trans "for" %} {{ ORGANIZATION|default:"LabCIRS" }}{% endblock %}</title>
         <meta name="description" content="">
         <meta name="author" content="Sebastian Major">
-       
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Bootstrap -->
         <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}css/sticky-footer-navbar.css" rel="stylesheet">
-        
+
 		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-3.3.1.min.js"></script>
     {% endblock %}
 </head>
 
 <body>
-    {% block nav %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     	<span class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</span>
+ 
     	{% if user.is_authenticated == True %}
-        	<ul class="navbar-nav nav-pills">
-                {% url 'incidents_list' as url %}
-                <li class="nav-item">
-                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
-                		{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
-                </li>
-                {% url 'create_incident' as url %}
-                <li class="nav-item">
-                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
-                		{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
-                </li>
-                {% url 'incident_search' as url %}
-                <li class="nav-item">
-                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
-                		{% endif %}" href="{{ url }}">{% trans "Comments" %}</a>
-                </li>
-            	{% if user.is_superuser %}
+    	<div> 
+    		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu">
+    			<span class="navbar-toggler-icon"></span>
+  			</button>
+	  		<div class="collapse navbar-collapse" id="navbarMenu">
+        		<ul class="navbar-nav nav-pills">
+	                {% url 'incidents_list' as url %}
 	                <li class="nav-item">
-	                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+	                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
+	                		{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
 	                </li>
-            	{% endif %}
-        	</ul>
-
+	                {% url 'create_incident' as url %}
+	                <li class="nav-item">
+	                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
+	                		{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
+	                </li>
+	                {% url 'incident_search' as url %}
+	                <li class="nav-item">
+	                	<a class="nav-link
+	                		{% comment %}
+	                			Works on all pages only because not existing variables are ignored in templates
+	                		{% endcomment %}
+	                		{% if request.path == url or request.path == incident.get_absolute_url %}
+	                			active text-light bg-dark
+	                		{% endif %}" 
+	                	href="{{ url }}">{% trans "Comments" %}</a>
+	                </li>
+	            	{% if user.is_superuser %}
+		                <li class="nav-item">
+		                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+		                </li>
+            		{% endif %}
+        		</ul>
+        	</div>
+        </div>
 		{% endif %}
-		
+
         <h5 class="mx-auto">
         	<span class="nav-item badge badge-danger d-none d-lg-block">Anonymous Lab Critical Incident Reporting System</span>
         	<span class="nav-item badge badge-danger d-block d-lg-none">Anonymous LabCIRS</span>
         </h5>
-		
+
         {% if user.is_authenticated == True %}
             <span class="navbar-text mr-sm-2 d-none d-md-block">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }}</em></span>
         {% endif %}
-        
-            <form name="select_language" class="form-inline" action="{% url 'set_language' %}" method="post">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ redirect_to }}" />
-                <div class="form-group">
-                    <select name="language" class="form-control" onchange="this.form.submit();">
-                        {% get_language_info_list for LANGUAGES as languages %}
-                        {% for language in languages %}
-                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
-                                {{ language.name_local }} ({{ language.code }})
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
+
+        <form name="select_language" class="form-inline" action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ redirect_to }}" />
+            <div class="form-group">
+                <select name="language" class="form-control" onchange="this.form.submit();">
+                    {% get_language_info_list for LANGUAGES as languages %}
+                    {% for language in languages %}
+                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
+                            {{ language.name_local }} ({{ language.code }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
         {% if user.is_authenticated == True %}
             <ul class="navbar-nav nav-pills">    
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">{% trans "Log out" %}</a></li>
             </ul>
         {% endif %}
     </nav>
-    {% endblock %}
+ 
     {% block content %}
-    
     {% endblock %}
-    
 
     <footer class="footer">
         <div class="container">
