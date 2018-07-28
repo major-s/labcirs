@@ -3,29 +3,7 @@
 {% block head %}
 	{{ block.super }}
 	{% load i18n %}
-	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.12.1.min.js"></script>
-
-	{% get_language_info_list for LANGUAGES as languages %}
-
-	{% for language in languages %}
-	    {% ifnotequal language.code "en" %}
-			<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ language.code }}.js"></script>
-	    {% endifnotequal %}
-	{% endfor %}
-
 	<link rel="stylesheet" type="text/css" href={{ STATIC_URL }}css/jquery-ui.min.css />
-	
-	{% get_current_language as LANGUAGE_CODE %}
-	
-	<script type="text/javascript">
-	    $(document).ready(function(){
-		{% if LANGUAGE_CODE == "en" %}
-			$("#id_date").datepicker( $.datepicker.regional[ "" ] );
-		{% else %}
-			$("#id_date").datepicker( $.datepicker.regional[ "{{ LANGUAGE_CODE }}" ] );
-		{% endif %}
-	    });
-	</script>
 {% endblock %}
 
 {% block content %}
@@ -41,4 +19,24 @@
 			<button type="submit" class="btn btn-danger">{% trans "Send" %}</button> 
 		</form>
     </div>
+{% endblock %}
+
+{% block javascript %}
+	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.12.1.min.js"></script>
+
+	{% get_current_language as LANGUAGE_CODE %}
+	
+	{% ifnotequal LANGUAGE_CODE "en" %}
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ LANGUAGE_CODE }}.js"></script>
+	{% endifnotequal %}
+	
+	<script type="text/javascript">
+	    $(document).ready(function(){
+		{% if LANGUAGE_CODE == "en" %}
+			$("#id_date").datepicker( $.datepicker.regional[ "" ] );
+		{% else %}
+			$("#id_date").datepicker( $.datepicker.regional[ "{{ LANGUAGE_CODE }}" ] );
+		{% endif %}
+	    });
+	</script>
 {% endblock %}

@@ -15,8 +15,6 @@
         <!-- Bootstrap -->
         <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}css/sticky-footer-navbar.css" rel="stylesheet">
-
-		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-3.3.1.min.js"></script>
     {% endblock %}
 </head>
 
@@ -103,6 +101,9 @@
             </p>
         </div>
     </footer>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-3.3.1.min.js"></script>
+    {% block javascript %}
+    {% endblock %}
     <script src="{{ STATIC_URL }}js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
