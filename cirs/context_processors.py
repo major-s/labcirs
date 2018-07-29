@@ -7,6 +7,5 @@ from django.conf import settings
 def cirs_data(request):
     return {'APP_VERSION': cirs.__version__,
             'AUTHOR': cirs.__AUTHOR__,
-            'AUTHOR_EMAIL': cirs.__AUTHOR_EMAIL__,
             'ORGANIZATION': settings.ORGANIZATION
             }
