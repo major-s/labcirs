@@ -123,7 +123,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.logout()
         self.login_user()
         # check if all expected fields are present in the table
-        table = self.browser.find_element_by_id('tableIncidents')
+        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo']
         header_elements = table.find_elements_by_tag_name('th')
         table_headers_list = []
