@@ -80,7 +80,7 @@ class CriticalIncident(models.Model):
     public = models.BooleanField(
         _("Publication"), choices=PUBLIC_CHOICES, default=None)
     comment_code = models.CharField(max_length=16, blank=True)
-    # QMB review, unvisible for reporter
+    # review part, invisible for reporter
     reported = models.DateField(_("Date of report"), auto_now_add=True)
     action = models.TextField(_("Action"), blank=True)
     responsibilty = models.CharField(
