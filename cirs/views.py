@@ -20,7 +20,7 @@
 
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
@@ -35,7 +35,7 @@ from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm
 from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig
 
 
-class IncidentCreate(SuccessMessageMixin, CreateView):
+class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = CriticalIncident
     form_class = IncidentCreateForm
     success_url = 'success'
@@ -101,15 +101,11 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
             return super(IncidentDetailView, self).render_to_response(context, **kwargs)
 
 
-class PublishableIncidentList(ListView):
+class PublishableIncidentList(LoginRequiredMixin, ListView):
     """
     Returns a simple list of publishable incidents where "publish" is set to true.
     """
     queryset = PublishableIncident.objects.filter(publish=True)
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(PublishableIncidentList, self).dispatch(*args, **kwargs)
 
 
 def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
