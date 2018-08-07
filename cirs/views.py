@@ -58,7 +58,6 @@ class IncidentSearch(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         comment_code = form.cleaned_data.get('incident_code')
-        # TODO: handle nonexistend codes
         incident_id = CriticalIncident.objects.get(comment_code=comment_code).id
         self.request.session['accessible_incident'] = incident_id
         return redirect('incident_detail', pk=incident_id)

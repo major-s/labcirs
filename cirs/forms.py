@@ -19,11 +19,12 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 
-from django import forms
+#from django import forms
 from django.core import mail
 from django.forms import (Form, ModelForm, Textarea, TextInput, RadioSelect, 
-                          CharField, Select, ClearableFileInput, DateInput)
+                          CharField, Select, ClearableFileInput, DateInput, ValidationError)
 from django.forms.utils import ErrorList
+from django.utils.translation import ugettext_lazy as _
 
 from .models import CriticalIncident, Comment, LabCIRSConfig
 
@@ -75,10 +76,19 @@ class IncidentCreateForm(ModelForm):
         return result
 
 
-
 class IncidentSearchForm(Form):
     incident_code = CharField()
     incident_code.widget.attrs.update({'class': "form-control col-sm-3"})
+    error_css_class = "error alert alert-danger"
+    
+    def clean_incident_code(self):
+        comment_code = self.cleaned_data.get('incident_code')
+        try:
+            CriticalIncident.objects.get(comment_code=comment_code)
+            return comment_code
+        except CriticalIncident.DoesNotExist:
+            raise ValidationError(_('No matching critical incident found!'), code='invalid_id')
+
 
 class CommentForm(ModelForm):
     
