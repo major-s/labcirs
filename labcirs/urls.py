@@ -12,7 +12,6 @@ cirs_url = settings.ROOT_URL + '/incidents/'
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url=cirs_url), name='labcirs_home'),
     url(r'^incidents/', include('cirs.urls')),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/$',  login_user, name='login'),
     url(r'^logout/$', logout_user, name='logout'),
