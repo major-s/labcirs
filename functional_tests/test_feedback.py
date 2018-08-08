@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2018 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -218,10 +218,24 @@ class SecurityTest(FunctionalTest):
         self.browser.find_element_by_class_name("btn-info").click()
         self.assertEqual(self.browser.current_url, self.live_server_url+incident.get_absolute_url())
 
-    def reviewer_can_access_incident_without_code(self):
+    def test_reviewer_can_access_incident_without_code(self):
         incident = CriticalIncident.objects.create(**test_incident)
         absolute_incident_url = self.live_server_url + incident.get_absolute_url()
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
+        time.sleep(3)
         self.browser.get(absolute_incident_url)
         self.assertEqual(self.browser.current_url, absolute_incident_url)
+
+    def test_wrong_code_redirects_to_search_page(self):
+        # Reporter logs in and enters a code which does not exist
+        self.login_user()
+        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Comments"))).click()
+        self.wait.until(EC.presence_of_element_located((By.ID, "id_incident_code"))).send_keys('abc')
+        self.browser.find_element_by_class_name("btn-info").click()
+
+        # After submitting he lands again on the search page
+        self.wait.until(EC.presence_of_element_located((By.ID, "id_incident_code")))
+
+        # and sees informatinon that no incident was found
+        self.assertIn("No matching critical incident found!", self.browser.page_source)
 

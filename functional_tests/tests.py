@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2016-2018 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -67,7 +67,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.login_user()
         # # TODO: check if user is authenticated
         # # instead checking for the title of the table
-        self.wait.until(EC.presence_of_element_located((By.ID, 'tableInventory')))
+        self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         table_title = self.browser.find_element_by_tag_name('h2').text
         self.assertEqual('Critical incidents', table_title)
 
@@ -123,7 +123,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.logout()
         self.login_user()
         # check if all expected fields are present in the table
-        table = self.browser.find_element_by_id('tableInventory')
+        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo']
         header_elements = table.find_elements_by_tag_name('th')
         table_headers_list = []
@@ -145,7 +145,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         # Now user goes to the list and should see the list of
         # published incidents in order b, a, c
         self.login_user()
-        table = self.browser.find_element_by_id('tableInventory')
+        table = self.browser.find_element_by_id('tableIncidents')
         rows = table.find_elements_by_tag_name('tr')
 
         self.assertIn('b', rows[1].text)

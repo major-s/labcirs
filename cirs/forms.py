@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2018 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -19,10 +19,12 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 
-from django import forms
+#from django import forms
 from django.core import mail
-from django.forms import Form, ModelForm, Textarea, TextInput, RadioSelect, CharField
+from django.forms import (Form, ModelForm, Textarea, TextInput, RadioSelect, 
+                          CharField, Select, ClearableFileInput, DateInput, ValidationError)
 from django.forms.utils import ErrorList
+from django.utils.translation import ugettext_lazy as _
 
 from .models import CriticalIncident, Comment, LabCIRSConfig
 
@@ -44,6 +46,14 @@ def notify_on_creation(form, subject='', excluded_user_id=None):
                            config.notification_sender_email,
                            to_list, fail_silently=False)
 
+
+class BootstrapRadioSelect(RadioSelect):
+    # Used only in Django >= 1.11 as before no templates were used for widgets.
+    # The built-in templates have problems when used with Bootstrap 4 class="form-check-input"
+    # Older versions simply ignore this attribute.
+    template_name="cirs/radio_option_bootstrap_4.html"
+
+
 class IncidentCreateForm(ModelForm):
     error_css_class = "error alert alert-danger"
 
@@ -51,13 +61,13 @@ class IncidentCreateForm(ModelForm):
         model = CriticalIncident
         fields = ['date', 'incident', 'reason', 'immediate_action',
                   'preventability', 'photo', 'public']
-        widgets = {"incident": Textarea(attrs={'cols': 80, 'rows': 5,
-                                               'class': "form-control"}),
-                   "reason": Textarea(attrs={'cols': 80, 'rows': 5,
-                                             'class': "form-control"}),
-                   "immediate_action": Textarea(attrs={'cols': 80, 'rows': 5,
-                                                       'class': "form-control"}),
-                   "public": RadioSelect()
+        widgets = {"date": DateInput(attrs={'class': "form-control col-sm-5"}),
+                   "incident": Textarea(attrs={'rows': 5, 'class': "form-control"}),
+                   "reason": Textarea(attrs={'rows': 5, 'class': "form-control"}),
+                   "immediate_action": Textarea(attrs={'rows': 5, 'class': "form-control"}),
+                   "preventability": Select(attrs={'class': "form-control col-sm-5"}),
+                   "photo": ClearableFileInput(attrs={'class': "form-control-file"}),
+                   "public": BootstrapRadioSelect(attrs={'class': "form-check-input"})
                    }
 
     def save(self):
@@ -66,9 +76,18 @@ class IncidentCreateForm(ModelForm):
         return result
 
 
-
 class IncidentSearchForm(Form):
-    incident_code = CharField()
+    incident_code = CharField(label=_('Incident code'))
+    incident_code.widget.attrs.update({'class': "form-control col-sm-3"})
+    error_css_class = "error alert alert-danger"
+    
+    def clean_incident_code(self):
+        comment_code = self.cleaned_data.get('incident_code')
+        try:
+            CriticalIncident.objects.get(comment_code=comment_code)
+            return comment_code
+        except CriticalIncident.DoesNotExist:
+            raise ValidationError(_('No matching critical incident found!'), code='invalid_id')
 
 
 class CommentForm(ModelForm):
@@ -76,9 +95,7 @@ class CommentForm(ModelForm):
     class Meta:
         model = Comment
         fields = ['text']
-        widgets = {"text": Textarea(attrs={'cols': 80, 'rows': 5, 
-                                           'class': "form-control"})
-        }
+        widgets = {"text": Textarea(attrs={'rows': 5, 'class': "form-control"})}
 
     def save(self):
         result = super(CommentForm, self).save()

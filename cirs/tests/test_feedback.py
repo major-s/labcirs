@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2018 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -27,7 +27,8 @@ from django.test import TestCase
 
 
 from cirs.models import CriticalIncident, Comment, LabCIRSConfig
-from cirs.views import IncidentDetailView, CommentForm
+from cirs.views import IncidentDetailView
+from cirs.forms import CommentForm, IncidentSearchForm
 import datetime as dt
 import string
 import random
@@ -81,6 +82,10 @@ class SecurityTest(BaseFeedbackTest):
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
         self.assertRedirects(response, reverse('incident_search'))
 
+    def test_wrong_code_causes_form_error(self):
+        login = self.client.login(username=self.username, password=self.password)
+        response = self.client.post(reverse('incident_search'), {'incident_code':'ab'}, follow=True)
+        self.assertFormError(response, 'form', 'incident_code', 'No matching critical incident found!')
 
 class CommentModelTest(BaseFeedbackTest):
     def setUp(self):

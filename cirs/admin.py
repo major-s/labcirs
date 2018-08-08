@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2016-2018 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -61,8 +61,11 @@ class PublishableIncidentInline(admin.StackedInline):
 
 class CommentInline(admin.TabularInline):
     model = Comment
-    extra = 1
+    extra = 0
     readonly_fields = ('author', 'text',)
+    
+    def has_add_permission(self, request):
+      return False
 
 class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
@@ -78,7 +81,7 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
                        'immediate_action', 'preventability', 'photo',
                        'photo_tag')
         }),
-        ('QMB', {
+        ('Review', {
             'fields': (('review_date', 'status'),
                        ('risk', 'frequency', 'hazard'),
                        'responsibilty', 'action', 'category')

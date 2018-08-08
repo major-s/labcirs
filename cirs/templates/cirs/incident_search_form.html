@@ -4,10 +4,11 @@
     {{ block.super }}
     {% load i18n %}
     <div class="container">
-		<form action="" method="post" enctype="multipart/form-data" >{% csrf_token %}
+		<form action="" method="post" enctype="multipart/form-data" >
+			{% csrf_token %}
 			<p>{% trans "Please enter the code which you received after submitting the incident." %}</p>
 			
-			<p>{{ form }}</p>
+			{{ form.as_p }}
 			
 			<button type="submit" class="btn btn-info">{% trans "Search" %}</button> 
 		</form>
