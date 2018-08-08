@@ -1,4 +1,4 @@
-VERSION = (4, 1, 0, "dev", 1)
+VERSION = (4, 1, 1, "final", 0)
 __AUTHOR__ = "Sebastian Major"
 
 
