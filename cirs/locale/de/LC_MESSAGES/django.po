@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the LabCIRS package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-28 13:06+0200\n"
+"POT-Creation-Date: 2018-08-08 18:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,13 +30,21 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-#: .\admin.py:121
+#: .\admin.py:124
 msgid "Login infos"
 msgstr "Anmeldedaten"
 
-#: .\admin.py:126
+#: .\admin.py:129
 msgid "Notification settings"
 msgstr "Benachrichtigungseinstellungen"
+
+#: .\forms.py:80
+msgid "Incident code"
+msgstr "Ereignis-Kode"
+
+#: .\forms.py:90
+msgid "No matching critical incident found!"
+msgstr "Kein passendes kritisches Ereignis gefunden!"
 
 #: .\models.py:33
 msgid "singular case (for the first time)"
@@ -162,7 +170,7 @@ msgstr "Fehler / Problem / kritisches Ereignis"
 msgid "Cause of failure"
 msgstr "Fehlerursache / Verursacherbereich"
 
-#: .\models.py:71 .\templates\cirs\criticalincident_detail.html:10
+#: .\models.py:71 .\templates\cirs\criticalincident_detail.html:31
 msgid "Immediate action / suggestion"
 msgstr "Sofortmaßnahmen / Vorschläge"
 
@@ -170,7 +178,7 @@ msgstr "Sofortmaßnahmen / Vorschläge"
 msgid "Immediate action or suggestion regarding prevention / troubleshooting"
 msgstr "Sofortmaßnahme ggf. Vorschlag zur Vermeidung / Behebung"
 
-#: .\models.py:76 .\templates\cirs\criticalincident_detail.html:11
+#: .\models.py:76 .\templates\cirs\criticalincident_detail.html:36
 msgid "Preventability"
 msgstr "Vermeidbarkeit"
 
@@ -181,7 +189,7 @@ msgstr ""
 "gewesen ?"
 
 #: .\models.py:79 .\models.py:113
-#: .\templates\cirs\publishableincident_list.html:38
+#: .\templates\cirs\publishableincident_list.html:21
 msgid "Photo"
 msgstr "Foto"
 
@@ -233,7 +241,7 @@ msgstr "Kategorie"
 msgid "Critical incident"
 msgstr "Kritisches Ereignis"
 
-#: .\models.py:103 .\templates\cirs\publishableincident_list.html:30
+#: .\models.py:103 .\templates\cirs\publishableincident_list.html:13
 msgid "Critical incidents"
 msgstr "Kritische Ereignise"
 
@@ -414,70 +422,70 @@ msgstr "Status des Kommentars"
 msgid "for"
 msgstr "für"
 
-#: .\templates\cirs\base.html:36 .\templates\cirs\success.html:15
+#: .\templates\cirs\base.html:35 .\templates\cirs\success.html:15
 msgid "View incidents"
 msgstr "Ereignisliste"
 
-#: .\templates\cirs\base.html:38
+#: .\templates\cirs\base.html:40
 msgid "Add incident"
 msgstr "Neues Ereignis"
 
-#: .\templates\cirs\base.html:40
-#: .\templates\cirs\criticalincident_detail.html:16
+#: .\templates\cirs\base.html:52
+#: .\templates\cirs\criticalincident_detail.html:47
 msgid "Comments"
 msgstr "Kommentare"
 
-#: .\templates\cirs\base.html:49 .\templates\cirs\success.html:14
-msgid "Log out"
-msgstr "Abmelden"
-
-#: .\templates\cirs\base.html:68
+#: .\templates\cirs\base.html:70
 msgid "Welcome,"
 msgstr "Wilkommen"
 
+#: .\templates\cirs\base.html:90 .\templates\cirs\success.html:14
+msgid "Log out"
+msgstr "Abmelden"
+
 #: .\templates\cirs\criticalincident_detail.html:6
-#: .\templates\cirs\criticalincident_detail.html:8
-#: .\templates\cirs\publishableincident_list.html:35
+#: .\templates\cirs\criticalincident_detail.html:19
+#: .\templates\cirs\publishableincident_list.html:18
 msgid "Incident"
 msgstr "Ereignis"
 
-#: .\templates\cirs\criticalincident_detail.html:7
+#: .\templates\cirs\criticalincident_detail.html:13
 msgid "Date"
 msgstr "Datum"
 
-#: .\templates\cirs\criticalincident_detail.html:9
+#: .\templates\cirs\criticalincident_detail.html:25
 msgid "Cause"
 msgstr "Grund"
 
-#: .\templates\cirs\criticalincident_detail.html:32
+#: .\templates\cirs\criticalincident_detail.html:63
 msgid "Your comment"
 msgstr "Ihr Kommentar"
 
-#: .\templates\cirs\criticalincident_detail.html:36
+#: .\templates\cirs\criticalincident_detail.html:66
 msgid "Save"
 msgstr "Sichern"
 
-#: .\templates\cirs\criticalincident_form.html:34
+#: .\templates\cirs\criticalincident_form.html:14
 msgid "Empty"
 msgstr "Leer"
 
-#: .\templates\cirs\criticalincident_form.html:38
+#: .\templates\cirs\criticalincident_form.html:19
 msgid ""
 "Anonymous report will be send. There is no possibility to change the report."
 msgstr ""
 "Anonymer Report wird verschickt. Es sind keine nachträglichen Änderungen "
 "möglich."
 
-#: .\templates\cirs\criticalincident_form.html:39
+#: .\templates\cirs\criticalincident_form.html:20
 msgid "Send"
 msgstr "Senden"
 
-#: .\templates\cirs\incident_search_form.html:8
+#: .\templates\cirs\incident_search_form.html:9
 msgid "Please enter the code which you received after submitting the incident."
 msgstr ""
-"Bitte den Code eingeben, der nach Erstellung des Kommentars angezeigt wurde."
+"Bitte den Kode eingeben, der nach Erstellung der Meldung angezeigt wurde."
 
-#: .\templates\cirs\incident_search_form.html:12
+#: .\templates\cirs\incident_search_form.html:13
 msgid "Search"
 msgstr "Suchen"
 
@@ -497,20 +505,20 @@ msgstr "Passwort"
 msgid "Log in"
 msgstr "Anmelden"
 
-#: .\templates\cirs\publishableincident_list.html:36
+#: .\templates\cirs\publishableincident_list.html:19
 msgid "Description"
 msgstr "Beschreibung"
 
-#: .\templates\cirs\publishableincident_list.html:37
+#: .\templates\cirs\publishableincident_list.html:20
 msgid "Measures and consequences"
 msgstr "Maßnahmen und Konsequenzen"
 
-#: .\templates\cirs\publishableincident_list.html:56
-#: .\templates\cirs\publishableincident_list.html:80
+#: .\templates\cirs\publishableincident_list.html:39
+#: .\templates\cirs\publishableincident_list.html:63
 msgid "Sorry, this photo is missing"
 msgstr "Es tut uns leid, aber dieses Foto kann nicht dargestellt werden"
 
-#: .\templates\cirs\publishableincident_list.html:87
+#: .\templates\cirs\publishableincident_list.html:70
 msgid "Add new incident"
 msgstr "Neues Ereignis hinzufügen"
 
@@ -522,15 +530,14 @@ msgstr "Danke!"
 msgid "One more"
 msgstr "Noch eins"
 
-#: .\views.py:133
+#: .\views.py:128
 msgid "Your account is not active, please contact the admin."
 msgstr "Ihr Zugang ist nicht mehr aktiv. Bitte den Administrator kontaktieren."
 
-#: .\views.py:136
+#: .\views.py:131
 msgid ""
 "Your username and/or password were incorrect.\n"
 "                        Please check the information below!"
 msgstr ""
 "Der Benutzername und/oder Passwort waren inkorrekt. Bitte die Informationen "
 "darunter lesen!"
-

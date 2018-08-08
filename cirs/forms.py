@@ -77,7 +77,7 @@ class IncidentCreateForm(ModelForm):
 
 
 class IncidentSearchForm(Form):
-    incident_code = CharField()
+    incident_code = CharField(label=_('Incident code'))
     incident_code.widget.attrs.update({'class': "form-control col-sm-3"})
     error_css_class = "error alert alert-danger"
     
