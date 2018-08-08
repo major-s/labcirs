@@ -4,16 +4,19 @@ LabCIRS
 
 LabCIRS is a lightweight anonymous Critical Incident Reporting System (CIRS) developed for research laboratories/departments.
 
-It builds upon the `Django <http://www.djangoproject.com>`_ framework as a stand alone web application and is not intended to be a reusable app.
+Background informations can be found in
+`A Laboratory Critical Incident and Error Reporting System for Experimental Biomedicine <https://doi.org/10.1371/journal.pbio.2000705>`_ published in `PLOS Biology <http://journals.plos.org/plosbiology/>`_
+
+LabCIRS builds upon the `Django <http://www.djangoproject.com>`_ framework as a stand alone web application and is not intended to be a reusable app.
 
 A demo installation can be visited and tested at http://labcirs.charite.de.
 
 Requirements
 ------------
 - Python 2.7
-- Django 1.9.6 (might run with 1.7 and 1.8 but the current version was not tested)
-- Pillow 2.9.0
-- django-multiselectfield 0.1.3
+- Django 1.11 (1.9 and 1.10 work too but are not recommended)
+- Pillow 5.2.0
+- django-multiselectfield 0.1.8
 - any Django compatible database - tested in real life with MySQL and PostreSQL.
 - any web server capable running WSGI applications - a template for Apache 2.4 configuration is provided
 
@@ -81,6 +84,11 @@ LabCIRS configuration
 6. If you plan to use multiple reviewer account then you should create a group with appropriate permissions and add all users with the reviewer role to this group.
 7. In the admin interface go to the ``LabCIRS configuration`` and add a new configuration (only one can be used). Here you can specify where the users can get the information about the reporter login. Further you can specify if email notifications should be sent to any reviewer upon creation of new incidents. This function can only be activated if you set a valid ``EMAIL_HOST`` in the local configuration file.
 
+Acknowledgments
+---------------
+
+Current development of LabCIRS is sponsored by the `Stiftung Charité <http://www.stiftung-charite.de>`_
+
 Users
 -----
 
@@ -97,7 +105,7 @@ The copyright of these software packages is hold by its respective owners.
 License
 -------
 
-Copyright (C) 2016 Sebastian Major <sebastian.major@charite.de>
+Copyright (C) 2016-2018 Sebastian Major <sebastian.major@charite.de>
 
 LabCIRS is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
