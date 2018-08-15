@@ -18,21 +18,21 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+import os
 import time
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
 
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select, WebDriverWait
 
-DEFAULT_WAIT = 5
+
+DEFAULT_WAIT = 8
 
 
 class FunctionalTest(StaticLiveServerTestCase):
@@ -65,7 +65,7 @@ class FunctionalTest(StaticLiveServerTestCase):
                          'add_labcirsconfig', 'change_labcirsconfig'):
             permission = Permission.objects.get(codename=codename)
             self.reviewer.user_permissions.add(permission)
-        self.admin = User.objects.create_user(
+        self.admin = User.objects.create_superuser(
             self.ADMIN, self.ADMIN_EMAIL, self.ADMIN_PASSWORD)
         # Initialise browser for testing
         # the noninternationalized version is checked
@@ -82,29 +82,71 @@ class FunctionalTest(StaticLiveServerTestCase):
 
         self.browser.implicitly_wait(DEFAULT_WAIT)
         self.maxDiff = None
-        self.wait = WebDriverWait(self.browser, 20)
+        self.wait = WebDriverWait(self.browser, DEFAULT_WAIT)
+
 
     def tearDown(self):
         time.sleep(1)
         self.browser.quit()
         time.sleep(1)
 
+    def click_link_with_text(self, link_text):
+        self.wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, link_text)),
+            message=('could not find ' + link_text)
+        ).click()
+    
+    def click_link_case_insensitive(self, link_text):
+        try:
+            self.click_link_with_text(link_text)
+        except:
+            self.click_link_with_text(link_text.upper())
+
+    def find_input_and_enter_text(self, identifier, text, method=By.ID):
+        self.wait.until(
+            EC.presence_of_element_located((method, identifier)),
+            message=('could not find {} {}'.format(identifier, method))
+        ).send_keys(text)
+
+    def quick_login(self, user, target_url=''):
+        self.client.force_login(user)
+        cookie = self.client.cookies['sessionid']
+        self.browser.get(self.live_server_url + target_url)
+        self.browser.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
+        self.browser.get(self.live_server_url + target_url)
+
+    def quick_login_reporter(self, target_url=''):
+        self.quick_login(self.reporter, target_url)
+
+    def quick_backend_login(self, user=None, target_url='/admin/'):
+        if user is None:
+            user = self.admin
+        self.quick_login(user, target_url)
+    
     def login_user(self, username=REPORTER, password=REPORTER_PASSWORD):
         """Loggs user into the frontend of the webproject"""
         self.browser.get(self.live_server_url)
-        self.wait.until(EC.presence_of_element_located((By.NAME, "username")))
-        username_input = self.browser.find_element_by_name("username")
-        username_input.send_keys(username)
-        password_input = self.browser.find_element_by_name("password")
-        password_input.send_keys(password)
-        password_input.send_keys(Keys.RETURN)
+        self.find_input_and_enter_text('username', username, By.NAME)
+        self.find_input_and_enter_text('password', password, By.NAME)
+        self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)
         
     def logout(self):
-        # Depending on Django or Firefox version CSS (upper or lower case) 
-        # seems to be sometimes neglected.
-        try:
-            self.wait.until(
-                EC.element_to_be_clickable((By.LINK_TEXT, "Log out"))).click()
-        except:
-            self.browser.find_element_by_link_text("Log out".upper()).click()
- 
+        self.click_link_case_insensitive("Log out")
+
+    def enter_test_incident(self, with_photo=False):
+        # usable on incident create page
+        self.find_input_and_enter_text('id_date', "07/24/2015")
+        self.find_input_and_enter_text('id_incident', "A strang incident happened")
+        self.find_input_and_enter_text('id_reason', "No one knows")
+        self.find_input_and_enter_text('id_immediate_action', "No action possible")
+        Select(self.browser.find_element_by_id(
+            'id_preventability')).select_by_value("indistinct")
+        self.browser.find_element_by_id('id_public_0').click()  # true
+        # upload photo
+        if with_photo is True:
+            self.find_input_and_enter_text('id_photo',
+                os.path.join(os.getcwd(), "cirs", "tests", "test.jpg"))
+        # submit
+        for button in self.browser.find_elements_by_class_name("btn-danger"):
+            if "Send" in button.text:
+                button.click()

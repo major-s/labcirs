@@ -18,23 +18,21 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-import os
 import time
-from datetime import date
 
-from django.conf import settings
+from datetime import date
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import override_settings
-
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig
 from cirs.tests.tests import generate_three_incidents
+
 from .base import FunctionalTest
+
 
 DEFAULT_WAIT = 5
 
@@ -55,15 +53,13 @@ class FunctionalTestWithBackendLogin(FunctionalTest):
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
         self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
         self.assertIn("/admin/", self.browser.current_url)
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Critical incidents")))
-        self.browser.find_element_by_link_text("Critical incidents").click()
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, test_incident['incident'])))
-        self.browser.find_element_by_link_text(test_incident['incident']).click()
+        self.click_link_with_text('Critical incidents')
+        self.click_link_with_text(test_incident['incident'])
 
 
 class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     
-    def test_login(self):
+    def test_reporter_login(self):
         self.login_user()
         # # TODO: check if user is authenticated
         # # instead checking for the title of the table
@@ -74,34 +70,14 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
         LabCIRSConfig.objects.create(send_notification=True)
-        self.login_user()
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add incident")))
-        self.browser.find_element_by_link_text("Add incident").click()
+        self.quick_login_reporter()
+        self.click_link_with_text('Add incident')
 
         # change to besser test
         self.assertIn("incidents/create", self.browser.current_url)
 
         # the reporter enters incident data
-        date_field = self.browser.find_element_by_id('id_date')
-        date_field.send_keys("07/24/2015")
-        incident_field = self.browser.find_element_by_id('id_incident')
-        incident_field.send_keys("A strang incident happened")
-        reason_field = self.browser.find_element_by_id('id_reason')
-        reason_field.send_keys("No one knows")
-        immediate_action_field = self.browser.find_element_by_id(
-            'id_immediate_action')
-        immediate_action_field.send_keys("No action possible")
-        preventability_select = Select(self.browser.find_element_by_id(
-            'id_preventability'))
-        preventability_select.select_by_value("indistinct")
-        self.browser.find_element_by_id('id_public_0').click()  # true
-        # upload photo
-        photo_field = self.browser.find_element_by_id('id_photo')
-        photo_field.send_keys(os.path.join(os.getcwd(), "cirs", "tests", "test.jpg"))
-        # submit
-        for button in self.browser.find_elements_by_class_name("btn-danger"):
-            if "Send" in button.text:
-                button.click()
+        self.enter_test_incident(with_photo=True)
         # check for success
         time.sleep(2)
         self.assertIn("/incidents/create/success/", self.browser.current_url)
@@ -113,15 +89,15 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
             'id_status')).select_by_value("in process")
         for field in ('incident', 'description', 'measures_and_consequences'):
             for lang in ('de', 'en'):  # TODO: import languages from settings
-                self.browser.find_element_by_id(
-                    'id_publishableincident-0-' + field + '_' + lang).send_keys("a")
+                self.find_input_and_enter_text(
+                    'id_publishableincident-0-{}_{}'.format(field, lang), "a")
         self.browser.find_element_by_id('id_publishableincident-0-publish').click()
         self.browser.find_element_by_name('_save').click()
         headers1 = self.browser.find_elements_by_tag_name('h1')
         self.assertIn("Select Critical incident to change", [header1.text for header1 in headers1])
         # logout and check as normal user if photo is visible
         self.logout()
-        self.login_user()
+        self.quick_login_reporter()
         # check if all expected fields are present in the table
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo']
@@ -142,9 +118,9 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 
         generate_three_incidents()
 
-        # Now user goes to the list and should see the list of
+        # Now reporter goes to the list and should see the list of
         # published incidents in order b, a, c
-        self.login_user()
+        self.quick_login_reporter()
         table = self.browser.find_element_by_id('tableIncidents')
         rows = table.find_elements_by_tag_name('tr')
 
@@ -158,28 +134,11 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         config.notification_recipients.add(self.reviewer)
         config.notification_sender_email = 'labcirs@labcirs.edu'
         config.save()
-        self.login_user()
-        self.browser.find_element_by_link_text("Add incident").click()
-        # labcirs enters incident data
-        # copied from test_user_can_add_incident_with_photo
-        # refactor later if needed
-        date_field = self.browser.find_element_by_id('id_date')
-        date_field.send_keys("07/24/2015")
-        incident_field = self.browser.find_element_by_id('id_incident')
-        incident_field.send_keys("A strang incident happened")
-        reason_field = self.browser.find_element_by_id('id_reason')
-        reason_field.send_keys("No one knows")
-        immediate_action_field = self.browser.find_element_by_id(
-            'id_immediate_action')
-        immediate_action_field.send_keys("No action possible")
-        preventability_select = Select(self.browser.find_element_by_id(
-            'id_preventability'))
-        preventability_select.select_by_value("indistinct")
-        self.browser.find_element_by_id('id_public_0').click()  # true
-        # submit
-        for button in self.browser.find_elements_by_class_name("btn-danger"):
-            if "Send" in button.text:
-                button.click()
+        self.quick_login_reporter(reverse('create_incident'))
+
+        # reporter enters incident data
+        self.enter_test_incident()
+
         # check if incident was sent by email
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
