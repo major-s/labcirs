@@ -246,3 +246,60 @@ class Comment(models.Model):
     
     def __unicode__(self):
         return self.text[:64]
+
+
+class Role(models.Model):
+    user = models.OneToOneField(User, verbose_name=_('User'), on_delete=models.PROTECT,
+        limit_choices_to={'is_superuser': False, 'reviewer': None, 'reporter': None})
+
+    def clean(self):
+        if self.user.is_superuser:
+            raise ValidationError(
+                _('Superuser cannot become {}'.format(type(self).__name__.lower())))
+
+    class Meta:
+        abstract = True
+
+    def __unicode__(self):
+        return self.user.username
+
+
+class Reporter(Role):
+    
+    def clean(self):
+        super(Reporter, self).clean()
+        if hasattr(self.user, 'reviewer'):
+            raise ValidationError(
+                _('This user is already a reviewer and thus cannot become a reporter'))
+
+    class Meta:
+        verbose_name = _('Reporter')
+        verbose_name_plural = _('Reporters')
+
+
+class Reviewer(Role):
+    
+    def clean(self):
+        super(Reviewer, self).clean()
+        if hasattr(self.user, 'reporter'):
+            raise ValidationError(
+                _('This user is already a reporter and thus cannot become a reviewer'))
+
+    class Meta:
+        verbose_name = _('Reviewer')
+        verbose_name_plural = _('Reviewers')      
+
+
+class Organization(models.Model):
+    label = models.CharField(_('Label'), max_length=32, unique=True)
+    name = models.CharField(_('Name'), max_length=255, unique=True)
+    reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"),
+        on_delete=models.PROTECT, limit_choices_to={'organization': None})
+    reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"))
+
+    class Meta:
+        verbose_name = _('Organization')
+        verbose_name_plural = _('Organizations')
+
+    def __unicode__(self):
+        return self.label

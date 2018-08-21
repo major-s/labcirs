@@ -131,7 +131,16 @@ class ConfigurationAdmin(admin.ModelAdmin):
                        'notification_text', 'notification_recipients')
         })
     )
+
+
+class OrganizationAdmin(admin.ModelAdmin):
+    filter_horizontal = ('reviewers',)
+
+
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
 admin.site.register(Comment)
+admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(Reporter)
+admin.site.register(Reviewer)
