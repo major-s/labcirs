@@ -29,6 +29,7 @@ from parameterized import parameterized
 
 from cirs.models import Organization, Reporter, Reviewer
 from cirs.admin import OrganizationAdmin
+from django.core.management import call_command
 
 
 class AdminRegistration(TestCase):
@@ -165,3 +166,33 @@ class ReviewerReporterModel(OrganizationBase):
                 self.admin.username, role_cls.__name__
             )
         )
+
+from django.core.management import call_command
+from django.utils.six import StringIO
+from django.contrib.auth.models import Permission
+class DataMigrationForOrganization(TestCase):
+
+    def setUp(self):
+        # has to perform forward migration, so 
+        out = StringIO()
+        call_command('migrate', 'cirs', '0005', stdout=out)
+        print out.getvalue()
+    
+    def test_migration_creates_reporter_role(self):
+
+        out = StringIO()
+        call_command('migrate', 'cirs', '0006', stdout=out)
+        print out.getvalue()
+        self.assertEqual(Reporter.objects.count(), 1)
+        
+    def test_migration_creates_reporter_role_from_real_reporter(self):
+        reporter = create_user('reporter')
+        permission = Permission.objects.get(codename='add_criticalincident')
+        reporter.user_permissions.add(permission)
+        print reporter
+        out = StringIO()
+        call_command('migrate', 'cirs', '0006', stdout=out)
+        print out.getvalue()
+        self.assertEqual(Reporter.objects.first().user, reporter)        
+        self.assertIn(permission, Reporter.objects.first().user.user_permissions.all())
+        
