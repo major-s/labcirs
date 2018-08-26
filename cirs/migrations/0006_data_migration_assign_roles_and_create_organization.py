@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 #from django.contrib.auth.models import User, Permission
+from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import migrations
 
 
@@ -11,25 +12,80 @@ def create_reporter(apps, schema_editor):
     # we search for this user
     # in new installations there are no permissions during initial migration
     # therefore try is necessary
-    
+    # only one reporter should exist before this migration.
+    Permission = apps.get_model('auth', 'Permission')
+    User = apps.get_model('auth', 'User')
+    CriticalIncident = apps.get_model('cirs', 'CriticalIncident')
     try:
-        Permission = apps.get_model('auth', 'Permission')
+        
         permission = Permission.objects.get(codename='add_criticalincident')
         try:
-            User = apps.get_model('auth', 'User')
             reporter = User.objects.get(user_permissions=permission)
             Reporter = apps.get_model('cirs', 'Reporter')
+            print 'Assigning {} as reporter'.format(reporter.username)
             rep = Reporter.objects.create(user=reporter)
         except User.DoesNotExist:
-            print 'User does not exist'
+            if CriticalIncident.objects.count() > 0:
+                raise ValidationError('There are critical incidents in the database, '
+                                      'therefore there should be one user with permission '
+                                      '"add_criticalincident". '
+                                      'Correct and rerun the migration!')
+            print 'There is no user with reporter permissions!'
+            # TODO: Report error if critical incidents exist without reporter user.
+        except MultipleObjectsReturned as e:
+            raise e
     except Permission.DoesNotExist:
         print 'Permission does not exist'
+        if User.objects.count() == 0:
+            print 'This is no problem as this is apparently the initial migration'
 
-
-def delete_reporter(apps, schema_editor):
+def create_reviewers(apps, schema_editor):
+    User = apps.get_model('auth', 'User')
+    Permission = apps.get_model('auth', 'Permission')
+    Reviewer = apps.get_model('cirs', 'Reviewer')
     Reporter = apps.get_model('cirs', 'Reporter')
-    if Reporter.objects.count() > 0:
-        Reporter.objects.all().delete()
+    CriticalIncident = apps.get_model('cirs', 'CriticalIncident')
+    try:
+        permission = Permission.objects.get(codename='change_criticalincident')
+        reviewers = User.objects.filter(user_permissions=permission)
+        if reviewers.count() == 0:
+            if CriticalIncident.objects.count() > 0:
+                raise ValidationError('There are critical incidents in the database, '
+                                      'therefore there should be at least one user with permission '
+                                      '"change_criticalincident". '
+                                      'Correct and rerun the migration!')
+        for reviewer in reviewers:
+            try:
+                #print 'Rev perms: {}'.format(reviewer.user_permissions.all())
+                try:
+                    # model.full_clean() does not work in migrations!!!
+                    if reviewer.reporter.user == reviewer:
+                        raise ValidationError('{} cannot be reporter and reviewer. Please correct permissions and migrate again'.format(reviewer.username))
+                except Reporter.DoesNotExist:
+                    pass
+                role = Reviewer(user = reviewer)
+                role.full_clean()
+                print 'Assigning {} as reviewer'.format(reviewer.username)
+                role.save()
+            except ValidationError as e:
+                raise e
+            #Reviewer.objects.create(user = reviewer)
+    except Permission.DoesNotExist:
+        print 'Permission does not exist'
+        if User.objects.count() == 0:
+            print 'This is no problem as this is apparently the initial migration'
+
+
+def backwards(apps, schema_editor):
+    for cls_name in ('Reporter', 'Reviewer'):
+        model_cls = apps.get_model('cirs', cls_name)
+        model_cls.objects.all().delete()
+
+
+def forward(apps, schema_editor):
+    create_reporter(apps, schema_editor)
+    create_reviewers(apps, schema_editor)
+    
 
 class Migration(migrations.Migration):
 
@@ -38,5 +94,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_reporter, reverse_code=delete_reporter)
+        migrations.RunPython(forward, reverse_code=backwards)
     ]

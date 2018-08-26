@@ -19,17 +19,20 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import itertools
+from unittest import skip
 
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from parameterized import parameterized
 
-from cirs.models import Organization, Reporter, Reviewer
+from cirs.models import Organization, Reporter, Reviewer, CriticalIncident
 from cirs.admin import OrganizationAdmin
 from django.core.management import call_command
+
+from model_mommy import mommy
 
 
 class AdminRegistration(TestCase):
@@ -176,23 +179,89 @@ class DataMigrationForOrganization(TestCase):
         # has to perform forward migration, so 
         out = StringIO()
         call_command('migrate', 'cirs', '0005', stdout=out)
-        print out.getvalue()
-    
-    def test_migration_creates_reporter_role(self):
+        #print out.getvalue()
 
+    def gen_test_role_classes():
+        return [
+        ('reporter', Reporter),
+        ('reviewer', Reviewer)
+    ]
+
+    @parameterized.expand(gen_test_role_classes)
+    def test_migration_goes_further_if_there_is_no_fitting_user(self, _, role_cls):
+        # important for initial migration
         out = StringIO()
         call_command('migrate', 'cirs', '0006', stdout=out)
-        print out.getvalue()
-        self.assertEqual(Reporter.objects.count(), 1)
+        #print out.getvalue()
+        self.assertEqual(role_cls.objects.count(), 0)
+     
+    @parameterized.expand([
+        ('reporter', 'add_criticalincident', Reporter),
+        ('reviewer', 'change_criticalincident', Reviewer)
+    ])        
+    def test_migration_creates_role_based_on_user_perms(self, name, codename, role_cls):
+        user = create_user(name)
+        permission = Permission.objects.get(codename=codename)
+        user.user_permissions.add(permission)
+        print user
+        print "Perms: " + str(user.user_permissions.all())
+        out = StringIO()
+        call_command('migrate', 'cirs', '0006', stdout=out)
+        #print out.getvalue()
+        self.assertEqual(role_cls.objects.first().user, user)        
+        self.assertIn(permission, role_cls.objects.first().user.user_permissions.all())
         
-    def test_migration_creates_reporter_role_from_real_reporter(self):
+    def test_migration_stops_if_there_is_more_than_one_user_with_reporter_rights(self):
         reporter = create_user('reporter')
         permission = Permission.objects.get(codename='add_criticalincident')
         reporter.user_permissions.add(permission)
-        print reporter
+        reporter2 = create_user('reporter2')
+        reporter2.user_permissions.add(permission)
+        #print reporter
+        out = StringIO()
+        with self.assertRaises(MultipleObjectsReturned):
+            call_command('migrate', 'cirs', '0006', stdout=out)
+            #print out.getvalue()
+    
+    def test_all_users_with_reviewer_permissions_are_assigned_to_reviewer_role(self):
+        reviewer = create_user('reviewer')
+        reviewer2 = create_user('reviewer2')
+        permission = Permission.objects.get(codename='change_criticalincident')
+        reviewer.user_permissions.add(permission)
+        reviewer2.user_permissions.add(permission)
         out = StringIO()
         call_command('migrate', 'cirs', '0006', stdout=out)
+        self.assertEqual(Reviewer.objects.count(), 2)
+
+    def test_no_omnipotent_users(self):
+        # generates exception if any user has add and change permissions 
+        # afterwards no reperter and no reviewer should be present
+        user = create_user('user')
+        for codename in ('add_criticalincident', 'change_criticalincident'):
+            permission = Permission.objects.get(codename=codename)
+            user.user_permissions.add(permission)
+        out = StringIO()
+        with self.assertRaises(ValidationError):
+            call_command('migrate', 'cirs', '0006', stdout=out)
+            print out.getvalue()
+
+
+# TODO: If there are no suitable users, check if the incident count is different from zero
+# if not raise exception
+    
+    
+    @parameterized.expand([
+        ('none', ''),
+        ('reporter', 'add_criticalincident'),
+        ('reviewer', 'change_criticalincident')
+    ])   
+    def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
+        ci = mommy.make(CriticalIncident, public=True)
+        if name != 'none':
+            user = create_user(name)
+            permission = Permission.objects.get(codename=codename)
+            user.user_permissions.add(permission)
+        out = StringIO()
+        with self.assertRaises(ValidationError):
+            call_command('migrate', 'cirs', '0006', stdout=out)
         print out.getvalue()
-        self.assertEqual(Reporter.objects.first().user, reporter)        
-        self.assertIn(permission, Reporter.objects.first().user.user_permissions.all())
-        
