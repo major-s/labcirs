@@ -3,8 +3,11 @@
 from __future__ import unicode_literals
 
 #from django.contrib.auth.models import User, Permission
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import migrations
+
+# TODO: make kind of setup function to create permissions
 
 
 def create_reporter(apps, schema_editor):
@@ -31,12 +34,11 @@ def create_reporter(apps, schema_editor):
                                       '"add_criticalincident". '
                                       'Correct and rerun the migration!')
             print 'There is no user with reporter permissions!'
-            # TODO: Report error if critical incidents exist without reporter user.
         except MultipleObjectsReturned as e:
             raise e
     except Permission.DoesNotExist:
         print 'Permission does not exist'
-        if User.objects.count() == 0:
+        if CriticalIncident.objects.count() == 0:
             print 'This is no problem as this is apparently the initial migration'
 
 def create_reviewers(apps, schema_editor):
@@ -56,28 +58,33 @@ def create_reviewers(apps, schema_editor):
                                       'Correct and rerun the migration!')
         for reviewer in reviewers:
             try:
-                #print 'Rev perms: {}'.format(reviewer.user_permissions.all())
-                try:
-                    # model.full_clean() does not work in migrations!!!
-                    if reviewer.reporter.user == reviewer:
-                        raise ValidationError('{} cannot be reporter and reviewer. Please correct permissions and migrate again'.format(reviewer.username))
-                except Reporter.DoesNotExist:
-                    pass
-                role = Reviewer(user = reviewer)
-                role.full_clean()
+                # model.full_clean() does not work in migrations!!!
+                if reviewer.reporter.user == reviewer:
+                    raise ValidationError('{} cannot be reporter and reviewer. Please correct permissions and migrate again'.format(reviewer.username))
+            except Reporter.DoesNotExist:
                 print 'Assigning {} as reviewer'.format(reviewer.username)
-                role.save()
-            except ValidationError as e:
-                raise e
-            #Reviewer.objects.create(user = reviewer)
+                Reviewer.objects.create(user = reviewer)
     except Permission.DoesNotExist:
         print 'Permission does not exist'
-        if User.objects.count() == 0:
+        if CriticalIncident.objects.count() == 0:
             print 'This is no problem as this is apparently the initial migration'
+
+def create_organization(apps, schema_editor):
+    Organization = apps.get_model('cirs', 'Organization')
+    Reporter = apps.get_model('cirs', 'Reporter')
+    Reviewer = apps.get_model('cirs', 'Reviewer')
+    if Reporter.objects.count() == 1:
+        org = Organization.objects.create(
+            label=settings.ORGANIZATION,
+            name=settings.ORGANIZATION,
+            reporter=Reporter.objects.first()
+            )
+        for reviewer in Reviewer.objects.all():
+            org.reviewers.add(reviewer)
 
 
 def backwards(apps, schema_editor):
-    for cls_name in ('Reporter', 'Reviewer'):
+    for cls_name in ('Reporter', 'Reviewer', 'Organization'):
         model_cls = apps.get_model('cirs', cls_name)
         model_cls.objects.all().delete()
 
@@ -85,6 +92,7 @@ def backwards(apps, schema_editor):
 def forward(apps, schema_editor):
     create_reporter(apps, schema_editor)
     create_reviewers(apps, schema_editor)
+    create_organization(apps, schema_editor)
     
 
 class Migration(migrations.Migration):

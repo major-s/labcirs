@@ -34,6 +34,31 @@ from parameterized import parameterized
 from .base import FunctionalTest
 
 
+def get_admin_url(instance, operation='change'):
+    """Return the admin url for an object instance.
+
+    Parameters
+    ----------
+    instance: object
+        Object instance which should be accessed in the backend
+    operation: str
+        Desired operation to perform. Default is 'change' as the most common one.
+
+    Returns
+    -------
+    str
+        Url of the object in the backend
+
+    """
+    admin_url = reverse(
+        'admin:{}_{}_{}'.format(
+            instance._meta.app_label, instance._meta.model_name, operation
+        ),
+        args=(instance.pk,)
+    )
+    return admin_url
+
+
 class MultipleOrganizationBackendTest(FunctionalTest):
     
     def setUp(self):
@@ -124,3 +149,13 @@ class MultipleOrganizationBackendTest(FunctionalTest):
         expected = [str(new_reporter), '---------']
         self.assertItemsEqual(options, expected,
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
+
+    def test_admin_can_modify_organizations_name(self):
+        org = Organization.objects.create(**self.en_dict)
+        self.browser.get(self.live_server_url + get_admin_url(org))
+        self.find_input_and_enter_text('id_name', 'The best lab in the world')
+        self.browser.find_element_by_name('_save').click()
+        self.wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, self.en_dict['label'])),
+            message=('could not find {}'.format(self.en_dict['label']))
+        )
