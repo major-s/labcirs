@@ -152,6 +152,7 @@ class MultipleOrganizationBackendTest(FunctionalTest):
 
     def test_admin_can_modify_organizations_name(self):
         org = Organization.objects.create(**self.en_dict)
+        org.reviewers.add(self.reviewer)
         self.browser.get(self.live_server_url + get_admin_url(org))
         self.find_input_and_enter_text('id_name', 'The best lab in the world')
         self.browser.find_element_by_name('_save').click()

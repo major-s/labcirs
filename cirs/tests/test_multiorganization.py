@@ -27,6 +27,7 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils.six import StringIO
 from parameterized import parameterized
 
 from cirs.models import Organization, Reporter, Reviewer, CriticalIncident
@@ -113,7 +114,7 @@ class OrganizationTest(OrganizationBase):
 
     def test_assigned_reporter_appears_in_admin_form_for_his_org(self):
         org = Organization.objects.create(**self.en_dict)
-        form = OrganizationAdmin(Organization, admin.AdminSite()).get_form(org)
+        form = OrganizationAdmin(Organization, admin.AdminSite()).get_form(None, obj=org)
         self.assertIn(
             org.reporter, form().fields['reporter'].choices.queryset,
             'Did not found {} in select for {} although he is assigned'.format(
@@ -186,8 +187,6 @@ class ReviewerReporterModel(OrganizationBase):
             )
         )
 
-from django.core.management import call_command
-from django.utils.six import StringIO
 
 class DataMigrationForOrganization(TestCase):
 

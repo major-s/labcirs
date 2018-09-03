@@ -135,6 +135,19 @@ class ConfigurationAdmin(admin.ModelAdmin):
 
 class OrganizationAdmin(admin.ModelAdmin):
     filter_horizontal = ('reviewers',)
+    
+    organization_id = None
+    
+    def get_form(self, request, obj=None, **kwargs):
+        if obj:
+            self.organization_id= obj.id
+        return super(OrganizationAdmin, self).get_form(request, obj, **kwargs)
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "reporter":
+            kwargs["queryset"] = (Reporter.objects.filter(organization=None) 
+                                  | Reporter.objects.filter(organization__id=self.organization_id))
+        return super(OrganizationAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
