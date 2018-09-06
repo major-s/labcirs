@@ -133,21 +133,38 @@ class ConfigurationAdmin(admin.ModelAdmin):
     )
 
 
-class OrganizationAdmin(admin.ModelAdmin):
-    filter_horizontal = ('reviewers',)
-    
-    organization_id = None
+class AdminWithObject(admin.ModelAdmin):
     
     def get_form(self, request, obj=None, **kwargs):
+        self.model_instance = None
         if obj:
-            self.organization_id= obj.id
-        return super(OrganizationAdmin, self).get_form(request, obj, **kwargs)
-    
+            self.model_instance = obj
+           
+        return super(AdminWithObject, self).get_form(request, obj, **kwargs)
+
+
+class OrganizationAdmin(AdminWithObject):
+    filter_horizontal = ('reviewers',)
+       
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "reporter":
             kwargs["queryset"] = (Reporter.objects.filter(organization=None) 
-                                  | Reporter.objects.filter(organization__id=self.organization_id))
+                                  | Reporter.objects.filter(organization=self.model_instance))
         return super(OrganizationAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class RoleAdmin(AdminWithObject):
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            queryset = User.objects.filter(is_superuser=False, reporter=None, reviewer=None)
+            assigned_user = User.objects.none()
+            # add assigned user if existing object is provided
+            if self.model_instance:
+                assigned_user =  User.objects.filter(**{self.model._meta.model_name: self.model_instance})
+            kwargs["queryset"] = queryset | assigned_user
+            
+        return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
@@ -155,5 +172,5 @@ admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
 admin.site.register(Comment)
 admin.site.register(Organization, OrganizationAdmin)
-admin.site.register(Reporter)
-admin.site.register(Reviewer)
+admin.site.register(Reporter, RoleAdmin)
+admin.site.register(Reviewer, RoleAdmin)

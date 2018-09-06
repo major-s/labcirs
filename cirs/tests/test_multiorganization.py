@@ -30,8 +30,8 @@ from django.test import TestCase
 from django.utils.six import StringIO
 from parameterized import parameterized
 
-from cirs.models import Organization, Reporter, Reviewer, CriticalIncident
-from cirs.admin import OrganizationAdmin
+from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig
+from cirs.admin import OrganizationAdmin, RoleAdmin
 from django.core.management import call_command
 
 from model_mommy import mommy
@@ -131,7 +131,6 @@ class ReviewerReporterModel(OrganizationBase):
     """
 
     def gen_test_cases():
-        # don't has access to users generated in setUp! 
         return [
         ('reporter', Reporter),
         ('reviewer', Reviewer)
@@ -169,7 +168,7 @@ class ReviewerReporterModel(OrganizationBase):
     )
     def test_user_with_role_does_not_apear_in_admin_form(self, model_cls, role_cls):
         role = role_cls.objects.create(user=self.user)
-        form = admin.ModelAdmin(model_cls, admin.AdminSite()).get_form(None)
+        form = RoleAdmin(model_cls, admin.AdminSite()).get_form(None)
         self.assertNotIn(
             self.user.username, form().as_p(),
             'found {} in {} select although he already is a {}'.format(
@@ -179,14 +178,36 @@ class ReviewerReporterModel(OrganizationBase):
         
     @parameterized.expand(gen_test_cases)            
     def test_superuser_does_not_apear_in_admin_form_for(self, _, role_cls):
-        form = admin.ModelAdmin(role_cls, admin.AdminSite()).get_form(None)
+        form = RoleAdmin(role_cls, admin.AdminSite()).get_form(None)
         self.assertNotIn(
-            self.admin.username, form().as_p(),
+            self.admin, form().fields['user'].choices.queryset,
             'found {} in {} select although he already is a superuser'.format(
                 self.admin.username, role_cls.__name__
             )
         )
 
+
+    @parameterized.expand(gen_test_cases)            
+    def test_user_apears_in_admin_in_asigned_role(self, _, role_cls):
+        role = role_cls.objects.create(user=self.user)
+        form = RoleAdmin(role_cls, admin.AdminSite()).get_form(None, obj=role)
+        self.assertIn(
+            role.user, form().fields['user'].choices.queryset,
+            'Did not found {} in select for {} although he is assigned'.format(
+                role.user, role_cls.__name__
+            )
+        )
+        
+    @parameterized.expand(gen_test_cases)            
+    def test_assifned_user_does_not_apears_in_admin_in_new_role(self, _, role_cls):
+        role = role_cls.objects.create(user=self.user)
+        form = RoleAdmin(role_cls, admin.AdminSite()).get_form(None)
+        self.assertNotIn(
+            role.user, form().fields['user'].choices.queryset,
+            'Found {} in select for {} although he is assigned as {}'.format(
+                role.user, role_cls.__name__, role
+            )
+        )
 
 class DataMigrationForOrganization(TestCase):
 
@@ -195,6 +216,7 @@ class DataMigrationForOrganization(TestCase):
         out = StringIO()
         call_command('migrate', 'cirs', '0005', stdout=out)
         #print out.getvalue()
+        self.out = StringIO()
 
     def gen_test_role_classes():
         return [
@@ -205,9 +227,7 @@ class DataMigrationForOrganization(TestCase):
     @parameterized.expand(gen_test_role_classes)
     def test_migration_goes_further_if_there_is_no_fitting_user(self, _, role_cls):
         # important for initial migration
-        out = StringIO()
-        call_command('migrate', 'cirs', '0006', stdout=out)
-        #print out.getvalue()
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
         self.assertEqual(role_cls.objects.count(), 0)
      
     @parameterized.expand([
@@ -217,25 +237,22 @@ class DataMigrationForOrganization(TestCase):
     def test_migration_creates_role_based_on_user_perms(self, name, codename, role_cls):
         user = create_user_with_perm(name, codename)
         permission = Permission.objects.get(codename=codename)
-        out = StringIO()
-        call_command('migrate', 'cirs', '0006', stdout=out)
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
         self.assertEqual(role_cls.objects.first().user, user)        
         self.assertIn(permission, role_cls.objects.first().user.user_permissions.all())
         
     def test_migration_stops_if_there_is_more_than_one_user_with_reporter_rights(self):
         reporter = create_user_with_perm('reporter', 'add_criticalincident')
         reporter2 = create_user_with_perm('reporter2', 'add_criticalincident')
-        out = StringIO()
         with self.assertRaises(MultipleObjectsReturned):
-            call_command('migrate', 'cirs', '0006', stdout=out)
+            call_command('migrate', 'cirs', '0006', stdout=self.out)
 
     
     def test_all_users_with_reviewer_permissions_are_assigned_to_reviewer_role(self):
         reviewer = create_user_with_perm('reviewer', 'change_criticalincident')
         reviewer2 = create_user_with_perm('reviewer2', 'change_criticalincident')
 
-        out = StringIO()
-        call_command('migrate', 'cirs', '0006', stdout=out)
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
         self.assertEqual(Reviewer.objects.count(), 2)
 
     def test_no_omnipotent_users(self):
@@ -244,15 +261,10 @@ class DataMigrationForOrganization(TestCase):
         user = create_user_with_perm('user', 'add_criticalincident')
         permission = Permission.objects.get(codename='change_criticalincident')
         user.user_permissions.add(permission)
-        out = StringIO()
+
         with self.assertRaises(ValidationError):
-            call_command('migrate', 'cirs', '0006', stdout=out)
-        #print out.getvalue()
+            call_command('migrate', 'cirs', '0006', stdout=self.out)
 
-
-# TODO: If there are no suitable users, check if the incident count is equal to zero
-# if not raise exception
-    
     
     @parameterized.expand([
         ('none', ''),
@@ -260,21 +272,50 @@ class DataMigrationForOrganization(TestCase):
         ('reviewer', 'change_criticalincident')
     ])   
     def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
+        # tests if there are users for all roles
         ci = mommy.make(CriticalIncident, public=True)
         if name != 'none':
             create_user_with_perm(name, codename)
-        out = StringIO()
+
         with self.assertRaises(ValidationError):
-            call_command('migrate', 'cirs', '0006', stdout=out)
-        #print out.getvalue()
+            call_command('migrate', 'cirs', '0006', stdout=self.out)
+
+                
+
+    
+    def test_dont_create_organization_without_valid_configuration(self):
+        # Organization should be created only if there is valid configuration.
+        # As anyway only the first one was used, there is no need for a check of
+        # multiple configurations.
+        # Actually there should be no running installation without
+        reporter = create_user_with_perm('rep', 'add_criticalincident')
+        reviewer = create_user_with_perm('rev', 'change_criticalincident')
         
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
+
+        self.assertEqual(Organization.objects.count(), 0)
+    
+    @parameterized.expand([
+        ('none', ''),
+        ('reporter', 'add_criticalincident'),
+        ('reviewer', 'change_criticalincident')
+    ]) 
+    def test_dont_create_organization_without_valid_roles(self, name, codename):
+        if name != 'none':
+            create_user_with_perm(name, codename)
+
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
+
+        self.assertEqual(Organization.objects.count(), 0)
+
     def test_create_organization(self):
         reporter = create_user_with_perm('rep', 'add_criticalincident')
         reviewer = create_user_with_perm('rev', 'change_criticalincident')
-        out = StringIO()
-        call_command('migrate', 'cirs', '0006', stdout=out)
+        config = mommy.make(LabCIRSConfig, send_notification=False)
+
+        call_command('migrate', 'cirs', '0006', stdout=self.out)
         # there should be Organization with label equal to organization in settings
         org = Organization.objects.get(label=settings.ORGANIZATION)
-        self.assertEqual(org.reporter.user, reporter)
+
+        self.assertEqual(reporter, org.reporter.user)
         self.assertIn(reviewer.reviewer, org.reviewers.all())
-        print out.getvalue()

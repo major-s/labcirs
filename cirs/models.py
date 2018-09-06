@@ -250,7 +250,7 @@ class Comment(models.Model):
 
 class Role(models.Model):
     user = models.OneToOneField(User, verbose_name=_('User'), on_delete=models.PROTECT,
-        limit_choices_to={'is_superuser': False, 'reviewer': None, 'reporter': None})
+        help_text='User assigned to other roles and superusers are not listed here!')
 
     def clean(self):
         if self.user.is_superuser:
@@ -271,7 +271,7 @@ class Reporter(Role):
         if hasattr(self.user, 'reviewer'):
             raise ValidationError(
                 _('This user is already a reviewer and thus cannot become a reporter'))
-
+    
     class Meta:
         verbose_name = _('Reporter')
         verbose_name_plural = _('Reporters')
@@ -293,7 +293,8 @@ class Reviewer(Role):
 class Organization(models.Model):
     label = models.CharField(_('Label'), max_length=32, unique=True)
     name = models.CharField(_('Name'), max_length=255, unique=True)
-    reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT)
+    reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT,
+            help_text='Reporters assigned to other organizations are not listed here!')
     reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"))
 
     class Meta:
