@@ -22,9 +22,10 @@ import itertools
 from unittest import skip
 
 from django.conf import settings
-from django.contrib import admin
-from django.contrib.auth.models import User, Permission
+from django.contrib import admin, auth
+from django.contrib.auth.models import Permission
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils.six import StringIO
@@ -36,6 +37,7 @@ from django.core.management import call_command
 
 from model_mommy import mommy
 
+from .helpers import create_user, create_user_with_perm, create_role
 
 class AdminRegistration(TestCase):
     
@@ -44,22 +46,7 @@ class AdminRegistration(TestCase):
         self.assertTrue(admin.site.is_registered(model), "{} not registered".format(model))
 
 
-def create_user(name=None, superuser=False):
-    if superuser is True:
-        user = User.objects.create_superuser(name, '%s@localhost' % name, name)
-    else:
-        user = User.objects.create_user(name, '%s@localhost' % name, name)
-    return user
 
-def create_role(role_cls, name):
-    return role_cls.objects.create(user=create_user(name))
-
-
-def create_user_with_perm(name, codename):
-    user = create_user(name)
-    permission = Permission.objects.get(codename=codename)
-    user.user_permissions.add(permission)
-    return user
 
 class OrganizationBase(TestCase):
     
@@ -319,3 +306,90 @@ class DataMigrationForOrganization(TestCase):
 
         self.assertEqual(reporter, org.reporter.user)
         self.assertIn(reviewer.reviewer, org.reviewers.all())
+
+class SecurityTest(TestCase):
+    
+    def gen_test_role_classes():
+        return [
+        ('reporter', Reporter),
+        ('reviewer', Reviewer)
+    ]
+    
+    def test_user_without_role_is_redirected_to_login_page(self):
+        user = create_user('cirs_user')
+        response = self.client.post(
+            reverse('login'), {'username': user.username, 'password': user.username},
+            follow=True)
+        self.assertTemplateUsed(response, 'cirs/login.html')
+        self.assertTemplateNotUsed(response, 'cirs/publishableincident_list.html')
+        
+    def test_user_without_role_sees_error_message(self):
+        from cirs.views import MISSING_ROLE_MSG  # necessary only here so far
+        user = create_user('cirs_user')
+        response = self.client.post(
+            reverse('login'), {'username': user.username, 'password': user.username},
+            follow=True)
+    
+        self.assertEqual(response.context['message'], MISSING_ROLE_MSG)
+        self.assertEqual(response.context['message_class'], 'danger')
+        
+    def test_user_without_role_is_logged_out(self):
+        user = create_user('cirs_user')
+        response = self.client.post(
+            reverse('login'), {'username': user.username, 'password': user.username},
+            follow=True)
+        #from django.contrib import auth
+        session_user = auth.get_user(self.client)
+
+        self.assertNotEqual(session_user, user)
+    
+    @parameterized.expand(gen_test_role_classes)    
+    def test_role_without_organization_is_redirected_to_login_page(self, name, role_cls):
+        role = create_role(role_cls, name)
+        response = self.client.post(
+            reverse('login'), 
+            {'username': role.user.username, 'password': role.user.username},
+            follow=True)
+        self.assertTemplateUsed(response, 'cirs/login.html')
+        self.assertTemplateNotUsed(response, 'cirs/publishableincident_list.html')
+    
+    @parameterized.expand(gen_test_role_classes)     
+    def test_role_without_organization_sees_error_message(self, name, role_cls):
+        from cirs.views import MISSING_ORGANIZATION_MSG  # necessary only here so far
+        role = create_role(role_cls, name)
+        response = self.client.post(
+            reverse('login'), 
+            {'username': role.user.username, 'password': role.user.username},
+            follow=True)
+        self.assertEqual(response.context['message'], MISSING_ORGANIZATION_MSG)
+        self.assertEqual(response.context['message_class'], 'danger')
+
+    @parameterized.expand(gen_test_role_classes)
+    def test_role_without_organization_is_logged_out(self, name, role_cls):
+        role = create_role(role_cls, name)
+        response = self.client.post(
+            reverse('login'), 
+            {'username': role.user.username, 'password': role.user.username},
+            follow=True)
+        
+        session_user = auth.get_user(self.client)
+
+        self.assertNotEqual(session_user, role.user)
+        
+    @parameterized.expand(gen_test_role_classes)
+    def test_role_with_organization_is_logged_in(self, name, role_cls):
+        role = create_role(role_cls, name)
+        if name == 'reporter':
+            org = mommy.make(Organization, reporter=role)
+        elif name == 'reviewer':
+            org = mommy.make(Organization)
+            org.reviewers.add(role)
+        
+        response = self.client.post(
+            reverse('login'), 
+            {'username': role.user.username, 'password': role.user.username},
+            follow=True)
+        
+        session_user = auth.get_user(self.client)
+
+        self.assertEqual(session_user, role.user)

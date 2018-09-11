@@ -106,9 +106,15 @@ class PublishableIncidentList(LoginRequiredMixin, ListView):
     """
     queryset = PublishableIncident.objects.filter(publish=True)
 
+MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
+                     'nor reviewer. Please contact the administrator!')
+
+MISSING_ORGANIZATION_MSG =_('Your account has no associated organization! '
+                            'Please contact the administrator!')
 
 def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
-    username = password = message = message_class = ''
+    username = password = message = ''
+    message_class = 'danger'
     redirect_url = request.GET.get(redirect_field_name, '')
     if len(redirect_url) == 0:
         redirect_url = reverse_lazy('labcirs_home')
@@ -120,17 +126,30 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if user.is_active:
                 login(request, user)
                 # TODO: prevent superuser accessing frontend view
-                if user.has_perm('cirs.add_criticalincident'):
-                    return HttpResponseRedirect(redirect_url)
-                else:
+                # Done here but other views are also important!
+                if user.is_superuser:
                     return HttpResponseRedirect(reverse_lazy('admin:index'))
+                elif hasattr(user, 'reviewer'):
+                    if user.reviewer.organizations.count() > 0:
+                        return HttpResponseRedirect(reverse_lazy('admin:index'))
+                    else:
+                        message = MISSING_ORGANIZATION_MSG
+                        logout(request)
+                elif hasattr(user, 'reporter'):
+                    if hasattr(user.reporter, 'organization'):
+                        return HttpResponseRedirect(redirect_url)
+                    else:
+                        message = MISSING_ORGANIZATION_MSG
+                        logout(request)
+                else:
+                    message = MISSING_ROLE_MSG
+                    logout(request)
             else:
                 message = _('Your account is not active, please contact the admin.')
                 message_class = 'warning'
         else:
             message = _("""Your username and/or password were incorrect.
                         Please check the information below!""")
-            message_class = 'danger'
 
     context = {'message': message,
                'message_class': message_class,

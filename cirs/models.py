@@ -295,7 +295,7 @@ class Organization(models.Model):
     name = models.CharField(_('Name'), max_length=255, unique=True)
     reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT,
             help_text='Reporters assigned to other organizations are not listed here!')
-    reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"))
+    reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"), related_name='organizations')
 
     class Meta:
         verbose_name = _('Organization')

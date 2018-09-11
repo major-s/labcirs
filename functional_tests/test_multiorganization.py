@@ -23,12 +23,14 @@ from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy, reverse
+from model_mommy import mommy
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
 from cirs.models import Reporter, Reviewer, Organization
-from cirs.tests.test_multiorganization import create_role, create_user
+from cirs.tests.helpers import create_role, create_user
 from parameterized import parameterized
 
 from .base import FunctionalTest
@@ -59,10 +61,10 @@ def get_admin_url(instance, operation='change'):
     return admin_url
 
 
-class MultipleOrganizationBackendTest(FunctionalTest):
+class AddRolesAndOrganizationBackendTest(FunctionalTest):
     
     def setUp(self):
-        super(MultipleOrganizationBackendTest, self).setUp()
+        super(AddRolesAndOrganizationBackendTest, self).setUp()
         self.user = create_user('cirs_user')
         self.reporter = Reporter.objects.create(user=self.reporter)
         self.reviewer = Reviewer.objects.create(user=self.reviewer)
@@ -160,3 +162,69 @@ class MultipleOrganizationBackendTest(FunctionalTest):
             EC.element_to_be_clickable((By.LINK_TEXT, self.en_dict['label'])),
             message=('could not find {}'.format(self.en_dict['label']))
         )
+
+   
+class RoleAndOrganizationFrontendTest(FunctionalTest):
+    """
+    User without role sees error message
+    Reporter without organisation sees error message
+    Reporter with organization sees only incidents belonging to his organization
+    """
+     
+    def setUp(self):
+        super(RoleAndOrganizationFrontendTest, self).setUp()
+        #self.user = create_user('cirs_user')
+        #self.reporter = Reporter.objects.create(user=self.reporter)
+         
+    def test_log_out_and_error_message_for_user_without_role(self):
+        from cirs.views import MISSING_ROLE_MSG  # necessary only here so far
+        user = create_user('cirs_user')
+        self.login_user(username=user.username, password=user.username)
+
+        error_alert = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger')))
+
+        self.assertEqual(error_alert.text, MISSING_ROLE_MSG)
+        
+        with self.assertRaises(NoSuchElementException):
+            nav = self.browser.find_element_by_id('navbarMenu')
+            self.assertNotIn('View incidents', nav.text)
+
+    
+    @parameterized.expand([
+        ('rep', Reporter), 
+        ('rev', Reviewer)
+    ])    
+    def test_log_out_and_error_message_for_role_without_organization(self, name, role_cls):
+        from cirs.views import MISSING_ORGANIZATION_MSG  # necessary only here so far
+        role = create_role(role_cls, name)
+        self.login_user(username=role.user.username, password=role.user.username)
+
+        error_alert = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger')))
+        self.assertEqual(error_alert.text, MISSING_ORGANIZATION_MSG)
+        
+        with self.assertRaises(NoSuchElementException):
+            nav = self.browser.find_element_by_id('navbarMenu')
+
+        
+    def test_reporter_with_organization_is_redirected_to_incident_list(self):
+        reporter = create_role(Reporter, 'rep')
+        org = mommy.make(Organization, reporter=reporter)
+        self.login_user(username=reporter.user.username, password=reporter.user.username)
+        time.sleep(2)
+        redirect_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
+        self.assertEqual(self.browser.current_url, redirect_url)
+        
+
+    def test_reviewer_with_organization_is_redirected_to_admin(self):
+        reporter = create_role(Reporter, 'rep')
+        reviewer = create_role(Reviewer, 'rev')
+        org = mommy.make(Organization, reporter=reporter)
+        org.reviewers.add(reviewer)
+        self.login_user(username=reviewer.user.username, password=reviewer.user.username)
+        time.sleep(2)
+        redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
+        self.assertEqual(self.browser.current_url, redirect_url)
+# TODO: Reviewer cannot see organizations and reviewers(?). Probably also not reporters
+# although he should may change reporter password for own organization

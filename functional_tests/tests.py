@@ -19,16 +19,20 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import time
+from unittest import skip
 
 from datetime import date
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import override_settings
+from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig
+from cirs.models import (CriticalIncident, PublishableIncident, LabCIRSConfig,
+                         Organization, Reviewer)
+from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 
 from .base import FunctionalTest
@@ -50,6 +54,8 @@ test_incident = {'date': incident_date,
 class FunctionalTestWithBackendLogin(FunctionalTest):
 
     def go_to_test_incident_as_reviewer(self):
+        org = org = mommy.make(Organization)
+        org.reviewers.add(create_role(Reviewer, self.reviewer))
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
         self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
         self.assertIn("/admin/", self.browser.current_url)
@@ -59,6 +65,7 @@ class FunctionalTestWithBackendLogin(FunctionalTest):
 
 class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     
+    @skip('Tested extensivly in test_multiorganization')
     def test_reporter_login(self):
         self.login_user()
         # # TODO: check if user is authenticated
