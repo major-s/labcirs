@@ -133,7 +133,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     def logout(self):
         self.click_link_case_insensitive("Log out")
 
-    def enter_test_incident(self, with_photo=False):
+    def enter_test_incident(self, with_photo=False, wait_for_success=False):
         # usable on incident create page
         self.find_input_and_enter_text('id_date', "07/24/2015")
         self.find_input_and_enter_text('id_incident', "A strang incident happened")
@@ -150,3 +150,7 @@ class FunctionalTest(StaticLiveServerTestCase):
         for button in self.browser.find_elements_by_class_name("btn-danger"):
             if "Send" in button.text:
                 button.click()
+        if wait_for_success:
+            # wait for the success page
+            self.wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'alert-info')))

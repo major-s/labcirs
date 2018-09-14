@@ -24,6 +24,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from model_mommy import mommy
 
 
 from cirs.models import CriticalIncident, Comment, LabCIRSConfig
@@ -33,8 +34,6 @@ import datetime as dt
 import string
 import random
 
-from .tests import generate_three_incidents 
-
 
 class BaseFeedbackTest(TestCase):
     def setUp(self):
@@ -43,8 +42,7 @@ class BaseFeedbackTest(TestCase):
         self.password = 'reporter'
         self.reporter = User.objects.create_user(self.username, self.email,
                                                  self.password)
-        generate_three_incidents()
-        self.ci = CriticalIncident.objects.first()
+        self.ci = mommy.make(CriticalIncident, public=True)
 
 
 class SecurityTest(BaseFeedbackTest):

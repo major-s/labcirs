@@ -25,10 +25,12 @@ from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import override_settings
+from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, LabCIRSConfig
+from cirs.models import Comment, CriticalIncident, LabCIRSConfig, Organization, Reporter
+from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
 
@@ -36,21 +38,16 @@ from .base import FunctionalTest
 DEFAULT_WAIT = 5
 
 
-incident_date = date(2015, 7, 24)
-test_incident = {'date': incident_date,
-                 'incident': 'A strang incident happened',
-                 'reason': 'No one knows',
-                 'immediate_action': 'No action possible',
-                 'preventability': 'indistinct',
-                 'public': True,
-                 }
-
-
 class CriticalIncidentFeedbackTest(FunctionalTest):
 
     @override_settings(DEBUG=True)
     def test_user_can_see_feedback_code(self):
         LabCIRSConfig.objects.create(send_notification=True)
+        reporter = create_role(Reporter, self.reporter)
+        # create organization. In theory I could test if reporter has 
+        # an organization in the view, but acutally users who are not superuser 
+        # and don't have assoziated organization cannot efectivly log in
+        mommy.make(Organization, reporter=reporter)
         self.quick_login_reporter(reverse('create_incident'))
 
         # the reporter enters incident data
@@ -71,7 +68,8 @@ class CommentTest(FunctionalTest):
 
     def setUp(self):
         super(CommentTest, self).setUp()
-        self.incident = CriticalIncident.objects.create(**test_incident)
+        self.incident = mommy.make(CriticalIncident, public=True,
+            organization__reporter=create_role(Reporter, self.reporter))
         LabCIRSConfig.objects.create(send_notification=True)
 
     def view_incident_detail(self):
@@ -149,7 +147,7 @@ class CommentTest(FunctionalTest):
 class SecurityTest(FunctionalTest):
 
     def test_anon_user_cannot_access_incident(self):
-        incident = CriticalIncident.objects.create(**test_incident)
+        incident =  mommy.make(CriticalIncident, public=True)
         incident_url = incident.get_absolute_url()
         redirect_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'),  incident_url)
         # should go to login page
@@ -160,7 +158,7 @@ class SecurityTest(FunctionalTest):
     def test_reporter_cannot_access_incident_without_comment_code(self):
         # User logs in as reporter and tries to access directly detail view of an incident
         # this redirects him to the incident search page.
-        incident = CriticalIncident.objects.create(**test_incident)
+        incident = mommy.make(CriticalIncident, public=True)
         incident_url = incident.get_absolute_url()
         self.quick_login_reporter()
         redirect_url = '%s%s' % (self.live_server_url, reverse('incident_search'))
@@ -170,14 +168,14 @@ class SecurityTest(FunctionalTest):
         
     @override_settings(DEBUG=True)
     def test_reporter_can_access_incident_with_correct_comment_code(self):
-        incident = CriticalIncident.objects.create(**test_incident)
+        incident = mommy.make(CriticalIncident, public=True)
         self.quick_login_reporter(reverse('incident_search'))
         self.find_input_and_enter_text('id_incident_code', incident.comment_code)
         self.browser.find_element_by_class_name("btn-info").click()
         self.assertEqual(self.browser.current_url, self.live_server_url+incident.get_absolute_url())
 
     def test_reviewer_can_access_incident_without_code(self):
-        incident = CriticalIncident.objects.create(**test_incident)
+        incident = mommy.make(CriticalIncident, public=True)
         absolute_incident_url = self.live_server_url + incident.get_absolute_url()
         self.quick_backend_login(self.reviewer)
         self.browser.get(absolute_incident_url)

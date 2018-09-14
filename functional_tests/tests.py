@@ -31,7 +31,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
 from cirs.models import (CriticalIncident, PublishableIncident, LabCIRSConfig,
-                         Organization, Reviewer)
+                         Organization, Reviewer, Reporter)
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 
@@ -54,8 +54,7 @@ test_incident = {'date': incident_date,
 class FunctionalTestWithBackendLogin(FunctionalTest):
 
     def go_to_test_incident_as_reviewer(self):
-        org = org = mommy.make(Organization)
-        org.reviewers.add(create_role(Reviewer, self.reviewer))
+        self.org.reviewers.add(create_role(Reviewer, self.reviewer))
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
         self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
         self.assertIn("/admin/", self.browser.current_url)
@@ -77,6 +76,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
         LabCIRSConfig.objects.create(send_notification=True)
+        create_role(Reporter, self.reporter)
+        self.org = mommy.make(Organization,reporter=self.reporter.reporter)
         self.quick_login_reporter()
         self.click_link_with_text('Add incident')
 
@@ -122,8 +123,9 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         if the new appear in the upper row independent of the order of the
         critical incidents."""
         # import the generator from unit test
-
-        generate_three_incidents()
+        create_role(Reporter, self.reporter)
+        organization = mommy.make(Organization, reporter=self.reporter.reporter)
+        generate_three_incidents(organization)
 
         # Now reporter goes to the list and should see the list of
         # published incidents in order b, a, c
@@ -141,10 +143,12 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         config.notification_recipients.add(self.reviewer)
         config.notification_sender_email = 'labcirs@labcirs.edu'
         config.save()
+        create_role(Reporter, self.reporter)
+        self.org = mommy.make(Organization,reporter=self.reporter.reporter)
         self.quick_login_reporter(reverse('create_incident'))
 
         # reporter enters incident data
-        self.enter_test_incident()
+        self.enter_test_incident(wait_for_success=True)
 
         # check if incident was sent by email
         self.assertEqual(len(mail.outbox), 1)
@@ -154,7 +158,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 class CriticalIncidentBackendTest(FunctionalTestWithBackendLogin):
 
     def test_reviewer_can_chose_category_of_incident(self):
-        CriticalIncident.objects.create(**test_incident)
+        self.org = mommy.make(Organization)
+        CriticalIncident.objects.create(organization=self.org, **test_incident)
         self.go_to_test_incident_as_reviewer()
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")

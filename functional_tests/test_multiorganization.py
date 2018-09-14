@@ -29,7 +29,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import Reporter, Reviewer, Organization
+from cirs.models import Reporter, Reviewer, Organization, CriticalIncident, PublishableIncident
 from cirs.tests.helpers import create_role, create_user
 from parameterized import parameterized
 
@@ -226,5 +226,35 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
         time.sleep(2)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
         self.assertEqual(self.browser.current_url, redirect_url)
-# TODO: Reviewer cannot see organizations and reviewers(?). Probably also not reporters
+# TODO: Reviewer should not see organizations and reviewers(?). Probably also not reporters
 # although he should may change reporter password for own organization
+
+    def test_reporter_sees_only_published_incidents_from_his_organization(self):
+        reporter = create_role(Reporter, 'rep')
+        reporter2 = create_role(Reporter, 'rep2')
+        pi = mommy.make(PublishableIncident, publish=True,
+                        critical_incident__public=True, 
+                        critical_incident__organization__reporter=reporter)
+        pi2 = mommy.make(PublishableIncident, publish=True,
+                        critical_incident__public=True, 
+                        critical_incident__organization__reporter=reporter2)
+        
+        # first reporter logs in and sees only incidents associated with his 
+        # organization
+        self.quick_login(reporter.user)
+        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
+        rows = table.find_elements_by_tag_name('tr')
+        
+        self.assertIn(pi.incident_en, [row.text for row in rows])
+        self.assertNotIn(pi2.incident_en, [row.text for row in rows])
+        
+        # now the second reporter logs in and also he sees only incidents 
+        # associated with his organization
+        self.quick_login(reporter2.user)
+        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
+        rows = table.find_elements_by_tag_name('tr')
+        
+        self.assertIn(pi2.incident_en, [row.text for row in rows])
+        self.assertNotIn(pi.incident_en, [row.text for row in rows])
+
+        

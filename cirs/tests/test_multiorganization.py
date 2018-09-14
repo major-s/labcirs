@@ -27,12 +27,13 @@ from django.contrib.auth.models import Permission
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.utils.six import StringIO
 from parameterized import parameterized
 
-from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig
+from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
 from cirs.admin import OrganizationAdmin, RoleAdmin
+from cirs.views import PublishableIncidentList
 from django.core.management import call_command
 
 from model_mommy import mommy
@@ -257,10 +258,12 @@ class DataMigrationForOrganization(TestCase):
         ('none', ''),
         ('reporter', 'add_criticalincident'),
         ('reviewer', 'change_criticalincident')
-    ])   
+    ])
+    # TODO: Use historical model? Or remove?
+    @skip('worked for migration testeing before organization for ci was introduced')  
     def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
         # tests if there are users for all roles
-        ci = mommy.make(CriticalIncident, public=True)
+        ci = mommy.prepare(CriticalIncident, public=True)
         if name != 'none':
             create_user_with_perm(name, codename)
 
@@ -393,3 +396,43 @@ class SecurityTest(TestCase):
         session_user = auth.get_user(self.client)
 
         self.assertEqual(session_user, role.user)
+        
+# next schema migration has to check if there are cis or organizations
+# if there are cis and no org, raise
+# if there are cis and multiple orgs raise 
+
+class CriticalIncidentWithOrganization(TestCase):
+    
+    def test_critical_incident_inherits_organization_from_creating_reporter(self):
+        reporter = create_role(Reporter, 'reporter')
+        # TODO: check if permission is still necessary or if reporter role is enough
+        permission = Permission.objects.get(codename='add_criticalincident')
+        reporter.user.user_permissions.add(permission)
+        org = mommy.make(Organization, reporter=reporter)
+        LabCIRSConfig.objects.create(send_notification=False)
+        ci = mommy.prepare(CriticalIncident, public=True)
+        self.client.login(username=reporter.user.username, password=reporter.user.username)
+
+        response = self.client.post(reverse('create_incident'), data=ci.__dict__,
+                                    follow=True)
+
+        self.assertEqual(CriticalIncident.objects.first().organization, 
+                         reporter.organization)
+    
+    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_organization(self):
+        reporter = create_role(Reporter, 'reporter')
+        pi = mommy.make(PublishableIncident, publish=True,
+                        critical_incident__public=True, 
+                        critical_incident__organization__reporter=reporter)
+        pi2 = mommy.make(PublishableIncident, critical_incident__public=True, publish=True)
+        
+        factory = RequestFactory()
+
+        request = factory.get(reverse('incidents_list'))
+        request.user = reporter.user
+        response = PublishableIncidentList.as_view()(request)
+        
+        qs = response.context_data['object_list']
+        self.assertIn(pi, qs)
+        self.assertNotIn(pi2, qs)
+

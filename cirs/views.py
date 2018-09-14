@@ -51,6 +51,10 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             comment_code=self.object.comment_code,
         )
 
+    def form_valid(self, form):
+        form.instance.organization = self.request.user.reporter.organization
+        return super(IncidentCreate, self).form_valid(form)
+
 
 class IncidentSearch(LoginRequiredMixin, FormView):
     form_class = IncidentSearchForm
@@ -102,9 +106,12 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
 
 class PublishableIncidentList(LoginRequiredMixin, ListView):
     """
-    Returns a simple list of publishable incidents where "publish" is set to true.
+    Returns a simple list of publishable incidents where "publish" is set to true
+    and the organization matches the reporters organization
     """
-    queryset = PublishableIncident.objects.filter(publish=True)
+    def get_queryset(self):
+        return PublishableIncident.objects.filter(publish=True,
+            critical_incident__organization=self.request.user.reporter.organization)
 
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
