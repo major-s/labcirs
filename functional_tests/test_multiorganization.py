@@ -23,6 +23,7 @@ from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy, reverse
+from django.test import override_settings
 from model_mommy import mommy
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -31,7 +32,7 @@ from selenium.webdriver.support.ui import Select
 
 from cirs.models import Reporter, Reviewer, Organization, CriticalIncident, PublishableIncident
 from cirs.tests.helpers import create_role, create_user
-from parameterized import parameterized
+from parameterized import parameterized, param
 
 from .base import FunctionalTest
 
@@ -164,13 +165,13 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
         )
 
    
-class RoleAndOrganizationFrontendTest(FunctionalTest):
+class SecurityFrontendTest(FunctionalTest):
     """
     User without role sees error message
     Reporter without organisation sees error message
     Reporter with organization sees only incidents belonging to his organization
     """
-         
+ 
     def test_log_out_and_error_message_for_user_without_role(self):
         from cirs.views import MISSING_ROLE_MSG  # necessary only here so far
         user = create_user('cirs_user')
@@ -189,7 +190,7 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
     @parameterized.expand([
         ('rep', Reporter), 
         ('rev', Reviewer)
-    ])    
+    ])
     def test_log_out_and_error_message_for_role_without_organization(self, name, role_cls):
         from cirs.views import MISSING_ORGANIZATION_MSG  # necessary only here so far
         role = create_role(role_cls, name)
@@ -202,7 +203,6 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
         with self.assertRaises(NoSuchElementException):
             nav = self.browser.find_element_by_id('navbarMenu')
 
-        
     def test_reporter_with_organization_is_redirected_to_incident_list(self):
         reporter = create_role(Reporter, 'rep')
         org = mommy.make(Organization, reporter=reporter)
@@ -211,7 +211,6 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
         redirect_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
         self.assertEqual(self.browser.current_url, redirect_url)
         
-
     def test_reviewer_with_organization_is_redirected_to_admin(self):
         reporter = create_role(Reporter, 'rep')
         reviewer = create_role(Reviewer, 'rev')
@@ -221,35 +220,90 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
         time.sleep(2)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
         self.assertEqual(self.browser.current_url, redirect_url)
+        
+#     @parameterized.expand([
+#         param('cirs_user'),
+#         param('rep', Reporter),
+#         param('rev', Reviewer),
+#         param('superman', superuser=True)
+#     ]) 
+    def test_reporter_can_access_create_incident_view(self):
+        user = create_role(Reporter, 'rep').user
+        self.quick_login(user, reverse('create_incident'))
+        target_url = '{}{}'.format(self.live_server_url, reverse('create_incident'))
+        self.assertEqual(self.browser.current_url, target_url)
+        
+    def test_redirect_reviewer_from_create_incident_view_to_list(self):
+        user = create_role(Reviewer, 'rev').user
+        self.quick_login(user, reverse('create_incident'))
+        target_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
+        self.assertEqual(self.browser.current_url, target_url)
+
+    def test_user_cannot_access_create_incident_view(self):
+        user = create_user('cirs_user')
+        self.quick_login(user, reverse('create_incident'))
+        target_url = '{}{}'.format(self.live_server_url, reverse('login'))
+        self.assertEqual(self.browser.current_url, target_url)
+        with self.assertRaises(NoSuchElementException):
+            nav = self.browser.find_element_by_id('navbarMenu')
+        
+    def test_redirect_admin_from_create_incident_view_to_admin(self):
+        user = create_user('superman', superuser=True)
+        self.quick_login(user, reverse('create_incident'))
+        target_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
+        self.assertEqual(self.browser.current_url, target_url)
+        
+    def test_anonymous_cannot_access_create_incident_view(self):
+        self.browser.get('{}{}'.format(self.live_server_url,
+                                       reverse('create_incident')))
+        target_url = '{}{}'.format(self.live_server_url, reverse('login'))
+        self.assertEqual(self.browser.current_url, target_url)
+        with self.assertRaises(NoSuchElementException):
+            nav = self.browser.find_element_by_id('navbarMenu')
+
 # TODO: Reviewer should not see organizations and reviewers(?). Probably also not reporters
 # although he should may change reporter password for own organization
 
-    def test_reporter_sees_only_published_incidents_from_his_organization(self):
-        reporter = create_role(Reporter, 'rep')
-        reporter2 = create_role(Reporter, 'rep2')
-        pi = mommy.make(PublishableIncident, publish=True,
-                        critical_incident__public=True, 
-                        critical_incident__organization__reporter=reporter)
-        pi2 = mommy.make(PublishableIncident, publish=True,
-                        critical_incident__public=True, 
-                        critical_incident__organization__reporter=reporter2)
+@override_settings(DEBUG=True)
+class AccessDataWithMultipleOrgs(FunctionalTest):
         
+    def setUp(self):
+        super(AccessDataWithMultipleOrgs, self).setUp()
+        self.rep = create_role(Reporter, 'rep')
+        self.rep2 = create_role(Reporter, 'rep2')
+        self.rev = create_role(Reviewer, 'rev')
+        self.rev2 = create_role(Reviewer, 'rev2')
+        self.org = mommy.make(Organization, reporter=self.rep)
+        self.org.reviewers.add(self.rev)
+        self.org2 = mommy.make(Organization, reporter=self.rep2)
+        self.org2.reviewers.add(self.rev2)
+        self.ci = mommy.make(CriticalIncident, public=True, organization=self.org)
+        self.ci2 = mommy.make(CriticalIncident, public=True, organization=self.org2)
+        self.pi = mommy.make(PublishableIncident, publish=True, critical_incident=self.ci)
+        self.pi2 = mommy.make(PublishableIncident, publish=True, critical_incident=self.ci2)
+    
+    def get_test_cases():
+        return[
+            ('rep', 'pi', 'pi2'),
+            ('rep2', 'pi2', 'pi'),
+            ('rev', 'pi', 'pi2'),
+            ('rev2', 'pi2', 'pi'),
+        ]
+    
+    @parameterized.expand(get_test_cases)
+    def test_role_sees_only_published_incidents_from_his_organization(self, user, pi1, pi2):
+       
         # first reporter logs in and sees only incidents associated with his 
         # organization
-        self.quick_login(reporter.user)
+        role = getattr(self, user)
+        own_pi = getattr(self, pi1)
+        alien_pi = getattr(self, pi2)
+        self.quick_login(role.user)
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         rows = table.find_elements_by_tag_name('tr')
         
-        self.assertIn(pi.incident_en, [row.text for row in rows])
-        self.assertNotIn(pi2.incident_en, [row.text for row in rows])
+        self.assertIn(own_pi.incident_en, [row.text for row in rows])
+        self.assertNotIn(alien_pi.incident_en, [row.text for row in rows])
         
-        # now the second reporter logs in and also he sees only incidents 
-        # associated with his organization
-        self.quick_login(reporter2.user)
-        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
-        rows = table.find_elements_by_tag_name('tr')
-        
-        self.assertIn(pi2.incident_en, [row.text for row in rows])
-        self.assertNotIn(pi.incident_en, [row.text for row in rows])
 
         

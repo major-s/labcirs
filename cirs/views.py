@@ -41,9 +41,17 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = 'success'
     success_message = "%(comment_code)s"
 
-    @method_decorator(permission_required('cirs.add_criticalincident'))
+    #@method_decorator(permission_required('cirs.add_criticalincident'))
     def dispatch(self, *args, **kwargs):
-        return super(IncidentCreate, self).dispatch(*args, **kwargs)
+        if hasattr(self.request.user, 'reporter'):
+            return super(IncidentCreate, self).dispatch(*args, **kwargs)
+        elif hasattr(self.request.user, 'reviewer'):
+            return HttpResponseRedirect(reverse_lazy('incidents_list'))
+        elif self.request.user.is_superuser:
+            return HttpResponseRedirect(reverse_lazy('admin:index'))
+        else:
+            logout(self.request)
+            return HttpResponseRedirect(reverse_lazy('login'))
     
     def get_success_message(self, cleaned_data):
         return self.success_message % dict(
@@ -110,8 +118,14 @@ class PublishableIncidentList(LoginRequiredMixin, ListView):
     and the organization matches the reporters organization
     """
     def get_queryset(self):
-        return PublishableIncident.objects.filter(publish=True,
-            critical_incident__organization=self.request.user.reporter.organization)
+        if hasattr(self.request.user, 'reporter'):
+            return PublishableIncident.objects.filter(publish=True,
+                critical_incident__organization=self.request.user.reporter.organization)
+        elif hasattr(self.request.user, 'reviewer'):
+            return PublishableIncident.objects.filter(publish=True,
+                critical_incident__organization__in=self.request.user.reviewer.organizations.all())
+        else:
+            return PublishableIncident.objects.none()
 
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')

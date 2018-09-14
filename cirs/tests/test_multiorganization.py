@@ -33,7 +33,7 @@ from parameterized import parameterized
 
 from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
 from cirs.admin import OrganizationAdmin, RoleAdmin
-from cirs.views import PublishableIncidentList
+from cirs.views import PublishableIncidentList, IncidentCreate
 from django.core.management import call_command
 
 from model_mommy import mommy
@@ -401,6 +401,47 @@ class SecurityTest(TestCase):
 # if there are cis and no org, raise
 # if there are cis and multiple orgs raise 
 
+
+class IncidentCreationViewSecurityTest(TestCase):
+    # Role based access!
+    def setUp(self):
+        factory = RequestFactory()
+        self.request = factory.get(reverse('create_incident'))
+    
+    def test_reporter_can_access_create_view(self):
+        self.request.user = create_role(Reporter, 'reporter').user
+        response =IncidentCreate.as_view()(self.request)
+        self.assertIn('cirs/criticalincident_form.html', response.template_name)
+        
+    def test_reviewer_cannot_access_create_view(self):
+        user = create_role(Reviewer, 'reviewer').user
+        self.client.force_login(user)
+        response = self.client.get(reverse('create_incident'), follow=True)
+        self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
+        self.assertTemplateUsed(response, 'cirs/publishableincident_list.html')
+        
+    def test_admin_cannot_access_create_view(self):
+        user = create_user('admin', superuser=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('create_incident'), follow=True)
+        self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
+        self.assertTemplateUsed(response, 'admin/index.html')
+    
+    # Actually probably not necessary as user are checked at login?     
+    def test_user_cannot_access_create_view(self):
+        user = create_user('cirs_user')
+        self.client.force_login(user)
+        response = self.client.get(reverse('create_incident'), follow=True)
+        self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
+        self.assertTemplateUsed(response, 'cirs/login.html')
+        session_user = auth.get_user(self.client)
+        self.assertNotEqual(session_user, user)
+        
+    def test_anonymous_cannot_access_create_view(self):
+        response = self.client.get(reverse('create_incident'), follow=True)
+        self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
+        self.assertTemplateUsed(response, 'cirs/login.html')
+
 class CriticalIncidentWithOrganization(TestCase):
     
     def test_critical_incident_inherits_organization_from_creating_reporter(self):
@@ -419,17 +460,23 @@ class CriticalIncidentWithOrganization(TestCase):
         self.assertEqual(CriticalIncident.objects.first().organization, 
                          reporter.organization)
     
-    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_organization(self):
-        reporter = create_role(Reporter, 'reporter')
+    @parameterized.expand([
+        ('reporter',),
+        ('reviewer',),
+        ])
+    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_organization(self, role):
+        self.reporter = create_role(Reporter, 'reporter')
+        self.reviewer = create_role(Reviewer, 'reviewer')
         pi = mommy.make(PublishableIncident, publish=True,
                         critical_incident__public=True, 
-                        critical_incident__organization__reporter=reporter)
+                        critical_incident__organization__reporter=self.reporter)
+        pi.critical_incident.organization.reviewers.add(self.reviewer)
         pi2 = mommy.make(PublishableIncident, critical_incident__public=True, publish=True)
         
         factory = RequestFactory()
 
         request = factory.get(reverse('incidents_list'))
-        request.user = reporter.user
+        request.user = getattr(self, role).user
         response = PublishableIncidentList.as_view()(request)
         
         qs = response.context_data['object_list']
