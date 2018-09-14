@@ -170,11 +170,6 @@ class RoleAndOrganizationFrontendTest(FunctionalTest):
     Reporter without organisation sees error message
     Reporter with organization sees only incidents belonging to his organization
     """
-     
-    def setUp(self):
-        super(RoleAndOrganizationFrontendTest, self).setUp()
-        #self.user = create_user('cirs_user')
-        #self.reporter = Reporter.objects.create(user=self.reporter)
          
     def test_log_out_and_error_message_for_user_without_role(self):
         from cirs.views import MISSING_ROLE_MSG  # necessary only here so far

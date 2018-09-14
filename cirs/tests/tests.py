@@ -35,23 +35,7 @@ from cirs.admin import CriticalIncidentAdmin
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Organization, Reporter
 from cirs.views import IncidentCreateForm, PublishableIncidentList
 
-from .helpers import create_role
-
-
-
-
-class AddCriticalIncidentTest(TestCase):
-
-    def setUp(self):
-        self.username = 'reporter'
-        self.email = 'reporter@test.edu'
-        self.password = 'reporter'
-        self.reporter = User.objects.create_user(self.username, self.email, self.password)
-
-    def test_user_login(self):
-        login = self.client.login(username=self.username, password=self.password)
-
-        self.assertEqual(login, True)
+from .helpers import create_role, create_user, create_user_with_perm
 
 
 class CriticalIncidentModelTest(TestCase):
@@ -69,7 +53,7 @@ class CriticalIncidentModelTest(TestCase):
         # TODO: not really working. Compare files
         self.failUnless(open(p), 'file not found')
         # TODO: move category testing to another test
-        my_incident = CriticalIncident.objects.get(pk=1)
+        my_incident = CriticalIncident.objects.first()
         self.assertIn('other', my_incident.category)
 
     def test_cannot_save_future_incidents(self):
@@ -80,7 +64,7 @@ class CriticalIncidentModelTest(TestCase):
     
     def test_comment_code_is_generated_on_creation(self):
         #retreive incident and check for existing comment_code
-        my_incident = CriticalIncident.objects.get(pk=1)
+        my_incident = CriticalIncident.objects.first()
         self.assertNotEqual('', my_incident.comment_code, "Comment code should not be empty")
         
         # TODO: test for unique code
@@ -104,17 +88,10 @@ class CriticalIncidentFormTest(TestCase):
 class CriticalIncidentCreateViewTest(TestCase):
   
     def test_create_view_returns_message(self):
-        self.username = 'reporter'
-        self.email = 'reporter@test.edu'
-        self.password = 'reporter'
-        self.reporter = User.objects.create_user(self.username, self.email, self.password)
-        user = User.objects.get(pk=1)
-        permission = Permission.objects.get(codename='add_criticalincident')
-        user.user_permissions.add(permission)
+        user = create_user_with_perm('reporter', 'add_criticalincident')
         create_role(Reporter, user)
         mommy.make(Organization, reporter=user.reporter)
           
-        incident_date = date(2015, 7, 31)
         test_incident = {'date': '07/24/2015',
                          'incident': 'A strang incident happened',
                          'reason': 'No one knows',
@@ -123,10 +100,10 @@ class CriticalIncidentCreateViewTest(TestCase):
                          'public': True,
                          }
           
-        login = self.client.login(username=self.username, password=self.password)
+        login = self.client.login(username=user.username, password=user.username)
         LabCIRSConfig.objects.create(send_notification=False)
 
-        response = self.client.post('/incidents/create/',  test_incident, follow=True)
+        response = self.client.post(reverse('create_incident'),  test_incident, follow=True)
         comment_code = CriticalIncident.objects.last().comment_code
         messages = list(response.context['messages'])
         self.assertEqual(comment_code, messages[0].message, "Comment code should be sent as message")
@@ -145,84 +122,72 @@ class SendNotificationEmailTest(TestCase):
             'preventability': 'indistinct',
             'public': True,
             }
-        self.test_config = {
-            'login_info_en': 'Login information',
-            'login_info_de': 'Anmeldeinformationen',
-            'send_notification': False,
-            'notification_text': 'Notification text.',
-            }
         self.reviewer = User.objects.create_user("reviewer", "reviewer@test.edu", "reviewer")
+
+    def save_form(self):
+        form = IncidentCreateForm(self.test_incident)
+        form.instance.organization = self.organization
+        form.save()
+        
+    def prepare_config(self, send=True, recipient=None):
+        # TODO: should only prepare? 
+        config = LabCIRSConfig.objects.create(
+            login_info_en='Login information',
+            login_info_de='Anmeldeinformationen',
+            send_notification=send,
+            notification_text='Notification text.',
+        )
+        if recipient is not None:
+            config.notification_recipients.add(recipient)
+        return config
+       
 
     def test_send_email_after_form_is_saved(self):
         config = LabCIRSConfig.objects.create(send_notification=True)
         config.notification_recipients.add(self.reviewer)
-        form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
-        form.save()
+        self.save_form()
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
 
     def test_set_email_body_in_config(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.notification_recipients.add(self.reviewer)
-        config.send_notification = True
-        config.save()
-        form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
-        form.save()
+        self.prepare_config(recipient=self.reviewer)
+        self.save_form()
         email_body = LabCIRSConfig.objects.first().notification_text
         self.assertEqual(mail.outbox[0].body, email_body)
 
     @override_settings(EMAIL_HOST='localhost')
     def test_no_notifications_without_proper_smtp_host(self):
         """Raises error as EMAIL_HOST is set to localhost"""
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.send_notification = True
+        config = self.prepare_config()
         with self.assertRaises(ValidationError):
             config.full_clean()
 
     def test_do_not_send_email_if_send_notification_is_false(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
-        form.save()
+        self.prepare_config(send=False)
+        self.save_form()
         self.assertEqual(len(mail.outbox), 0)
 
     def test_no_notifications_without_recipients(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.send_notification = True
-        config.save()
+        config = self.prepare_config()
         with self.assertRaises(ValidationError):
             config.full_clean()
 
     def test_email_adress_of_all_recipients_in_mail(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.send_notification = True
-        config.notification_recipients.add(self.reviewer)
-        config.save()
-        form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
-        form.save()
+        self.prepare_config(recipient=self.reviewer)
+        self.save_form()
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(self.reviewer.email, mail.outbox[0].to)
 
     def test_no_notifications_without_sender(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.send_notification = True
-        config.notification_recipients.add(self.reviewer)
-        config.save()
+        config = self.prepare_config(recipient=self.reviewer)
         with self.assertRaises(ValidationError):
             config.full_clean()
 
     def test_sender_email_in_email_header(self):
-        config = LabCIRSConfig.objects.create(**self.test_config)
-        config.send_notification = True
-        config.notification_recipients.add(self.reviewer)
+        config = self.prepare_config(recipient=self.reviewer)
         config.notification_sender_email = 'labcirs@labcirs.edu'
         config.save()
-        form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
-        form.save()
+        self.save_form()
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual('labcirs@labcirs.edu', mail.outbox[0].from_email)
 
@@ -236,20 +201,19 @@ class CriticalIncidentAdminTest(TestCase):
 
 
 def generate_three_incidents(organization):
-    """generate three incidents with different dates in order 2,3,1"""
+    """generate three incidents with different dates in order 2,3,1 and names c, a, b"""
     
-    first_ci = mommy.make(CriticalIncident, public=True, date=date(2015, 7, 31), organization=organization)
-    second_ci = mommy.make(CriticalIncident, public=True, date=date(2015, 8, 31), organization=organization)
-    third_ci = mommy.make(CriticalIncident, public=True, date=date(2015, 5, 31), organization=organization)
-    
-    # publish incidents
-    incidents = OrderedDict((('c', third_ci), ('a', first_ci), ('b', second_ci)))
-    for char, incident in incidents.iteritems():
-        published_incident = PublishableIncident(critical_incident=incident)
+    def new_incident(month):
+        return mommy.make(CriticalIncident, public=True, 
+                          date=date(2015, month, 31), organization=organization)
+
+    incidents = [new_incident(month) for month in (7,8,5)]
+
+    for char, incident in zip('cab', incidents):    
+        published_incident = PublishableIncident(critical_incident=incident, publish=True)
         for field in ('incident', 'description', 'measures_and_consequences'):
             for lang in ('de', 'en'):  # TODO: import languages from settings
                 setattr(published_incident, (field + '_' + lang), char)
-        published_incident.publish = True
         published_incident.clean()
         published_incident.save()
 
@@ -261,13 +225,12 @@ class PublishedIncidentTest(TestCase):
         Neglects jQuery.DataTables!!!"""
         reporter = create_role(Reporter, 'reporter')
         organization = mommy.make(Organization, reporter=reporter)
-        generate_three_incidents(organization=organization)
+        generate_three_incidents(organization)
 
-        self.factory = RequestFactory()
+        factory = RequestFactory()
 
-        request = self.factory.get(reverse('incidents_list'))
+        request = factory.get(reverse('incidents_list'))
         request.user = reporter.user
-
         response = PublishableIncidentList.as_view()(request)
 
         # newest should come first

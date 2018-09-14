@@ -70,7 +70,7 @@ class CommentTest(FunctionalTest):
         super(CommentTest, self).setUp()
         self.incident = mommy.make(CriticalIncident, public=True,
             organization__reporter=create_role(Reporter, self.reporter))
-        LabCIRSConfig.objects.create(send_notification=True)
+        self.config = LabCIRSConfig.objects.create(send_notification=True)
 
     def view_incident_detail(self):
         '''Need this function because setting session from functional test
@@ -133,10 +133,9 @@ class CommentTest(FunctionalTest):
 
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_send_email_after_reporter_creates_a_comment(self):
-        config = LabCIRSConfig.objects.first()
-        config.notification_recipients.add(self.reviewer)
-        config.notification_sender_email = 'labcirs@labcirs.edu'
-        config.save()
+        self.config.notification_recipients.add(self.reviewer)
+        self.config.notification_sender_email = 'labcirs@labcirs.edu'
+        self.config.save()
         self.view_incident_detail()
         comment_text = "I have some remarks on this incident!"
         self.create_comment(comment_text)
@@ -145,41 +144,40 @@ class CommentTest(FunctionalTest):
         self.assertEqual(mail.outbox[0].subject, 'New LabCIRS comment')
 
 class SecurityTest(FunctionalTest):
+    
+    def setUp(self):
+        super(SecurityTest, self).setUp()
+        self.incident = mommy.make(CriticalIncident, public=True)
+        self.absolute_incident_url = self.live_server_url + self.incident.get_absolute_url()
 
     def test_anon_user_cannot_access_incident(self):
-        incident =  mommy.make(CriticalIncident, public=True)
-        incident_url = incident.get_absolute_url()
-        redirect_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'),  incident_url)
+        incident_url = self.incident.get_absolute_url()
+        redirect_url = '{}{}?next={}'.format(self.live_server_url,
+                                             reverse('login'),  incident_url)
         # should go to login page
-        self.browser.get('%s%s' % (self.live_server_url, incident_url))
-
+        self.browser.get(self.absolute_incident_url)#'%s%s' % (self.live_server_url, incident_url))
         self.assertEqual(self.browser.current_url, redirect_url)
     
     def test_reporter_cannot_access_incident_without_comment_code(self):
         # User logs in as reporter and tries to access directly detail view of an incident
         # this redirects him to the incident search page.
-        incident = mommy.make(CriticalIncident, public=True)
-        incident_url = incident.get_absolute_url()
         self.quick_login_reporter()
-        redirect_url = '%s%s' % (self.live_server_url, reverse('incident_search'))
-        self.browser.get('%s%s' % (self.live_server_url, incident_url))
-
+        redirect_url = '{}{}'.format(self.live_server_url,
+                                     reverse('incident_search'))
+        self.browser.get(self.absolute_incident_url)
         self.assertEqual(self.browser.current_url, redirect_url)
         
     @override_settings(DEBUG=True)
     def test_reporter_can_access_incident_with_correct_comment_code(self):
-        incident = mommy.make(CriticalIncident, public=True)
         self.quick_login_reporter(reverse('incident_search'))
-        self.find_input_and_enter_text('id_incident_code', incident.comment_code)
+        self.find_input_and_enter_text('id_incident_code', self.incident.comment_code)
         self.browser.find_element_by_class_name("btn-info").click()
-        self.assertEqual(self.browser.current_url, self.live_server_url+incident.get_absolute_url())
+        self.assertEqual(self.browser.current_url, self.absolute_incident_url)
 
     def test_reviewer_can_access_incident_without_code(self):
-        incident = mommy.make(CriticalIncident, public=True)
-        absolute_incident_url = self.live_server_url + incident.get_absolute_url()
         self.quick_backend_login(self.reviewer)
-        self.browser.get(absolute_incident_url)
-        self.assertEqual(self.browser.current_url, absolute_incident_url)
+        self.browser.get(self.absolute_incident_url)
+        self.assertEqual(self.browser.current_url, self.absolute_incident_url)
 
     def test_wrong_code_redirects_to_search_page(self):
         # Reporter logs in and enters a code which does not exist

@@ -18,6 +18,10 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+import datetime as dt
+import random
+import string
+
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
@@ -26,44 +30,40 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from model_mommy import mommy
 
-
+from cirs.forms import CommentForm, IncidentSearchForm
 from cirs.models import CriticalIncident, Comment, LabCIRSConfig
 from cirs.views import IncidentDetailView
-from cirs.forms import CommentForm, IncidentSearchForm
-import datetime as dt
-import string
-import random
+
+from .helpers import create_user
 
 
 class BaseFeedbackTest(TestCase):
     def setUp(self):
-        self.username = 'reporter'
-        self.email = 'reporter@test.edu'
-        self.password = 'reporter'
-        self.reporter = User.objects.create_user(self.username, self.email,
-                                                 self.password)
+        self.reporter = create_user('reporter')
         self.ci = mommy.make(CriticalIncident, public=True)
 
 
 class SecurityTest(BaseFeedbackTest):
+    
+    def setUp(self):
+        super(SecurityTest,self).setUp()
+        self.client.login(username=self.reporter.username, 
+                          password=self.reporter.username)
 
     def test_reporter_cannot_acces_incident_directly(self):
         """Tests if reporter gets redirected to the search page
         if he tries to access the detail view of an incident."""
 
-        login = self.client.login(username=self.username, password=self.password)
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
         self.assertRedirects(response, reverse('incident_search'))
             
     def test_incident_search_sets_session_var_on_success(self):
-        login = self.client.login(username=self.username, password=self.password)
         response = self.client.post(reverse('incident_search'), {'incident_code':self.ci.comment_code}, follow=True)
         self.assertEqual(self.client.session['accessible_incident'], self.ci.id)
         
     def test_reporter_can_acces_incident_if_session_var_is_set(self):
         """Tests if reporter gets redirected to the detail view of incident
         if 'accessible_incident' is set to the id of the incident.id."""
-        login = self.client.login(username=self.username, password=self.password)
         session = self.client.session
         session['accessible_incident'] = self.ci.id
         session.save()
@@ -73,7 +73,6 @@ class SecurityTest(BaseFeedbackTest):
     def test_reporter_cannot_acces_incident_if_another_pk_is_set(self):
         """Tests if reporter gets redirected to the search view of incident
         if 'accessible_incident' is set to wrong id."""
-        login = self.client.login(username=self.username, password=self.password)
         session = self.client.session
         session['accessible_incident'] = self.ci.id + 1
         session.save()
@@ -81,7 +80,6 @@ class SecurityTest(BaseFeedbackTest):
         self.assertRedirects(response, reverse('incident_search'))
 
     def test_wrong_code_causes_form_error(self):
-        login = self.client.login(username=self.username, password=self.password)
         response = self.client.post(reverse('incident_search'), {'incident_code':'ab'}, follow=True)
         self.assertFormError(response, 'form', 'incident_code', 'No matching critical incident found!')
 
@@ -118,7 +116,8 @@ class CommentViewTest(BaseFeedbackTest):
                              'status': 'open'} 
 
         LabCIRSConfig.objects.create(send_notification=False)
-        login = self.client.login(username=self.username, password=self.password)
+        self.client.login(username=self.reporter.username, 
+                          password=self.reporter.username)
         session = self.client.session
         session['accessible_incident'] = self.ci.id
         session.save()
@@ -148,7 +147,7 @@ class CommentViewTest(BaseFeedbackTest):
         self.assertRedirects(response, self.ci_url)
 
     def test_send_email_after_form_is_saved(self):
-        reviewer = User.objects.create_user("reviewer", "reviewer@test.edu", "reviewer")
+        reviewer = create_user('reviewer')
         config = LabCIRSConfig.objects.first()
         config.send_notification=True
         config.notification_recipients.add(reviewer)

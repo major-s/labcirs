@@ -64,20 +64,14 @@ class FunctionalTestWithBackendLogin(FunctionalTest):
 
 class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     
-    @skip('Tested extensivly in test_multiorganization')
-    def test_reporter_login(self):
-        self.login_user()
-        # # TODO: check if user is authenticated
-        # # instead checking for the title of the table
-        self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
-        table_title = self.browser.find_element_by_tag_name('h2').text
-        self.assertEqual('Critical incidents', table_title)
-
+    def setUp(self):
+        super(CriticalIncidentListTest, self).setUp()
+        create_role(Reporter, self.reporter)
+        self.org = mommy.make(Organization, reporter=self.reporter.reporter)
+    
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
         LabCIRSConfig.objects.create(send_notification=True)
-        create_role(Reporter, self.reporter)
-        self.org = mommy.make(Organization,reporter=self.reporter.reporter)
         self.quick_login_reporter()
         self.click_link_with_text('Add incident')
 
@@ -123,9 +117,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         if the new appear in the upper row independent of the order of the
         critical incidents."""
         # import the generator from unit test
-        create_role(Reporter, self.reporter)
-        organization = mommy.make(Organization, reporter=self.reporter.reporter)
-        generate_three_incidents(organization)
+
+        generate_three_incidents(self.org)
 
         # Now reporter goes to the list and should see the list of
         # published incidents in order b, a, c
@@ -139,12 +132,12 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_send_email_after_reviewer_creates_an_incident(self):
-        config = LabCIRSConfig.objects.create(send_notification=True)
+        config = LabCIRSConfig.objects.create(
+            send_notification=True, 
+            notification_sender_email='labcirs@labcirs.edu'
+        )
         config.notification_recipients.add(self.reviewer)
-        config.notification_sender_email = 'labcirs@labcirs.edu'
-        config.save()
-        create_role(Reporter, self.reporter)
-        self.org = mommy.make(Organization,reporter=self.reporter.reporter)
+
         self.quick_login_reporter(reverse('create_incident'))
 
         # reporter enters incident data
