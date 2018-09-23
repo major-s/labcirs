@@ -266,7 +266,22 @@ class SecurityFrontendTest(FunctionalTest):
 
 @override_settings(DEBUG=True)
 class AccessDataWithMultipleOrgs(FunctionalTest):
+    # if the class is run in isolation, the tests pass with following set to true
+    serialized_rollback = True
+    # if run as whole suite, there are exceptions with unique constraint!
         
+    def check_admin_table_for_items(self, user, cls_name, present=None, absent=None):
+        admin_url = reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name))
+        self.quick_backend_login(user, admin_url)
+        self.wait.until(EC.url_contains(admin_url))
+        if present:
+            self.browser.find_element_by_link_text(present)
+        if absent:
+            with self.assertRaises(NoSuchElementException):
+                self.browser.find_element_by_link_text(absent)
+
+
+
     def setUp(self):
         super(AccessDataWithMultipleOrgs, self).setUp()
         self.rep = create_role(Reporter, 'rep')
@@ -277,10 +292,10 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         self.org.reviewers.add(self.rev)
         self.org2 = mommy.make(Organization, reporter=self.rep2)
         self.org2.reviewers.add(self.rev2)
-        self.ci = mommy.make(CriticalIncident, public=True, organization=self.org)
-        self.ci2 = mommy.make(CriticalIncident, public=True, organization=self.org2)
-        self.pi = mommy.make(PublishableIncident, publish=True, critical_incident=self.ci)
-        self.pi2 = mommy.make(PublishableIncident, publish=True, critical_incident=self.ci2)
+        self.ci = mommy.make_recipe('cirs.public_ci', organization=self.org)
+        self.ci2 = mommy.make_recipe('cirs.public_ci', organization=self.org2)
+        self.pi = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci)
+        self.pi2 = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci2)
     
     def get_test_cases():
         return[
@@ -304,6 +319,37 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         
         self.assertIn(own_pi.incident_en, [row.text for row in rows])
         self.assertNotIn(alien_pi.incident_en, [row.text for row in rows])
-        
 
-        
+
+    def get_test_reviewers():
+        return [
+            ('rev',),
+            ('rev2',)
+        ]
+
+    @parameterized.expand(get_test_reviewers)
+    def test_reviewer_sees_only_cis_of_his_org_in_backend(self, user):
+        role = getattr(self, user)
+        own_item = CriticalIncident.objects.filter(
+            organization__in=role.organizations.all()).first().incident
+        foreign_item = CriticalIncident.objects.exclude(
+            organization__in=role.organizations.all()).first().incident
+        self.check_admin_table_for_items(role.user, CriticalIncident, own_item, foreign_item)
+
+    @parameterized.expand(get_test_reviewers)
+    def test_reviewer_sees_only_pis_of_his_org_in_backend(self, user):
+        role = getattr(self, user)
+        own_item = PublishableIncident.objects.filter(
+            critical_incident__organization__in=role.organizations.all()).first().incident_de
+        foreign_item = PublishableIncident.objects.exclude(
+            critical_incident__organization__in=role.organizations.all()).first().incident_de
+        self.check_admin_table_for_items(role.user, PublishableIncident, own_item, foreign_item)
+
+    @parameterized.expand([
+        (CriticalIncident, 'incident'),
+        (PublishableIncident, 'incident_de')
+    ])
+    def test_admin_sees_no_incidents(self, model_cls, field):
+        admin = create_user('superman', superuser=True)
+        for incident in model_cls.objects.all():
+            self.check_admin_table_for_items(admin, model_cls, absent=getattr(incident, field))

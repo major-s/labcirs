@@ -65,7 +65,7 @@ class CommentInline(admin.TabularInline):
     readonly_fields = ('author', 'text',)
     
     def has_add_permission(self, request):
-      return False
+        return False
 
 class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
@@ -95,7 +95,13 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
             if isinstance(inline, PublishableIncidentInline) and obj.public is False:
                 continue
             yield inline.get_formset(request, obj)
-
+            
+    def get_queryset(self, request):
+        qs = super(CriticalIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(organization__in=request.user.reviewer.organizations.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
 class PublishableIncidentAdmin(admin.ModelAdmin):
 
@@ -116,6 +122,14 @@ class PublishableIncidentAdmin(admin.ModelAdmin):
         return readonly_fields
 
     formfield_overrides = pi_form_overrides
+    
+    def get_queryset(self, request):
+        qs = super(PublishableIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                critical_incident__organization__in=request.user.reviewer.organizations.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
 
 class ConfigurationAdmin(admin.ModelAdmin):

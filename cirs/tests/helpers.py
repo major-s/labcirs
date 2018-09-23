@@ -44,10 +44,6 @@ def create_role(role_cls, name):
         raise TypeError('You have to proviede either a name for new user or an '
                         'existing user. But you provided {} which is '
                         '{}!'.format(name, type(name)))
-    # set staff flag for Reviewer
-    if role_cls == Reviewer:
-        role.user.is_staff = True
-        role.user.save()
     return role
 
 

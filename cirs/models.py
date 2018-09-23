@@ -21,7 +21,7 @@
 from __future__ import unicode_literals
 from datetime import date
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -62,12 +62,21 @@ class Reporter(Role):
 
 
 class Reviewer(Role):
+    REVIEWER_PERM_CODES = ('change_criticalincident', 'add_publishableincident', 
+                           'change_publishableincident', 'change_labcirsconfig')
+    REVIEWER_PERMS = Permission.objects.filter(codename__in=REVIEWER_PERM_CODES)
     
     def clean(self):
         super(Reviewer, self).clean()
         if hasattr(self.user, 'reporter'):
             raise ValidationError(
                 _('This user is already a reporter and thus cannot become a reviewer'))
+            
+    def save(self, *args, **kwargs):
+        super(Reviewer, self).save(*args, **kwargs)
+        self.user.user_permissions.set(self.REVIEWER_PERMS)
+        self.user.is_staff = True
+        self.user.save()
 
     class Meta:
         verbose_name = _('Reviewer')

@@ -32,7 +32,7 @@ from django.utils.six import StringIO
 from parameterized import parameterized
 
 from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
-from cirs.admin import OrganizationAdmin, RoleAdmin
+from cirs.admin import OrganizationAdmin, RoleAdmin, CriticalIncidentAdmin, PublishableIncidentAdmin
 from cirs.views import PublishableIncidentList, IncidentCreate
 from django.core.management import call_command
 
@@ -396,6 +396,83 @@ class SecurityTest(TestCase):
         session_user = auth.get_user(self.client)
 
         self.assertEqual(session_user, role.user)
+
+    # Reviewer needs rights to work in the admin backend, so they have to be granted
+    # to the user upon assignig a role, but revoked upon removal
+    
+    @parameterized.expand([
+        ('change_criticalincident',),
+        ('add_publishableincident',),
+        ('change_publishableincident',),
+        #('add_labcirsconfig',), # TODO: config should be created automatically on organization creation
+        ('change_labcirsconfig')
+    ])
+    #@skip('until group assignement for reviewer is done')
+    def test_users_has_permission_after_assignement_of_reviewer_role(self, perm_code):
+        user = create_user('cirs_user')
+        Reviewer.objects.create(user=user)
+        self.assertTrue(user.has_perm('cirs.'+perm_code))
+
+    def test_users_is_staff_after_assignement_of_reviewer_role(self):
+        user = create_user('cirs_user')
+        Reviewer.objects.create(user=user)
+        self.assertTrue(user.is_staff)
+
+class BackendViewAccess(TestCase):
+
+    #def setUp(self):
+    #    self.incidents = mommy.make_recipe('cirs.'+recipe,  _quantity=2)
+
+    @parameterized.expand([
+        (CriticalIncident, CriticalIncidentAdmin, 'public_ci'),
+        (PublishableIncident, PublishableIncidentAdmin, 'published_incident'),
+        #('labcirsconfig')
+    ])
+    def test_admin_list_view(self, cls_name, admin_cls, recipe):
+        # prepare DB
+        incidents = mommy.make_recipe('cirs.'+recipe,  _quantity=2)
+        reviewers = mommy.make_recipe('cirs.reviewer',  _quantity=2)
+        for incident, reviewer in zip(incidents, reviewers):
+            if cls_name == CriticalIncident:
+                incident.organization.reviewers.add(reviewer)
+            elif cls_name == PublishableIncident:
+                incident.critical_incident.organization.reviewers.add(reviewer)
+        
+        model_admin = admin_cls(cls_name, admin.AdminSite())
+        
+        factory = RequestFactory()
+        request = factory.get(
+            reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name)))
+        request.user = reviewers[0].user
+
+        qs = model_admin.get_queryset(request)
+
+        self.assertIn(incidents[0], qs)
+        self.assertNotIn(incidents[1], qs)
+        
+        # now with another reviewer
+        request.user = reviewers[1].user
+
+        qs = model_admin.get_queryset(request)
+
+        self.assertIn(incidents[1], qs)
+        self.assertNotIn(incidents[0], qs)
+
+    @parameterized.expand([
+        (CriticalIncident, CriticalIncidentAdmin, 'public_ci'),
+        (PublishableIncident, PublishableIncidentAdmin, 'published_incident'),
+    ])
+    def test_list_view_returns_empty_qs_for_superuser(self, cls_name, admin_cls, recipe):
+        mommy.make_recipe('cirs.'+recipe,  _quantity=2)
+        model_admin = admin_cls(cls_name, admin.AdminSite())
+        
+        factory = RequestFactory()
+        request = factory.get(
+            reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name)))
+        request.user = create_user('superman', superuser=True)
+        qs = model_admin.get_queryset(request)
+        print qs
+        self.assertEqual(qs.count(), 0)
         
 # next schema migration has to check if there are cis or organizations
 # if there are cis and no org, raise
