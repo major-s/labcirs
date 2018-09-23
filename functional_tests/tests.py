@@ -19,7 +19,6 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import time
-from unittest import skip
 
 from datetime import date
 from django.core import mail
@@ -30,7 +29,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import (CriticalIncident, PublishableIncident, LabCIRSConfig,
+from cirs.models import (CriticalIncident, LabCIRSConfig,
                          Organization, Reviewer, Reporter)
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
@@ -144,7 +143,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.enter_test_incident(wait_for_success=True)
 
         # check if incident was sent by email
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
 
 
@@ -156,4 +155,4 @@ class CriticalIncidentBackendTest(FunctionalTestWithBackendLogin):
         self.go_to_test_incident_as_reviewer()
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
-        category_field = self.browser.find_element_by_id('id_category')
+        self.browser.find_element_by_id('id_category')

@@ -21,8 +21,7 @@
 import time
 from unittest import skip
 
-from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.core.urlresolvers import reverse
 from django.test import override_settings
 from model_mommy import mommy
 from selenium.common.exceptions import NoSuchElementException
@@ -129,10 +128,10 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
         
     @parameterized.expand([('reporter', 'id_reporter'), 
                            ('reviewer', 'id_reviewers_from')])
-    def test_only_role_user_in_role_select_for(self, role, id):
+    def test_only_role_user_in_role_select_for(self, role, elem_id):
         # In the select dialogs only users assigned to roles are visible
         self.browser.get(self.live_server_url + '/admin/cirs/organization/add/')
-        select = Select(self.browser.find_element_by_id(id))
+        select = Select(self.browser.find_element_by_id(elem_id))
         options = [opt.text for opt in select.options]
         expected = [role, '---------']
         if role == 'reviewer':
@@ -201,11 +200,11 @@ class SecurityFrontendTest(FunctionalTest):
         self.assertEqual(error_alert.text, MISSING_ORGANIZATION_MSG)
         
         with self.assertRaises(NoSuchElementException):
-            nav = self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element_by_id('navbarMenu')
 
     def test_reporter_with_organization_is_redirected_to_incident_list(self):
         reporter = create_role(Reporter, 'rep')
-        org = mommy.make(Organization, reporter=reporter)
+        mommy.make(Organization, reporter=reporter)
         self.login_user(username=reporter.user.username, password=reporter.user.username)
         time.sleep(2)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
@@ -245,7 +244,7 @@ class SecurityFrontendTest(FunctionalTest):
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
         self.assertEqual(self.browser.current_url, target_url)
         with self.assertRaises(NoSuchElementException):
-            nav = self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element_by_id('navbarMenu')
         
     def test_redirect_admin_from_create_incident_view_to_admin(self):
         user = create_user('superman', superuser=True)
@@ -259,7 +258,7 @@ class SecurityFrontendTest(FunctionalTest):
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
         self.assertEqual(self.browser.current_url, target_url)
         with self.assertRaises(NoSuchElementException):
-            nav = self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element_by_id('navbarMenu')
 
 # TODO: Reviewer should not see organizations and reviewers(?). Probably also not reporters
 # although he should may change reporter password for own organization
@@ -297,7 +296,7 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         self.pi = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci)
         self.pi2 = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci2)
     
-    def get_test_cases():
+    def get_test_cases():  # @NoSelf
         return[
             ('rep', 'pi', 'pi2'),
             ('rep2', 'pi2', 'pi'),
@@ -321,7 +320,7 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         self.assertNotIn(alien_pi.incident_en, [row.text for row in rows])
 
 
-    def get_test_reviewers():
+    def get_test_reviewers():  # @NoSelf
         return [
             ('rev',),
             ('rev2',)

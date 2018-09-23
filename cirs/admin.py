@@ -19,11 +19,13 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
-from django import forms
 
-from cirs.models import *
+from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
+                         LabCIRSConfig, Organization, Reporter, Reviewer)
 
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):

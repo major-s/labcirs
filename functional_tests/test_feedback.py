@@ -18,10 +18,6 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-import os
-
-from datetime import date
-from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import override_settings
@@ -111,8 +107,8 @@ class CommentTest(FunctionalTest):
     def test_reviewer_can_comment_on_incident(self):
         # reporter entered his comment already
         comment_text = "I have some remarks on this incident!"
-        comment = Comment.objects.create(
-            critical_incident=self.incident, author=self.reporter, text=comment_text)
+        Comment.objects.create(critical_incident=self.incident,
+                               author=self.reporter, text=comment_text)
         # reviewer logs in and goes to the incident page
         self.quick_backend_login(self.reviewer, self.incident.get_absolute_url())
 
@@ -127,7 +123,7 @@ class CommentTest(FunctionalTest):
         self.check_if_comment_in_the_last_row(comment_text)
         
         # but now there is no email as reviewer made a comment himself
-        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)  # @UndefinedVariable
         
         # TODO: check what happens if therer are multiple recipients. It should send email then
 
@@ -140,7 +136,7 @@ class CommentTest(FunctionalTest):
         comment_text = "I have some remarks on this incident!"
         self.create_comment(comment_text)
         # check if incident was sent by email
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New LabCIRS comment')
 
 class SecurityTest(FunctionalTest):

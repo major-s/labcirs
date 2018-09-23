@@ -118,7 +118,7 @@ class ReviewerReporterModel(OrganizationBase):
     User can be assigned only to one role. Superuser cannot be assigned to any role.
     """
 
-    def gen_test_cases():
+    def gen_test_cases():  # @NoSelf
         return [
         ('reporter', Reporter),
         ('reviewer', Reviewer)
@@ -131,9 +131,9 @@ class ReviewerReporterModel(OrganizationBase):
     
     @parameterized.expand(gen_test_cases)
     def test_user_can_have_role_only_once(self, _, role_cls):
-        role1 = role_cls.objects.create(user=self.user)
+        role_cls.objects.create(user=self.user)
         with self.assertRaises(IntegrityError):
-            role2 = role_cls.objects.create(user=self.user)
+            role_cls.objects.create(user=self.user)
 
     @parameterized.expand(gen_test_cases)
     def test_superuser_cannot_have_cirs_role(self, _, role_cls):
@@ -146,7 +146,7 @@ class ReviewerReporterModel(OrganizationBase):
         ('reviewer', Reviewer, Reporter)
     ])
     def test_user_cannot_be_reporter_and_reviewer(self, _, class1, class2):
-        role1 = class1.objects.create(user=self.user)
+        class1.objects.create(user=self.user)
         with self.assertRaises(ValidationError):
             role2 = class2(user=self.user)
             role2.full_clean()
@@ -206,7 +206,7 @@ class DataMigrationForOrganization(TestCase):
         #print out.getvalue()
         self.out = StringIO()
 
-    def gen_test_role_classes():
+    def gen_test_role_classes():  # @NoSelf
         return [
         ('reporter', Reporter),
         ('reviewer', Reviewer)
@@ -230,15 +230,15 @@ class DataMigrationForOrganization(TestCase):
         self.assertIn(permission, role_cls.objects.first().user.user_permissions.all())
         
     def test_migration_stops_if_there_is_more_than_one_user_with_reporter_rights(self):
-        reporter = create_user_with_perm('reporter', 'add_criticalincident')
-        reporter2 = create_user_with_perm('reporter2', 'add_criticalincident')
+        create_user_with_perm('reporter', 'add_criticalincident')
+        create_user_with_perm('reporter2', 'add_criticalincident')
         with self.assertRaises(MultipleObjectsReturned):
             call_command('migrate', 'cirs', '0006', stdout=self.out)
 
     
     def test_all_users_with_reviewer_permissions_are_assigned_to_reviewer_role(self):
-        reviewer = create_user_with_perm('reviewer', 'change_criticalincident')
-        reviewer2 = create_user_with_perm('reviewer2', 'change_criticalincident')
+        create_user_with_perm('reviewer', 'change_criticalincident')
+        create_user_with_perm('reviewer2', 'change_criticalincident')
 
         call_command('migrate', 'cirs', '0006', stdout=self.out)
         self.assertEqual(Reviewer.objects.count(), 2)
@@ -263,23 +263,20 @@ class DataMigrationForOrganization(TestCase):
     @skip('worked for migration testeing before organization for ci was introduced')  
     def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
         # tests if there are users for all roles
-        ci = mommy.prepare(CriticalIncident, public=True)
+        mommy.prepare(CriticalIncident, public=True)
         if name != 'none':
             create_user_with_perm(name, codename)
 
         with self.assertRaises(ValidationError):
             call_command('migrate', 'cirs', '0006', stdout=self.out)
 
-                
-
-    
     def test_dont_create_organization_without_valid_configuration(self):
         # Organization should be created only if there is valid configuration.
         # As anyway only the first one was used, there is no need for a check of
         # multiple configurations.
         # Actually there should be no running installation without
-        reporter = create_user_with_perm('rep', 'add_criticalincident')
-        reviewer = create_user_with_perm('rev', 'change_criticalincident')
+        create_user_with_perm('rep', 'add_criticalincident')
+        create_user_with_perm('rev', 'change_criticalincident')
         
         call_command('migrate', 'cirs', '0006', stdout=self.out)
 
@@ -301,7 +298,7 @@ class DataMigrationForOrganization(TestCase):
     def test_create_organization(self):
         reporter = create_user_with_perm('rep', 'add_criticalincident')
         reviewer = create_user_with_perm('rev', 'change_criticalincident')
-        config = mommy.make(LabCIRSConfig, send_notification=False)
+        mommy.make(LabCIRSConfig, send_notification=False)
 
         call_command('migrate', 'cirs', '0006', stdout=self.out)
         # there should be Organization with label equal to organization in settings
@@ -312,7 +309,7 @@ class DataMigrationForOrganization(TestCase):
 
 class SecurityTest(TestCase):
     
-    def gen_test_role_classes():
+    def gen_test_role_classes():  # @NoSelf
         return [
         ('reporter', Reporter),
         ('reviewer', Reviewer)
@@ -338,10 +335,9 @@ class SecurityTest(TestCase):
         
     def test_user_without_role_is_logged_out(self):
         user = create_user('cirs_user')
-        response = self.client.post(
+        self.client.post(
             reverse('login'), {'username': user.username, 'password': user.username},
             follow=True)
-        #from django.contrib import auth
         session_user = auth.get_user(self.client)
 
         self.assertNotEqual(session_user, user)
@@ -370,7 +366,7 @@ class SecurityTest(TestCase):
     @parameterized.expand(gen_test_role_classes)
     def test_role_without_organization_is_logged_out(self, name, role_cls):
         role = create_role(role_cls, name)
-        response = self.client.post(
+        self.client.post(
             reverse('login'), 
             {'username': role.user.username, 'password': role.user.username},
             follow=True)
@@ -388,7 +384,7 @@ class SecurityTest(TestCase):
             org = mommy.make(Organization)
             org.reviewers.add(role)
         
-        response = self.client.post(
+        self.client.post(
             reverse('login'), 
             {'username': role.user.username, 'password': role.user.username},
             follow=True)
@@ -526,13 +522,12 @@ class CriticalIncidentWithOrganization(TestCase):
         # TODO: check if permission is still necessary or if reporter role is enough
         permission = Permission.objects.get(codename='add_criticalincident')
         reporter.user.user_permissions.add(permission)
-        org = mommy.make(Organization, reporter=reporter)
+        mommy.make(Organization, reporter=reporter)
         LabCIRSConfig.objects.create(send_notification=False)
         ci = mommy.prepare(CriticalIncident, public=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
 
-        response = self.client.post(reverse('create_incident'), data=ci.__dict__,
-                                    follow=True)
+        self.client.post(reverse('create_incident'), data=ci.__dict__, follow=True)
 
         self.assertEqual(CriticalIncident.objects.first().organization, 
                          reporter.organization)

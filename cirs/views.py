@@ -41,7 +41,6 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = 'success'
     success_message = "%(comment_code)s"
 
-    #@method_decorator(permission_required('cirs.add_criticalincident'))
     def dispatch(self, *args, **kwargs):
         if hasattr(self.request.user, 'reporter'):
             return super(IncidentCreate, self).dispatch(*args, **kwargs)
