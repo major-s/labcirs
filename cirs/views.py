@@ -59,7 +59,7 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         )
 
     def form_valid(self, form):
-        form.instance.organization = self.request.user.reporter.organization
+        form.instance.department = self.request.user.reporter.department
         return super(IncidentCreate, self).form_valid(form)
 
 
@@ -114,22 +114,22 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
 class PublishableIncidentList(LoginRequiredMixin, ListView):
     """
     Returns a simple list of publishable incidents where "publish" is set to true
-    and the organization matches the reporters organization
+    and the department matches the reporters department
     """
     def get_queryset(self):
         if hasattr(self.request.user, 'reporter'):
             return PublishableIncident.objects.filter(publish=True,
-                critical_incident__organization=self.request.user.reporter.organization)
+                critical_incident__department=self.request.user.reporter.department)
         elif hasattr(self.request.user, 'reviewer'):
             return PublishableIncident.objects.filter(publish=True,
-                critical_incident__organization__in=self.request.user.reviewer.organizations.all())
+                critical_incident__department__in=self.request.user.reviewer.departments.all())
         else:
             return PublishableIncident.objects.none()
 
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
 
-MISSING_ORGANIZATION_MSG =_('Your account has no associated organization! '
+MISSING_DEPARTMENT_MSG =_('Your account has no associated department! '
                             'Please contact the administrator!')
 
 def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
@@ -150,16 +150,16 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 if user.is_superuser:
                     return HttpResponseRedirect(reverse_lazy('admin:index'))
                 elif hasattr(user, 'reviewer'):
-                    if user.reviewer.organizations.count() > 0:
+                    if user.reviewer.departments.count() > 0:
                         return HttpResponseRedirect(reverse_lazy('admin:index'))
                     else:
-                        message = MISSING_ORGANIZATION_MSG
+                        message = MISSING_DEPARTMENT_MSG
                         logout(request)
                 elif hasattr(user, 'reporter'):
-                    if hasattr(user.reporter, 'organization'):
+                    if hasattr(user.reporter, 'department'):
                         return HttpResponseRedirect(redirect_url)
                     else:
-                        message = MISSING_ORGANIZATION_MSG
+                        message = MISSING_DEPARTMENT_MSG
                         logout(request)
                 else:
                     message = MISSING_ROLE_MSG

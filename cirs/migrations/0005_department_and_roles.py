@@ -16,15 +16,15 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Organization',
+            name='Department',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('label', models.CharField(max_length=32, unique=True, verbose_name='Label')),
                 ('name', models.CharField(max_length=255, unique=True, verbose_name='Name')),
             ],
             options={
-                'verbose_name': 'Organization',
-                'verbose_name_plural': 'Organizations',
+                'verbose_name': 'Department',
+                'verbose_name_plural': 'Departments',
             },
         ),
         migrations.CreateModel(
@@ -50,13 +50,13 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AddField(
-            model_name='organization',
+            model_name='department',
             name='reporter',
-            field=models.OneToOneField(help_text='Reporters assigned to other organizations are not listed here!', on_delete=django.db.models.deletion.PROTECT, to='cirs.Reporter', verbose_name='Reporter'),
+            field=models.OneToOneField(help_text='Reporters assigned to other departments are not listed here!', on_delete=django.db.models.deletion.PROTECT, to='cirs.Reporter', verbose_name='Reporter'),
         ),
         migrations.AddField(
-            model_name='organization',
+            model_name='department',
             name='reviewers',
-            field=models.ManyToManyField(related_name='organizations', to='cirs.Reviewer', verbose_name='Reviewers'),
+            field=models.ManyToManyField(related_name='departments', to='cirs.Reviewer', verbose_name='Reviewers'),
         ),
     ]

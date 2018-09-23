@@ -29,7 +29,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import Reporter, Reviewer, Organization, CriticalIncident, PublishableIncident
+from cirs.models import Reporter, Reviewer, Department, CriticalIncident, PublishableIncident
 from cirs.tests.helpers import create_role, create_user
 from parameterized import parameterized, param
 
@@ -61,10 +61,10 @@ def get_admin_url(instance, operation='change'):
     return admin_url
 
 
-class AddRolesAndOrganizationBackendTest(FunctionalTest):
+class AddRolesAndDepartmentBackendTest(FunctionalTest):
     
     def setUp(self):
-        super(AddRolesAndOrganizationBackendTest, self).setUp()
+        super(AddRolesAndDepartmentBackendTest, self).setUp()
         self.user = create_user('cirs_user')
         self.reporter = Reporter.objects.create(user=self.reporter)
         self.reviewer = Reviewer.objects.create(user=self.reviewer)
@@ -105,11 +105,11 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
         self.assertItemsEqual(options, [self.user.username, '---------'])
 
 
-    def test_admin_can_set_organization(self):
+    def test_admin_can_set_department(self):
         # Admin goes to the backend 
-        self.click_link_with_text("Organizations")
-        self.click_link_case_insensitive("Add organization")
-        # Now he enters the data for the new organization
+        self.click_link_with_text("Departments")
+        self.click_link_case_insensitive("Add department")
+        # Now he enters the data for the new department
         self.find_input_and_enter_text('id_label', self.en_dict['label'])
         self.find_input_and_enter_text('id_name', self.en_dict['name'])
         Select(
@@ -120,7 +120,7 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
         ).select_by_visible_text('reviewer')
         self.browser.find_element_by_id('id_reviewers_add_link').click()
         self.browser.find_element_by_name('_save').click()
-        # The name of the organization is equal to the label set
+        # The name of the department is equal to the label set
         self.wait.until(
             EC.element_to_be_clickable((By.LINK_TEXT, self.en_dict['label'])),
             message=('could not find {}'.format(self.en_dict['label']))
@@ -130,7 +130,7 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
                            ('reviewer', 'id_reviewers_from')])
     def test_only_role_user_in_role_select_for(self, role, elem_id):
         # In the select dialogs only users assigned to roles are visible
-        self.browser.get(self.live_server_url + '/admin/cirs/organization/add/')
+        self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
         select = Select(self.browser.find_element_by_id(elem_id))
         options = [opt.text for opt in select.options]
         expected = [role, '---------']
@@ -140,22 +140,22 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
 
 
-    def test_assigned_reporter_not_visible_for_new_org(self):
-        # If a reporter is assigned to an organization, he is not visible in
-        # the dialog for a new organization anymore 
-        Organization.objects.create(**self.en_dict)
+    def test_assigned_reporter_not_visible_for_new_dept(self):
+        # If a reporter is assigned to an department, he is not visible in
+        # the dialog for a new department anymore 
+        Department.objects.create(**self.en_dict)
         new_reporter = create_role(Reporter, 'new_reporter')
-        self.browser.get(self.live_server_url + '/admin/cirs/organization/add/')
+        self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
         select = Select(self.browser.find_element_by_id('id_reporter'))
         options = [opt.text for opt in select.options]
         expected = [str(new_reporter), '---------']
         self.assertItemsEqual(options, expected,
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
 
-    def test_admin_can_modify_organizations_name(self):
-        org = Organization.objects.create(**self.en_dict)
-        org.reviewers.add(self.reviewer)
-        self.browser.get(self.live_server_url + get_admin_url(org))
+    def test_admin_can_modify_departments_name(self):
+        dept = Department.objects.create(**self.en_dict)
+        dept.reviewers.add(self.reviewer)
+        self.browser.get(self.live_server_url + get_admin_url(dept))
         self.find_input_and_enter_text('id_name', 'The best lab in the world')
         self.browser.find_element_by_name('_save').click()
         self.wait.until(
@@ -167,8 +167,8 @@ class AddRolesAndOrganizationBackendTest(FunctionalTest):
 class SecurityFrontendTest(FunctionalTest):
     """
     User without role sees error message
-    Reporter without organisation sees error message
-    Reporter with organization sees only incidents belonging to his organization
+    Reporter without department sees error message
+    Reporter with department sees only incidents belonging to his department
     """
  
     def test_log_out_and_error_message_for_user_without_role(self):
@@ -190,31 +190,31 @@ class SecurityFrontendTest(FunctionalTest):
         ('rep', Reporter), 
         ('rev', Reviewer)
     ])
-    def test_log_out_and_error_message_for_role_without_organization(self, name, role_cls):
-        from cirs.views import MISSING_ORGANIZATION_MSG  # necessary only here so far
+    def test_log_out_and_error_message_for_role_without_department(self, name, role_cls):
+        from cirs.views import MISSING_DEPARTMENT_MSG  # necessary only here so far
         role = create_role(role_cls, name)
         self.login_user(username=role.user.username, password=role.user.username)
 
         error_alert = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger')))
-        self.assertEqual(error_alert.text, MISSING_ORGANIZATION_MSG)
+        self.assertEqual(error_alert.text, MISSING_DEPARTMENT_MSG)
         
         with self.assertRaises(NoSuchElementException):
             self.browser.find_element_by_id('navbarMenu')
 
-    def test_reporter_with_organization_is_redirected_to_incident_list(self):
+    def test_reporter_with_department_is_redirected_to_incident_list(self):
         reporter = create_role(Reporter, 'rep')
-        mommy.make(Organization, reporter=reporter)
+        mommy.make(Department, reporter=reporter)
         self.login_user(username=reporter.user.username, password=reporter.user.username)
         time.sleep(2)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
         self.assertEqual(self.browser.current_url, redirect_url)
         
-    def test_reviewer_with_organization_is_redirected_to_admin(self):
+    def test_reviewer_with_department_is_redirected_to_admin(self):
         reporter = create_role(Reporter, 'rep')
         reviewer = create_role(Reviewer, 'rev')
-        org = mommy.make(Organization, reporter=reporter)
-        org.reviewers.add(reviewer)
+        dept = mommy.make(Department, reporter=reporter)
+        dept.reviewers.add(reviewer)
         self.login_user(username=reviewer.user.username, password=reviewer.user.username)
         time.sleep(2)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
@@ -260,11 +260,11 @@ class SecurityFrontendTest(FunctionalTest):
         with self.assertRaises(NoSuchElementException):
             self.browser.find_element_by_id('navbarMenu')
 
-# TODO: Reviewer should not see organizations and reviewers(?). Probably also not reporters
-# although he should may change reporter password for own organization
+# TODO: Reviewer should not see departments and reviewers(?). Probably also not reporters
+# although he should may change reporter password for own department
 
 @override_settings(DEBUG=True)
-class AccessDataWithMultipleOrgs(FunctionalTest):
+class AccessDataWithMultipleDepts(FunctionalTest):
     # if the class is run in isolation, the tests pass with following set to true
     serialized_rollback = True
     # if run as whole suite, there are exceptions with unique constraint!
@@ -282,17 +282,17 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
 
 
     def setUp(self):
-        super(AccessDataWithMultipleOrgs, self).setUp()
+        super(AccessDataWithMultipleDepts, self).setUp()
         self.rep = create_role(Reporter, 'rep')
         self.rep2 = create_role(Reporter, 'rep2')
         self.rev = create_role(Reviewer, 'rev')
         self.rev2 = create_role(Reviewer, 'rev2')
-        self.org = mommy.make(Organization, reporter=self.rep)
-        self.org.reviewers.add(self.rev)
-        self.org2 = mommy.make(Organization, reporter=self.rep2)
-        self.org2.reviewers.add(self.rev2)
-        self.ci = mommy.make_recipe('cirs.public_ci', organization=self.org)
-        self.ci2 = mommy.make_recipe('cirs.public_ci', organization=self.org2)
+        self.dept = mommy.make(Department, reporter=self.rep)
+        self.dept.reviewers.add(self.rev)
+        self.dept2 = mommy.make(Department, reporter=self.rep2)
+        self.dept2.reviewers.add(self.rev2)
+        self.ci = mommy.make_recipe('cirs.public_ci', department=self.dept)
+        self.ci2 = mommy.make_recipe('cirs.public_ci', department=self.dept2)
         self.pi = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci)
         self.pi2 = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci2)
     
@@ -305,10 +305,10 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         ]
     
     @parameterized.expand(get_test_cases)
-    def test_role_sees_only_published_incidents_from_his_organization(self, user, pi1, pi2):
+    def test_role_sees_only_published_incidents_from_his_department(self, user, pi1, pi2):
        
         # first reporter logs in and sees only incidents associated with his 
-        # organization
+        # department
         role = getattr(self, user)
         own_pi = getattr(self, pi1)
         alien_pi = getattr(self, pi2)
@@ -327,21 +327,21 @@ class AccessDataWithMultipleOrgs(FunctionalTest):
         ]
 
     @parameterized.expand(get_test_reviewers)
-    def test_reviewer_sees_only_cis_of_his_org_in_backend(self, user):
+    def test_reviewer_sees_only_cis_of_his_dept_in_backend(self, user):
         role = getattr(self, user)
         own_item = CriticalIncident.objects.filter(
-            organization__in=role.organizations.all()).first().incident
+            department__in=role.departments.all()).first().incident
         foreign_item = CriticalIncident.objects.exclude(
-            organization__in=role.organizations.all()).first().incident
+            department__in=role.departments.all()).first().incident
         self.check_admin_table_for_items(role.user, CriticalIncident, own_item, foreign_item)
 
     @parameterized.expand(get_test_reviewers)
-    def test_reviewer_sees_only_pis_of_his_org_in_backend(self, user):
+    def test_reviewer_sees_only_pis_of_his_dept_in_backend(self, user):
         role = getattr(self, user)
         own_item = PublishableIncident.objects.filter(
-            critical_incident__organization__in=role.organizations.all()).first().incident_de
+            critical_incident__department__in=role.departments.all()).first().incident_de
         foreign_item = PublishableIncident.objects.exclude(
-            critical_incident__organization__in=role.organizations.all()).first().incident_de
+            critical_incident__department__in=role.departments.all()).first().incident_de
         self.check_admin_table_for_items(role.user, PublishableIncident, own_item, foreign_item)
 
     @parameterized.expand([

@@ -46,7 +46,7 @@ def create_reporter(apps, schema_editor, models):
     try:
         reporter = models.User.objects.get(user_permissions=permission)
         print 'Assigning {} as reporter'.format(reporter.username)
-        rep = models.Reporter.objects.create(user=reporter)
+        models.Reporter.objects.create(user=reporter)
     except models.User.DoesNotExist:
         if models.CriticalIncident.objects.count() > 0:
             raise ValidationError('There are critical incidents in the database, '
@@ -75,23 +75,23 @@ def create_reviewers(apps, schema_editor, models):
             models.Reviewer.objects.create(user = review_user)
 
 
-def create_organization(apps, schema_editor, models):
-    # in installations for single organizations there should be only one reporter.
+def create_department(apps, schema_editor, models):
+    # in installations for single organizations/departments there should be only one reporter.
     # if multiple exist, exception is thrown while creating reporter role
     # there has to be also at least one reviewer and one valid configuration
     reviewers = models.Reviewer.objects.all()
     if (models.Reporter.objects.count() == 1) & (reviewers.count() > 0) & (models.LabCIRSConfig.objects.count() == 1):
-        org = models.Organization.objects.create(
+        dept = models.Department.objects.create(
             label=settings.ORGANIZATION,
             name=settings.ORGANIZATION,
             reporter=models.Reporter.objects.first()
             )
         for reviewer in reviewers:
-            org.reviewers.add(reviewer)
+            dept.reviewers.add(reviewer)
 
 
 def backwards(apps, schema_editor):
-    for cls_name in ('Reporter', 'Reviewer', 'Organization'):
+    for cls_name in ('Reporter', 'Reviewer', 'Department'):
         model_cls = apps.get_model('cirs', cls_name)
         model_cls.objects.all().delete()
 
@@ -105,20 +105,20 @@ def forward(apps, schema_editor):
             self.CriticalIncident = apps.get_model('cirs', 'CriticalIncident')
             self.Reporter = apps.get_model('cirs', 'Reporter')
             self.Reviewer = apps.get_model('cirs', 'Reviewer')
-            self.Organization = apps.get_model('cirs', 'Organization')
+            self.Department = apps.get_model('cirs', 'Department')
             self.LabCIRSConfig = apps.get_model('cirs',  'LabCIRSConfig')
         
     models = ArchivedModels()
     
     create_reporter(apps, schema_editor, models)
     create_reviewers(apps, schema_editor, models)
-    create_organization(apps, schema_editor, models)
+    create_department(apps, schema_editor, models)
     
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cirs', '0005_organization_and_roles'),
+        ('cirs', '0005_department_and_roles'),
     ]
 
     operations = [

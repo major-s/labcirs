@@ -31,8 +31,8 @@ from django.test import TestCase, RequestFactory
 from django.utils.six import StringIO
 from parameterized import parameterized
 
-from cirs.models import Organization, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
-from cirs.admin import OrganizationAdmin, RoleAdmin, CriticalIncidentAdmin, PublishableIncidentAdmin
+from cirs.models import Department, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
+from cirs.admin import DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin, PublishableIncidentAdmin
 from cirs.views import PublishableIncidentList, IncidentCreate
 from django.core.management import call_command
 
@@ -42,14 +42,14 @@ from .helpers import create_user, create_user_with_perm, create_role
 
 class AdminRegistration(TestCase):
     
-    @parameterized.expand([(Organization,), (Reporter,), (Reviewer,)])
+    @parameterized.expand([(Department,), (Reporter,), (Reviewer,)])
     def test_registration(self, model):
         self.assertTrue(admin.site.is_registered(model), "{} not registered".format(model))
 
 
 
 
-class OrganizationBase(TestCase):
+class DepartmentBase(TestCase):
     
     def setUp(self):
 
@@ -65,55 +65,55 @@ class OrganizationBase(TestCase):
         }
         
 
-class OrganizationTest(OrganizationBase):
+class DepartmentTest(DepartmentBase):
 
-    def test_organization_admin_name_is_label(self):
-        org = Organization.objects.create(**self.en_dict)
-        self.assertEqual(str(org), org.label)
+    def test_department_admin_name_is_label(self):
+        dept = Department.objects.create(**self.en_dict)
+        self.assertEqual(str(dept), dept.label)
 
 
     @parameterized.expand([('label',), ('name',), ('reporter')])
-    def test_unique_org_field(self, field):
+    def test_unique_departmentt_field(self, field):
         fe_dict = {
             'label': 'FE',
             'name': 'Experimenting Noobs',
             'reporter': create_role(Reporter, 'reporter_fe'),
         }
-        # create first organization
-        Organization.objects.create(**self.en_dict)
-        # create second organization object
-        org = Organization(**fe_dict)
-        # and set fields equal to first organization
-        setattr(org, field, self.en_dict[field])
+        # create first department
+        Department.objects.create(**self.en_dict)
+        # create second department object
+        dept = Department(**fe_dict)
+        # and set fields equal to first department
+        setattr(dept, field, self.en_dict[field])
         with self.assertRaises(IntegrityError):
-            org.save()
+            dept.save()
 
 
-    def test_assigned_reporter_does_not_appear_in_admin_form_for_new_org(self):
-        Organization.objects.create(**self.en_dict)
-        form = OrganizationAdmin(Organization, admin.AdminSite()).get_form(None)
+    def test_assigned_reporter_does_not_appear_in_admin_form_for_new_dept(self):
+        Department.objects.create(**self.en_dict)
+        form = DepartmentAdmin(Department, admin.AdminSite()).get_form(None)
         self.assertNotIn(
             self.reporter, form().fields['reporter'].choices.queryset,
-            '''Found {} in select for new organization although he already is 
+            '''Found {} in select for new department although he already is 
             the reporter for {}'''.format(
-                str(self.reporter), self.reporter.organization
+                str(self.reporter), self.reporter.department
             )
         )
 
-    def test_assigned_reporter_appears_in_admin_form_for_his_org(self):
-        org = Organization.objects.create(**self.en_dict)
-        form = OrganizationAdmin(Organization, admin.AdminSite()).get_form(None, obj=org)
+    def test_assigned_reporter_appears_in_admin_form_for_his_dept(self):
+        dept = Department.objects.create(**self.en_dict)
+        form = DepartmentAdmin(Department, admin.AdminSite()).get_form(None, obj=dept)
         self.assertIn(
-            org.reporter, form().fields['reporter'].choices.queryset,
+            dept.reporter, form().fields['reporter'].choices.queryset,
             'Did not found {} in select for {} although he is assigned'.format(
-                str(org.reporter), org
+                str(dept.reporter), dept
             )
         )
 
     def test_reviewers_use_filter_horizontal(self):
-        self.assertIn('reviewers', OrganizationAdmin.filter_horizontal)
+        self.assertIn('reviewers', DepartmentAdmin.filter_horizontal)
 
-class ReviewerReporterModel(OrganizationBase):
+class ReviewerReporterModel(DepartmentBase):
     """
     User can be assigned only to one role. Superuser cannot be assigned to any role.
     """
@@ -197,7 +197,7 @@ class ReviewerReporterModel(OrganizationBase):
             )
         )
 
-class DataMigrationForOrganization(TestCase):
+class DataMigrationForDepartment(TestCase):
 
     def setUp(self):
         # has to perform forward migration, so 
@@ -260,7 +260,7 @@ class DataMigrationForOrganization(TestCase):
         ('reviewer', 'change_criticalincident')
     ])
     # TODO: Use historical model? Or remove?
-    @skip('worked for migration testeing before organization for ci was introduced')  
+    @skip('worked for migration testeing before department for ci was introduced')  
     def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
         # tests if there are users for all roles
         mommy.prepare(CriticalIncident, public=True)
@@ -270,8 +270,8 @@ class DataMigrationForOrganization(TestCase):
         with self.assertRaises(ValidationError):
             call_command('migrate', 'cirs', '0006', stdout=self.out)
 
-    def test_dont_create_organization_without_valid_configuration(self):
-        # Organization should be created only if there is valid configuration.
+    def test_dont_create_department_without_valid_configuration(self):
+        # Department should be created only if there is valid configuration.
         # As anyway only the first one was used, there is no need for a check of
         # multiple configurations.
         # Actually there should be no running installation without
@@ -280,32 +280,32 @@ class DataMigrationForOrganization(TestCase):
         
         call_command('migrate', 'cirs', '0006', stdout=self.out)
 
-        self.assertEqual(Organization.objects.count(), 0)
+        self.assertEqual(Department.objects.count(), 0)
     
     @parameterized.expand([
         ('none', ''),
         ('reporter', 'add_criticalincident'),
         ('reviewer', 'change_criticalincident')
     ]) 
-    def test_dont_create_organization_without_valid_roles(self, name, codename):
+    def test_dont_create_department_without_valid_roles(self, name, codename):
         if name != 'none':
             create_user_with_perm(name, codename)
 
         call_command('migrate', 'cirs', '0006', stdout=self.out)
 
-        self.assertEqual(Organization.objects.count(), 0)
+        self.assertEqual(Department.objects.count(), 0)
 
-    def test_create_organization(self):
+    def test_create_department(self):
         reporter = create_user_with_perm('rep', 'add_criticalincident')
         reviewer = create_user_with_perm('rev', 'change_criticalincident')
         mommy.make(LabCIRSConfig, send_notification=False)
 
         call_command('migrate', 'cirs', '0006', stdout=self.out)
-        # there should be Organization with label equal to organization in settings
-        org = Organization.objects.get(label=settings.ORGANIZATION)
+        # there should be department with label equal to organization in settings
+        dept = Department.objects.get(label=settings.ORGANIZATION)
 
-        self.assertEqual(reporter, org.reporter.user)
-        self.assertIn(reviewer.reviewer, org.reviewers.all())
+        self.assertEqual(reporter, dept.reporter.user)
+        self.assertIn(reviewer.reviewer, dept.reviewers.all())
 
 class SecurityTest(TestCase):
     
@@ -343,7 +343,7 @@ class SecurityTest(TestCase):
         self.assertNotEqual(session_user, user)
     
     @parameterized.expand(gen_test_role_classes)    
-    def test_role_without_organization_is_redirected_to_login_page(self, name, role_cls):
+    def test_role_without_department_is_redirected_to_login_page(self, name, role_cls):
         role = create_role(role_cls, name)
         response = self.client.post(
             reverse('login'), 
@@ -353,18 +353,18 @@ class SecurityTest(TestCase):
         self.assertTemplateNotUsed(response, 'cirs/publishableincident_list.html')
     
     @parameterized.expand(gen_test_role_classes)     
-    def test_role_without_organization_sees_error_message(self, name, role_cls):
-        from cirs.views import MISSING_ORGANIZATION_MSG  # necessary only here so far
+    def test_role_without_department_sees_error_message(self, name, role_cls):
+        from cirs.views import MISSING_DEPARTMENT_MSG  # necessary only here so far
         role = create_role(role_cls, name)
         response = self.client.post(
             reverse('login'), 
             {'username': role.user.username, 'password': role.user.username},
             follow=True)
-        self.assertEqual(response.context['message'], MISSING_ORGANIZATION_MSG)
+        self.assertEqual(response.context['message'], MISSING_DEPARTMENT_MSG)
         self.assertEqual(response.context['message_class'], 'danger')
 
     @parameterized.expand(gen_test_role_classes)
-    def test_role_without_organization_is_logged_out(self, name, role_cls):
+    def test_role_without_department_is_logged_out(self, name, role_cls):
         role = create_role(role_cls, name)
         self.client.post(
             reverse('login'), 
@@ -376,13 +376,13 @@ class SecurityTest(TestCase):
         self.assertNotEqual(session_user, role.user)
         
     @parameterized.expand(gen_test_role_classes)
-    def test_role_with_organization_is_logged_in(self, name, role_cls):
+    def test_role_with_department_is_logged_in(self, name, role_cls):
         role = create_role(role_cls, name)
         if name == 'reporter':
-            org = mommy.make(Organization, reporter=role)
+            dept = mommy.make(Department, reporter=role)
         elif name == 'reviewer':
-            org = mommy.make(Organization)
-            org.reviewers.add(role)
+            dept = mommy.make(Department)
+            dept.reviewers.add(role)
         
         self.client.post(
             reverse('login'), 
@@ -400,7 +400,7 @@ class SecurityTest(TestCase):
         ('change_criticalincident',),
         ('add_publishableincident',),
         ('change_publishableincident',),
-        #('add_labcirsconfig',), # TODO: config should be created automatically on organization creation
+        #('add_labcirsconfig',), # TODO: config should be created automatically on department creation
         ('change_labcirsconfig')
     ])
     #@skip('until group assignement for reviewer is done')
@@ -430,9 +430,9 @@ class BackendViewAccess(TestCase):
         reviewers = mommy.make_recipe('cirs.reviewer',  _quantity=2)
         for incident, reviewer in zip(incidents, reviewers):
             if cls_name == CriticalIncident:
-                incident.organization.reviewers.add(reviewer)
+                incident.department.reviewers.add(reviewer)
             elif cls_name == PublishableIncident:
-                incident.critical_incident.organization.reviewers.add(reviewer)
+                incident.critical_incident.department.reviewers.add(reviewer)
         
         model_admin = admin_cls(cls_name, admin.AdminSite())
         
@@ -467,12 +467,11 @@ class BackendViewAccess(TestCase):
             reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name)))
         request.user = create_user('superman', superuser=True)
         qs = model_admin.get_queryset(request)
-        print qs
         self.assertEqual(qs.count(), 0)
         
-# next schema migration has to check if there are cis or organizations
-# if there are cis and no org, raise
-# if there are cis and multiple orgs raise 
+# next schema migration has to check if there are cis or departments
+# if there are cis and no dept, raise
+# if there are cis and multiple depts raise 
 
 
 class IncidentCreationViewSecurityTest(TestCase):
@@ -515,34 +514,34 @@ class IncidentCreationViewSecurityTest(TestCase):
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'cirs/login.html')
 
-class CriticalIncidentWithOrganization(TestCase):
+class CriticalIncidentWithDepartment(TestCase):
     
-    def test_critical_incident_inherits_organization_from_creating_reporter(self):
+    def test_critical_incident_inherits_department_from_creating_reporter(self):
         reporter = create_role(Reporter, 'reporter')
         # TODO: check if permission is still necessary or if reporter role is enough
         permission = Permission.objects.get(codename='add_criticalincident')
         reporter.user.user_permissions.add(permission)
-        mommy.make(Organization, reporter=reporter)
+        mommy.make(Department, reporter=reporter)
         LabCIRSConfig.objects.create(send_notification=False)
         ci = mommy.prepare(CriticalIncident, public=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
 
         self.client.post(reverse('create_incident'), data=ci.__dict__, follow=True)
 
-        self.assertEqual(CriticalIncident.objects.first().organization, 
-                         reporter.organization)
+        self.assertEqual(CriticalIncident.objects.first().department, 
+                         reporter.department)
     
     @parameterized.expand([
         ('reporter',),
         ('reviewer',),
         ])
-    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_organization(self, role):
+    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_department(self, role):
         self.reporter = create_role(Reporter, 'reporter')
         self.reviewer = create_role(Reviewer, 'reviewer')
         pi = mommy.make(PublishableIncident, publish=True,
                         critical_incident__public=True, 
-                        critical_incident__organization__reporter=self.reporter)
-        pi.critical_incident.organization.reviewers.add(self.reviewer)
+                        critical_incident__department__reporter=self.reporter)
+        pi.critical_incident.department.reviewers.add(self.reviewer)
         pi2 = mommy.make(PublishableIncident, critical_incident__public=True, publish=True)
         
         factory = RequestFactory()

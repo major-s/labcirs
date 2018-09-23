@@ -32,7 +32,7 @@ from django.test import TestCase, RequestFactory, override_settings
 from model_mommy import mommy
 
 from cirs.admin import CriticalIncidentAdmin
-from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Organization, Reporter
+from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Department, Reporter
 from cirs.views import IncidentCreateForm, PublishableIncidentList
 
 from .helpers import create_role, create_user, create_user_with_perm
@@ -90,7 +90,7 @@ class CriticalIncidentCreateViewTest(TestCase):
     def test_create_view_returns_message(self):
         user = create_user_with_perm('reporter', 'add_criticalincident')
         create_role(Reporter, user)
-        mommy.make(Organization, reporter=user.reporter)
+        mommy.make(Department, reporter=user.reporter)
           
         test_incident = {'date': '07/24/2015',
                          'incident': 'A strang incident happened',
@@ -112,7 +112,7 @@ class CriticalIncidentCreateViewTest(TestCase):
 class SendNotificationEmailTest(TestCase):
 
     def setUp(self):
-        self.organization = mommy.make(Organization)
+        self.department = mommy.make(Department)
         incident_date = date(2015, 7, 31)
         self.test_incident = {
             'date': incident_date,
@@ -126,7 +126,7 @@ class SendNotificationEmailTest(TestCase):
 
     def save_form(self):
         form = IncidentCreateForm(self.test_incident)
-        form.instance.organization = self.organization
+        form.instance.department = self.department
         form.save()
         
     def prepare_config(self, send=True, recipient=None):
@@ -146,7 +146,7 @@ class SendNotificationEmailTest(TestCase):
         config = LabCIRSConfig.objects.create(send_notification=True)
         config.notification_recipients.add(self.reviewer)
         self.save_form()
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
 
     def test_set_email_body_in_config(self):
@@ -165,7 +165,7 @@ class SendNotificationEmailTest(TestCase):
     def test_do_not_send_email_if_send_notification_is_false(self):
         self.prepare_config(send=False)
         self.save_form()
-        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)  # @UndefinedVariable
 
     def test_no_notifications_without_recipients(self):
         config = self.prepare_config()
@@ -175,7 +175,7 @@ class SendNotificationEmailTest(TestCase):
     def test_email_adress_of_all_recipients_in_mail(self):
         self.prepare_config(recipient=self.reviewer)
         self.save_form()
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertIn(self.reviewer.email, mail.outbox[0].to)
 
     def test_no_notifications_without_sender(self):
@@ -188,7 +188,7 @@ class SendNotificationEmailTest(TestCase):
         config.notification_sender_email = 'labcirs@labcirs.edu'
         config.save()
         self.save_form()
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual('labcirs@labcirs.edu', mail.outbox[0].from_email)
 
 
@@ -200,12 +200,12 @@ class CriticalIncidentAdminTest(TestCase):
         self.assertIn('category', qmb_fields)
 
 
-def generate_three_incidents(organization):
+def generate_three_incidents(department):
     """generate three incidents with different dates in order 2,3,1 and names c, a, b"""
     
     def new_incident(month):
         return mommy.make(CriticalIncident, public=True, 
-                          date=date(2015, month, 31), organization=organization)
+                          date=date(2015, month, 31), department=department)
 
     incidents = [new_incident(month) for month in (7,8,5)]
 
@@ -224,8 +224,8 @@ class PublishedIncidentTest(TestCase):
         """Tests if newest published incidents appear first in the table.
         Neglects jQuery.DataTables!!!"""
         reporter = create_role(Reporter, 'reporter')
-        organization = mommy.make(Organization, reporter=reporter)
-        generate_three_incidents(organization)
+        department = mommy.make(Department, reporter=reporter)
+        generate_three_incidents(department)
 
         factory = RequestFactory()
 

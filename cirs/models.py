@@ -29,7 +29,6 @@ from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from multiselectfield import MultiSelectField
-from django.db.models.deletion import PROTECT
 
 
 class Role(models.Model):
@@ -83,16 +82,16 @@ class Reviewer(Role):
         verbose_name_plural = _('Reviewers')      
 
 
-class Organization(models.Model):
+class Department(models.Model):
     label = models.CharField(_('Label'), max_length=32, unique=True)
     name = models.CharField(_('Name'), max_length=255, unique=True)
     reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT,
-            help_text='Reporters assigned to other organizations are not listed here!')
-    reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"), related_name='organizations')
+            help_text='Reporters assigned to other departments are not listed here!')
+    reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"), related_name='departments')
 
     class Meta:
-        verbose_name = _('Organization')
-        verbose_name_plural = _('Organizations')
+        verbose_name = _('Department')
+        verbose_name_plural = _('Departments')
 
     def __unicode__(self):
         return self.label
@@ -150,7 +149,7 @@ class CriticalIncident(models.Model):
     comment_code = models.CharField(max_length=16, blank=True)
     # auto filled part, invisible for reporter
     reported = models.DateField(_("Date of report"), auto_now_add=True)
-    organization = models.ForeignKey(Organization, on_delete=PROTECT)
+    department = models.ForeignKey(Department, on_delete=models.PROTECT)
     # review part, invisible for reporter
     action = models.TextField(_("Action"), blank=True)
     responsibilty = models.CharField(

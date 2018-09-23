@@ -9,14 +9,14 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cirs', '0006_data_migration_assign_roles_and_create_organization'),
+        ('cirs', '0006_data_migration_assign_roles_and_create_department'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='criticalincident',
-            name='organization',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.PROTECT, to='cirs.Organization'),
+            name='department',
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.PROTECT, to='cirs.Department'),
             preserve_default=False,
         ),
     ]

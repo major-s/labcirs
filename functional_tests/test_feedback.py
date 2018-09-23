@@ -25,7 +25,7 @@ from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, LabCIRSConfig, Organization, Reporter
+from cirs.models import Comment, CriticalIncident, LabCIRSConfig, Department, Reporter
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
@@ -40,10 +40,10 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
     def test_user_can_see_feedback_code(self):
         LabCIRSConfig.objects.create(send_notification=True)
         reporter = create_role(Reporter, self.reporter)
-        # create organization. In theory I could test if reporter has 
-        # an organization in the view, but acutally users who are not superuser 
-        # and don't have assoziated organization cannot efectivly log in
-        mommy.make(Organization, reporter=reporter)
+        # create department. In theory I could test if reporter has 
+        # an department in the view, but acutally users who are not superuser 
+        # and don't have assoziated department cannot efectivly log in
+        mommy.make(Department, reporter=reporter)
         self.quick_login_reporter(reverse('create_incident'))
 
         # the reporter enters incident data
@@ -65,7 +65,7 @@ class CommentTest(FunctionalTest):
     def setUp(self):
         super(CommentTest, self).setUp()
         self.incident = mommy.make(CriticalIncident, public=True,
-            organization__reporter=create_role(Reporter, self.reporter))
+            department__reporter=create_role(Reporter, self.reporter))
         self.config = LabCIRSConfig.objects.create(send_notification=True)
 
     def view_incident_detail(self):

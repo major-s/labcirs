@@ -25,7 +25,7 @@ from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
 
 from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
-                         LabCIRSConfig, Organization, Reporter, Reviewer)
+                         LabCIRSConfig, Department, Reporter, Reviewer)
 
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):
@@ -101,7 +101,7 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(CriticalIncidentAdmin, self).get_queryset(request)
         try:
-            return qs.filter(organization__in=request.user.reviewer.organizations.all())
+            return qs.filter(department__in=request.user.reviewer.departments.all())
         except Reviewer.DoesNotExist:
             return qs.none()
 
@@ -129,7 +129,7 @@ class PublishableIncidentAdmin(admin.ModelAdmin):
         qs = super(PublishableIncidentAdmin, self).get_queryset(request)
         try:
             return qs.filter(
-                critical_incident__organization__in=request.user.reviewer.organizations.all())
+                critical_incident__department__in=request.user.reviewer.departments.all())
         except Reviewer.DoesNotExist:
             return qs.none()
 
@@ -159,14 +159,14 @@ class AdminWithObject(admin.ModelAdmin):
         return super(AdminWithObject, self).get_form(request, obj, **kwargs)
 
 
-class OrganizationAdmin(AdminWithObject):
+class DepartmentAdmin(AdminWithObject):
     filter_horizontal = ('reviewers',)
        
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "reporter":
-            kwargs["queryset"] = (Reporter.objects.filter(organization=None) 
-                                  | Reporter.objects.filter(organization=self.model_instance))
-        return super(OrganizationAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+            kwargs["queryset"] = (Reporter.objects.filter(department=None) 
+                                  | Reporter.objects.filter(department=self.model_instance))
+        return super(DepartmentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class RoleAdmin(AdminWithObject):
@@ -187,6 +187,6 @@ admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
 admin.site.register(Comment)
-admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Reporter, RoleAdmin)
 admin.site.register(Reviewer, RoleAdmin)

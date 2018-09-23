@@ -30,7 +30,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
 from cirs.models import (CriticalIncident, LabCIRSConfig,
-                         Organization, Reviewer, Reporter)
+                         Department, Reviewer, Reporter)
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 
@@ -53,7 +53,7 @@ test_incident = {'date': incident_date,
 class FunctionalTestWithBackendLogin(FunctionalTest):
 
     def go_to_test_incident_as_reviewer(self):
-        self.org.reviewers.add(create_role(Reviewer, self.reviewer))
+        self.dept.reviewers.add(create_role(Reviewer, self.reviewer))
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
         self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
         self.assertIn("/admin/", self.browser.current_url)
@@ -66,7 +66,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     def setUp(self):
         super(CriticalIncidentListTest, self).setUp()
         create_role(Reporter, self.reporter)
-        self.org = mommy.make(Organization, reporter=self.reporter.reporter)
+        self.dept = mommy.make(Department, reporter=self.reporter.reporter)
     
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
@@ -117,7 +117,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         critical incidents."""
         # import the generator from unit test
 
-        generate_three_incidents(self.org)
+        generate_three_incidents(self.dept)
 
         # Now reporter goes to the list and should see the list of
         # published incidents in order b, a, c
@@ -150,8 +150,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 class CriticalIncidentBackendTest(FunctionalTestWithBackendLogin):
 
     def test_reviewer_can_chose_category_of_incident(self):
-        self.org = mommy.make(Organization)
-        CriticalIncident.objects.create(organization=self.org, **test_incident)
+        self.dept = mommy.make(Department)
+        CriticalIncident.objects.create(department=self.dept, **test_incident)
         self.go_to_test_incident_as_reviewer()
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
