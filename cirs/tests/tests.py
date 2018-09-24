@@ -18,15 +18,14 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from collections import OrderedDict
 from datetime import date, timedelta
 
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core import mail
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory, override_settings
 
 from model_mommy import mommy
@@ -35,7 +34,7 @@ from cirs.admin import CriticalIncidentAdmin
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Department, Reporter
 from cirs.views import IncidentCreateForm, PublishableIncidentList
 
-from .helpers import create_role, create_user, create_user_with_perm
+from .helpers import create_role, create_user_with_perm
 
 
 class CriticalIncidentModelTest(TestCase):
@@ -100,7 +99,7 @@ class CriticalIncidentCreateViewTest(TestCase):
                          'public': True,
                          }
           
-        login = self.client.login(username=user.username, password=user.username)
+        self.client.login(username=user.username, password=user.username)
         LabCIRSConfig.objects.create(send_notification=False)
 
         response = self.client.post(reverse('create_incident'),  test_incident, follow=True)

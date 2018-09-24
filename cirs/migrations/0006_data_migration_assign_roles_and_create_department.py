@@ -35,7 +35,7 @@ def get_permission(codename, models):
             raise ValidationError('Permission does not exist although there ',
                                   'are critcal incidents in the database!')
 
-def create_reporter(apps, schema_editor, models):
+def create_reporter(models):
     # only reporter should have the permission to add incidents, therefore
     # we search for this user
     # in new installations there are no permissions during initial migration
@@ -56,7 +56,7 @@ def create_reporter(apps, schema_editor, models):
     except MultipleObjectsReturned as e:
         raise e
 
-def create_reviewers(apps, schema_editor, models):
+def create_reviewers(models):
     # all users with reviewer permissions are turned to reviewers
     permission = get_permission('change_criticalincident', models) 
     reviewers = models.User.objects.filter(user_permissions=permission)
@@ -75,7 +75,7 @@ def create_reviewers(apps, schema_editor, models):
             models.Reviewer.objects.create(user = review_user)
 
 
-def create_department(apps, schema_editor, models):
+def create_department(models):
     # in installations for single organizations/departments there should be only one reporter.
     # if multiple exist, exception is thrown while creating reporter role
     # there has to be also at least one reviewer and one valid configuration
@@ -90,13 +90,13 @@ def create_department(apps, schema_editor, models):
             dept.reviewers.add(reviewer)
 
 
-def backwards(apps, schema_editor):
+def backwards(apps, schema_editor):  # @UnusedVariable
     for cls_name in ('Reporter', 'Reviewer', 'Department'):
         model_cls = apps.get_model('cirs', cls_name)
         model_cls.objects.all().delete()
 
 
-def forward(apps, schema_editor):
+def forward(apps, schema_editor):  # @UnusedVariable
     
     class ArchivedModels():
         def __init__(self):
@@ -110,9 +110,9 @@ def forward(apps, schema_editor):
         
     models = ArchivedModels()
     
-    create_reporter(apps, schema_editor, models)
-    create_reviewers(apps, schema_editor, models)
-    create_department(apps, schema_editor, models)
+    create_reporter(models)
+    create_reviewers(models)
+    create_department(models)
     
 
 class Migration(migrations.Migration):

@@ -18,15 +18,12 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
-from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
@@ -103,7 +100,7 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
         accessible_incident_id = None
         try:
             accessible_incident_id = self.request.session['accessible_incident']
-        except KeyError as e:
+        except KeyError:
             return redirect('incident_search')
         if accessible_incident_id != context['incident'].pk:
             return redirect('incident_search')

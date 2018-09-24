@@ -209,7 +209,7 @@ class CriticalIncident(models.Model):
             random_string = get_random_string(8, chars)
             if CriticalIncident.objects.filter(comment_code=random_string).count() == 0:
                 self.comment_code = random_string
-        super(CriticalIncident, self).save()
+        super(CriticalIncident, self).save(*agrs, **kwargs)
 
 class PublishableIncident(models.Model):
     critical_incident = models.OneToOneField(CriticalIncident,
