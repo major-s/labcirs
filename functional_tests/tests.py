@@ -29,8 +29,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import (CriticalIncident, LabCIRSConfig,
-                         Department, Reviewer, Reporter)
+from cirs.models import CriticalIncident, Department, Reviewer, Reporter
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 
@@ -70,7 +69,6 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
-        LabCIRSConfig.objects.create(send_notification=True)
         self.quick_login_reporter()
         self.click_link_with_text('Add incident')
 
@@ -131,12 +129,11 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_send_email_after_reviewer_creates_an_incident(self):
-        config = LabCIRSConfig.objects.create(
-            send_notification=True, 
-            notification_sender_email='labcirs@labcirs.edu'
-        )
+        config = self.dept.labcirsconfig
+        config.send_notification = True
+        config.notification_sender_email = 'labcirs@labcirs.edu'
         config.notification_recipients.add(self.reviewer)
-
+        config.save()
         self.quick_login_reporter(reverse('create_incident'))
 
         # reporter enters incident data

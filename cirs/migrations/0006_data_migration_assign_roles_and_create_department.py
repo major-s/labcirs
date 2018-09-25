@@ -32,7 +32,7 @@ def get_permission(codename, models):
         return permission
     except models.Permission.DoesNotExist:
         if models.CriticalIncident.objects.count() > 0:
-            raise ValidationError('Permission does not exist although there ',
+            raise ValidationError('Permission does not exist although there '
                                   'are critcal incidents in the database!')
 
 def create_reporter(models):

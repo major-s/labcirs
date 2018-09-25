@@ -134,7 +134,17 @@ class PublishableIncidentAdmin(admin.ModelAdmin):
             return qs.none()
 
 
-class ConfigurationAdmin(admin.ModelAdmin):
+class AdminWithObject(admin.ModelAdmin):
+    
+    def get_form(self, request, obj=None, **kwargs):
+        self.model_instance = None
+        if obj:
+            self.model_instance = obj
+           
+        return super(AdminWithObject, self).get_form(request, obj, **kwargs)
+
+
+class ConfigurationAdmin(AdminWithObject):
     filter_horizontal = ('notification_recipients',)
     fieldsets = (
         (_('Login infos'), {
@@ -149,14 +159,20 @@ class ConfigurationAdmin(admin.ModelAdmin):
     )
 
 
-class AdminWithObject(admin.ModelAdmin):
-    
-    def get_form(self, request, obj=None, **kwargs):
-        self.model_instance = None
-        if obj:
-            self.model_instance = obj
-           
-        return super(AdminWithObject, self).get_form(request, obj, **kwargs)
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # If by chance someone creates config in admin manually, the list will be empty!
+        if db_field.name == "notification_recipients":
+            kwargs["queryset"] = User.objects.filter(reviewer__in=self.model_instance.department.reviewers.all())
+        return super(ConfigurationAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super(ConfigurationAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            if request.user.is_superuser is True:
+                return qs
 
 
 class DepartmentAdmin(AdminWithObject):
@@ -186,7 +202,6 @@ class RoleAdmin(AdminWithObject):
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
-admin.site.register(Comment)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Reporter, RoleAdmin)
 admin.site.register(Reviewer, RoleAdmin)

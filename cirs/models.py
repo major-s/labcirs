@@ -25,6 +25,8 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
@@ -63,7 +65,6 @@ class Reporter(Role):
 class Reviewer(Role):
     REVIEWER_PERM_CODES = ('change_criticalincident', 'add_publishableincident', 
                            'change_publishableincident', 'change_labcirsconfig')
-    REVIEWER_PERMS = Permission.objects.filter(codename__in=REVIEWER_PERM_CODES)
     
     def clean(self):
         super(Reviewer, self).clean()
@@ -72,8 +73,9 @@ class Reviewer(Role):
                 _('This user is already a reporter and thus cannot become a reviewer'))
             
     def save(self, *args, **kwargs):
-        super(Reviewer, self).save(*args, **kwargs)
-        self.user.user_permissions.set(self.REVIEWER_PERMS)
+        super(Reviewer, self).save()
+        REVIEWER_PERMS = Permission.objects.filter(codename__in=self.REVIEWER_PERM_CODES)
+        self.user.user_permissions.set(REVIEWER_PERMS)
         self.user.is_staff = True
         self.user.save()
 
@@ -149,7 +151,8 @@ class CriticalIncident(models.Model):
     comment_code = models.CharField(max_length=16, blank=True)
     # auto filled part, invisible for reporter
     reported = models.DateField(_("Date of report"), auto_now_add=True)
-    department = models.ForeignKey(Department, on_delete=models.PROTECT)
+    department = models.ForeignKey(Department, verbose_name=_('Department'),
+                                   on_delete=models.PROTECT)
     # review part, invisible for reporter
     action = models.TextField(_("Action"), blank=True)
     responsibilty = models.CharField(
@@ -261,7 +264,7 @@ class LabCIRSConfig(models.Model):
                                                max_length=255, blank=True)
     # Notification settings
     send_notification = models.BooleanField(
-        _('Send notification'),
+        _('Send notification'), default=False,
         help_text=_(
             """Check if you wish to be informed about new incidents per email.<br>
             IMPORTANT: Sender email has to exist and at least one recipient is necessary.<br>
@@ -275,13 +278,16 @@ class LabCIRSConfig(models.Model):
     # TODO: limit_choices_to should actually use permissions. Check if user has email!
     notification_recipients = models.ManyToManyField(
         User, verbose_name=_('Notification recipients'), null=True, blank=True,
-        help_text=_('Choose recipients of the notification email'),
-        limit_choices_to={'is_superuser': False, 'is_staff': True})
+        help_text=_('Choose recipients of the notification email'))
     notification_text = models.TextField(
         _('Notification text'), blank=True,
         help_text=('Enter the message which will be send to the reviewer(s) '
                    'when a new incident is reported')
         )
+
+    # auto filled part, invisible for reviewer
+    department = models.OneToOneField(Department, verbose_name=_('Department'),
+                                      on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = _('LabCIRS configuration')
@@ -296,10 +302,19 @@ class LabCIRSConfig(models.Model):
                 raise ValidationError(_('You have to choose at least one notification recipient.'))
             if self.notification_sender_email == '':
                 raise ValidationError(_('You have to enter valid sender email.'))
+            
+    def __unicode__(self):
+        return 'LabCIRS configuration for {}'.format(self.department.label)
+
+@receiver(post_save, sender=Department)
+def create_config_for_department(sender, instance, created, **kwargs):
+    if created:
+        LabCIRSConfig.objects.create(department=instance)
+
 
 COMMENT_STATUS_CHOICES = (('open', _('open')), ('in process', _('in process')),
                   ('closed', _('closed')))
-            
+
 class Comment(models.Model):
     critical_incident = models.ForeignKey(CriticalIncident, 
                                           verbose_name=_("Critical incident"),

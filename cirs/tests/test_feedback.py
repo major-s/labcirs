@@ -115,7 +115,6 @@ class CommentViewTest(BaseFeedbackTest):
                              'author': self.reporter,
                              'status': 'open'} 
 
-        LabCIRSConfig.objects.create(send_notification=False)
         self.client.login(username=self.reporter.username, 
                           password=self.reporter.username)
         session = self.client.session

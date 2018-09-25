@@ -25,7 +25,7 @@ from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, LabCIRSConfig, Department, Reporter
+from cirs.models import Comment, CriticalIncident, Department, Reporter
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
@@ -38,7 +38,6 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
 
     @override_settings(DEBUG=True)
     def test_user_can_see_feedback_code(self):
-        LabCIRSConfig.objects.create(send_notification=True)
         reporter = create_role(Reporter, self.reporter)
         # create department. In theory I could test if reporter has 
         # an department in the view, but acutally users who are not superuser 
@@ -66,7 +65,6 @@ class CommentTest(FunctionalTest):
         super(CommentTest, self).setUp()
         self.incident = mommy.make(CriticalIncident, public=True,
             department__reporter=create_role(Reporter, self.reporter))
-        self.config = LabCIRSConfig.objects.create(send_notification=True)
 
     def view_incident_detail(self):
         '''Need this function because setting session from functional test
@@ -129,6 +127,8 @@ class CommentTest(FunctionalTest):
 
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_send_email_after_reporter_creates_a_comment(self):
+        self.config = self.incident.department.labcirsconfig
+        self.config.send_notification = True
         self.config.notification_recipients.add(self.reviewer)
         self.config.notification_sender_email = 'labcirs@labcirs.edu'
         self.config.save()

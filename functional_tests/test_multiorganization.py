@@ -29,7 +29,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import Reporter, Reviewer, Department, CriticalIncident, PublishableIncident
+from cirs.models import (Reporter, Reviewer, Department, CriticalIncident, PublishableIncident,
+                        LabCIRSConfig)
 from cirs.tests.helpers import create_role, create_user
 from parameterized import parameterized, param
 
@@ -265,22 +266,7 @@ class SecurityFrontendTest(FunctionalTest):
 
 @override_settings(DEBUG=True)
 class AccessDataWithMultipleDepts(FunctionalTest):
-    # if the class is run in isolation, the tests pass with following set to true
-    serialized_rollback = True
-    # if run as whole suite, there are exceptions with unique constraint!
         
-    def check_admin_table_for_items(self, user, cls_name, present=None, absent=None):
-        admin_url = reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name))
-        self.quick_backend_login(user, admin_url)
-        self.wait.until(EC.url_contains(admin_url))
-        if present:
-            self.browser.find_element_by_link_text(present)
-        if absent:
-            with self.assertRaises(NoSuchElementException):
-                self.browser.find_element_by_link_text(absent)
-
-
-
     def setUp(self):
         super(AccessDataWithMultipleDepts, self).setUp()
         self.rep = create_role(Reporter, 'rep')
@@ -349,6 +335,19 @@ class AccessDataWithMultipleDepts(FunctionalTest):
         (PublishableIncident, 'incident_de')
     ])
     def test_admin_sees_no_incidents(self, model_cls, field):
-        admin = create_user('superman', superuser=True)
         for incident in model_cls.objects.all():
-            self.check_admin_table_for_items(admin, model_cls, absent=getattr(incident, field))
+            self.check_admin_table_for_items(self.admin, model_cls, absent=getattr(incident, field))
+
+class ConfigurationForDepartments(FunctionalTest):
+
+    def test_admin_can_go_to_department_config_after_dept_is_created(self):
+        dept = mommy.make_recipe('cirs.department')
+        self.quick_backend_login(target_url=reverse('admin:cirs_labcirsconfig_changelist'))
+        self.click_link_with_text('LabCIRS configuration for {}'.format(dept.label))
+
+    def test_reviewer_sees_only_config_of_own_department(self):
+        dept1, dept2 = mommy.make_recipe('cirs.department', _quantity=2)
+        reviewer = create_role(Reviewer, 'rev')
+        dept1.reviewers.add(reviewer)
+        self.check_admin_table_for_items(
+            reviewer.user, LabCIRSConfig, str(dept1.labcirsconfig), str(dept2.labcirsconfig))

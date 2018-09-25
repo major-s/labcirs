@@ -19,34 +19,29 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import itertools
-from unittest import skip
 
-from django.conf import settings
 from django.contrib import admin, auth
 from django.contrib.auth.models import Permission
-from django.core.exceptions import MultipleObjectsReturned, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.test import TestCase, RequestFactory
-from django.utils.six import StringIO
+from model_mommy import mommy
 from parameterized import parameterized
 
 from cirs.models import Department, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
-from cirs.admin import DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin, PublishableIncidentAdmin
+from cirs.admin import (DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin,
+                        PublishableIncidentAdmin, ConfigurationAdmin)
 from cirs.views import PublishableIncidentList, IncidentCreate
-from django.core.management import call_command
 
-from model_mommy import mommy
+from .helpers import create_user, create_role
 
-from .helpers import create_user, create_user_with_perm, create_role
 
 class AdminRegistration(TestCase):
     
     @parameterized.expand([(Department,), (Reporter,), (Reviewer,)])
     def test_registration(self, model):
         self.assertTrue(admin.site.is_registered(model), "{} not registered".format(model))
-
-
 
 
 class DepartmentBase(TestCase):
@@ -113,6 +108,7 @@ class DepartmentTest(DepartmentBase):
     def test_reviewers_use_filter_horizontal(self):
         self.assertIn('reviewers', DepartmentAdmin.filter_horizontal)
 
+
 class ReviewerReporterModel(DepartmentBase):
     """
     User can be assigned only to one role. Superuser cannot be assigned to any role.
@@ -174,7 +170,6 @@ class ReviewerReporterModel(DepartmentBase):
             )
         )
 
-
     @parameterized.expand(gen_test_cases)            
     def test_user_apears_in_admin_in_asigned_role(self, _, role_cls):
         role = role_cls.objects.create(user=self.user)
@@ -187,7 +182,7 @@ class ReviewerReporterModel(DepartmentBase):
         )
         
     @parameterized.expand(gen_test_cases)            
-    def test_assifned_user_does_not_apears_in_admin_in_new_role(self, _, role_cls):
+    def test_assigned_user_does_not_apears_in_admin_in_new_role(self, _, role_cls):
         role = role_cls.objects.create(user=self.user)
         form = RoleAdmin(role_cls, admin.AdminSite()).get_form(None)
         self.assertNotIn(
@@ -197,115 +192,6 @@ class ReviewerReporterModel(DepartmentBase):
             )
         )
 
-class DataMigrationForDepartment(TestCase):
-
-    def setUp(self):
-        # has to perform forward migration, so 
-        out = StringIO()
-        call_command('migrate', 'cirs', '0005', stdout=out)
-        #print out.getvalue()
-        self.out = StringIO()
-
-    def gen_test_role_classes():  # @NoSelf
-        return [
-        ('reporter', Reporter),
-        ('reviewer', Reviewer)
-    ]
-
-    @parameterized.expand(gen_test_role_classes)
-    def test_migration_goes_further_if_there_is_no_fitting_user(self, _, role_cls):
-        # important for initial migration
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-        self.assertEqual(role_cls.objects.count(), 0)
-     
-    @parameterized.expand([
-        ('reporter', 'add_criticalincident', Reporter),
-        ('reviewer', 'change_criticalincident', Reviewer)
-    ])        
-    def test_migration_creates_role_based_on_user_perms(self, name, codename, role_cls):
-        user = create_user_with_perm(name, codename)
-        permission = Permission.objects.get(codename=codename)
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-        self.assertEqual(role_cls.objects.first().user, user)        
-        self.assertIn(permission, role_cls.objects.first().user.user_permissions.all())
-        
-    def test_migration_stops_if_there_is_more_than_one_user_with_reporter_rights(self):
-        create_user_with_perm('reporter', 'add_criticalincident')
-        create_user_with_perm('reporter2', 'add_criticalincident')
-        with self.assertRaises(MultipleObjectsReturned):
-            call_command('migrate', 'cirs', '0006', stdout=self.out)
-
-    
-    def test_all_users_with_reviewer_permissions_are_assigned_to_reviewer_role(self):
-        create_user_with_perm('reviewer', 'change_criticalincident')
-        create_user_with_perm('reviewer2', 'change_criticalincident')
-
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-        self.assertEqual(Reviewer.objects.count(), 2)
-
-    def test_no_omnipotent_users(self):
-        # generates exception if any user has add and change permissions 
-        # afterwards no reperter and no reviewer should be present
-        user = create_user_with_perm('user', 'add_criticalincident')
-        permission = Permission.objects.get(codename='change_criticalincident')
-        user.user_permissions.add(permission)
-
-        with self.assertRaises(ValidationError):
-            call_command('migrate', 'cirs', '0006', stdout=self.out)
-
-    
-    @parameterized.expand([
-        ('none', ''),
-        ('reporter', 'add_criticalincident'),
-        ('reviewer', 'change_criticalincident')
-    ])
-    # TODO: Use historical model? Or remove?
-    @skip('worked for migration testeing before department for ci was introduced')  
-    def test_users_with_role_permission_has_to_exist_if_there_are_incidents(self, name, codename):
-        # tests if there are users for all roles
-        mommy.prepare(CriticalIncident, public=True)
-        if name != 'none':
-            create_user_with_perm(name, codename)
-
-        with self.assertRaises(ValidationError):
-            call_command('migrate', 'cirs', '0006', stdout=self.out)
-
-    def test_dont_create_department_without_valid_configuration(self):
-        # Department should be created only if there is valid configuration.
-        # As anyway only the first one was used, there is no need for a check of
-        # multiple configurations.
-        # Actually there should be no running installation without
-        create_user_with_perm('rep', 'add_criticalincident')
-        create_user_with_perm('rev', 'change_criticalincident')
-        
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-
-        self.assertEqual(Department.objects.count(), 0)
-    
-    @parameterized.expand([
-        ('none', ''),
-        ('reporter', 'add_criticalincident'),
-        ('reviewer', 'change_criticalincident')
-    ]) 
-    def test_dont_create_department_without_valid_roles(self, name, codename):
-        if name != 'none':
-            create_user_with_perm(name, codename)
-
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-
-        self.assertEqual(Department.objects.count(), 0)
-
-    def test_create_department(self):
-        reporter = create_user_with_perm('rep', 'add_criticalincident')
-        reviewer = create_user_with_perm('rev', 'change_criticalincident')
-        mommy.make(LabCIRSConfig, send_notification=False)
-
-        call_command('migrate', 'cirs', '0006', stdout=self.out)
-        # there should be department with label equal to organization in settings
-        dept = Department.objects.get(label=settings.ORGANIZATION)
-
-        self.assertEqual(reporter, dept.reporter.user)
-        self.assertIn(reviewer.reviewer, dept.reviewers.all())
 
 class SecurityTest(TestCase):
     
@@ -400,10 +286,8 @@ class SecurityTest(TestCase):
         ('change_criticalincident',),
         ('add_publishableincident',),
         ('change_publishableincident',),
-        #('add_labcirsconfig',), # TODO: config should be created automatically on department creation
-        ('change_labcirsconfig')
+        ('change_labcirsconfig', ),
     ])
-    #@skip('until group assignement for reviewer is done')
     def test_users_has_permission_after_assignement_of_reviewer_role(self, perm_code):
         user = create_user('cirs_user')
         Reviewer.objects.create(user=user)
@@ -414,18 +298,14 @@ class SecurityTest(TestCase):
         Reviewer.objects.create(user=user)
         self.assertTrue(user.is_staff)
 
-class BackendViewAccess(TestCase):
 
-    #def setUp(self):
-    #    self.incidents = mommy.make_recipe('cirs.'+recipe,  _quantity=2)
+class BackendViewAccess(TestCase):
 
     @parameterized.expand([
         (CriticalIncident, CriticalIncidentAdmin, 'public_ci'),
         (PublishableIncident, PublishableIncidentAdmin, 'published_incident'),
-        #('labcirsconfig')
     ])
     def test_admin_list_view(self, cls_name, admin_cls, recipe):
-        # prepare DB
         incidents = mommy.make_recipe('cirs.'+recipe,  _quantity=2)
         reviewers = mommy.make_recipe('cirs.reviewer',  _quantity=2)
         for incident, reviewer in zip(incidents, reviewers):
@@ -514,6 +394,7 @@ class IncidentCreationViewSecurityTest(TestCase):
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'cirs/login.html')
 
+
 class CriticalIncidentWithDepartment(TestCase):
     
     def test_critical_incident_inherits_department_from_creating_reporter(self):
@@ -522,7 +403,6 @@ class CriticalIncidentWithDepartment(TestCase):
         permission = Permission.objects.get(codename='add_criticalincident')
         reporter.user.user_permissions.add(permission)
         mommy.make(Department, reporter=reporter)
-        LabCIRSConfig.objects.create(send_notification=False)
         ci = mommy.prepare(CriticalIncident, public=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
 
@@ -554,3 +434,72 @@ class CriticalIncidentWithDepartment(TestCase):
         self.assertIn(pi, qs)
         self.assertNotIn(pi2, qs)
 
+
+class ConfigurationForDepartment(TestCase):
+    
+    def test_department_gets_config_upon_creation(self):
+        dept = mommy.make_recipe('cirs.department')
+        self.assertEqual(type(dept.labcirsconfig), LabCIRSConfig,
+                         '{} misses configuration'.format(dept))
+
+    def test_department_can_have_only_one_config(self):
+        dept = mommy.make_recipe('cirs.department')
+        with self.assertRaises(IntegrityError):
+            mommy.make(LabCIRSConfig, department=dept)
+            
+    def test_notification_is_set_to_false_upon_config_creation(self):
+        # Decided to set notification sendin to false by default
+        config = LabCIRSConfig()
+        self.assertFalse(config.send_notification)
+        self.assertNotEqual(config.send_notification, None)
+        
+    def test_configurations_name_contains_dept_label(self):
+        dept = mommy.make_recipe('cirs.department')
+        self.assertEqual(unicode(dept.labcirsconfig),
+                         'LabCIRS configuration for {}'.format(dept.label))
+        
+    def test_reviewer_sees_only_config_of_his_organization(self):
+        dept1, dept2 = mommy.make_recipe('cirs.department', _quantity=2)
+        reviewer = mommy.make_recipe('cirs.reviewer')
+        dept1.reviewers.add(reviewer)
+                
+        model_admin = ConfigurationAdmin(LabCIRSConfig, admin.AdminSite())
+        
+        factory = RequestFactory()
+        request = factory.get(reverse('admin:cirs_labcirsconfig_changelist'))
+        request.user = reviewer.user
+
+        qs = model_admin.get_queryset(request)
+
+        self.assertIn(dept1.labcirsconfig, qs)
+        self.assertNotIn(dept2.labcirsconfig, qs)
+    
+    def test_admin_sees_all_configurations(self):
+        mommy.make_recipe('cirs.department', _quantity=5)
+        model_admin = ConfigurationAdmin(LabCIRSConfig, admin.AdminSite())
+        
+        factory = RequestFactory()
+        request = factory.get(reverse('admin:cirs_labcirsconfig_changelist'))
+        request.user = create_user('admin', superuser=True)
+
+        qs = model_admin.get_queryset(request)
+
+        self.assertEqual(LabCIRSConfig.objects.count(), qs.count())
+
+    def test_only_reviewer_for_dept_appears_in_the_recipient_list(self):
+        dept = mommy.make_recipe('cirs.department')
+        dept.labcirsconfig.login_info_de = 'Hallo!!!'
+        dept.labcirsconfig.save()
+        rev1, rev2 = mommy.make_recipe('cirs.reviewer', _quantity=2)
+        dept.reviewers.add(rev1)
+        form = ConfigurationAdmin(LabCIRSConfig, admin.AdminSite()).get_form(
+            None, obj=dept.labcirsconfig)
+        
+        self.assertIn(
+            rev1.user, form().fields['notification_recipients'].choices.queryset,
+            'Did not found {} in select for recipients although he is assigned'.format(rev1.user)
+        )
+        self.assertNotIn(
+            rev2.user, form().fields['notification_recipients'].choices.queryset,
+            'Found {} in select for recipients although he is not assigned'.format(rev2.user)
+        )

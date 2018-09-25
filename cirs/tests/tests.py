@@ -21,7 +21,6 @@
 from datetime import date, timedelta
 
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core import mail
@@ -34,7 +33,7 @@ from cirs.admin import CriticalIncidentAdmin
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Department, Reporter
 from cirs.views import IncidentCreateForm, PublishableIncidentList
 
-from .helpers import create_role, create_user_with_perm
+from .helpers import create_role, create_user, create_user_with_perm
 
 
 class CriticalIncidentModelTest(TestCase):
@@ -100,7 +99,6 @@ class CriticalIncidentCreateViewTest(TestCase):
                          }
           
         self.client.login(username=user.username, password=user.username)
-        LabCIRSConfig.objects.create(send_notification=False)
 
         response = self.client.post(reverse('create_incident'),  test_incident, follow=True)
         comment_code = CriticalIncident.objects.last().comment_code
@@ -121,7 +119,7 @@ class SendNotificationEmailTest(TestCase):
             'preventability': 'indistinct',
             'public': True,
             }
-        self.reviewer = User.objects.create_user("reviewer", "reviewer@test.edu", "reviewer")
+        self.reviewer = create_user('reviewer')
 
     def save_form(self):
         form = IncidentCreateForm(self.test_incident)
@@ -130,20 +128,16 @@ class SendNotificationEmailTest(TestCase):
         
     def prepare_config(self, send=True, recipient=None):
         # TODO: should only prepare? 
-        config = LabCIRSConfig.objects.create(
-            login_info_en='Login information',
-            login_info_de='Anmeldeinformationen',
-            send_notification=send,
-            notification_text='Notification text.',
-        )
+        if send is True:
+            self.department.labcirsconfig.send_notification = True
+            self.department.labcirsconfig.save()
         if recipient is not None:
-            config.notification_recipients.add(recipient)
-        return config
+            self.department.labcirsconfig.notification_recipients.add(recipient)
+        return self.department.labcirsconfig
        
 
     def test_send_email_after_form_is_saved(self):
-        config = LabCIRSConfig.objects.create(send_notification=True)
-        config.notification_recipients.add(self.reviewer)
+        self.prepare_config(recipient=self.reviewer)
         self.save_form()
         self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')

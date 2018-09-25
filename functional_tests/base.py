@@ -19,12 +19,13 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import os
-import time
 
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core.urlresolvers import reverse
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -83,11 +84,8 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.maxDiff = None
         self.wait = WebDriverWait(self.browser, DEFAULT_WAIT)
 
-
     def tearDown(self):
-        time.sleep(1)
         self.browser.quit()
-        time.sleep(1)
 
     def click_link_with_text(self, link_text):
         self.wait.until(
@@ -153,3 +151,13 @@ class FunctionalTest(StaticLiveServerTestCase):
             # wait for the success page
             self.wait.until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'alert-info')))
+            
+    def check_admin_table_for_items(self, user, cls_name, present=None, absent=None):
+        admin_url = reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name))
+        self.quick_backend_login(user, admin_url)
+        self.wait.until(EC.url_contains(admin_url))
+        if present:
+            self.browser.find_element_by_link_text(present)
+        if absent:
+            with self.assertRaises(NoSuchElementException):
+                self.browser.find_element_by_link_text(absent)

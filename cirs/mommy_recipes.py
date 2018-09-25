@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 from model_mommy.recipe import Recipe, seq
 from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter
+from cirs.models import Department
 
 public_ci = Recipe(CriticalIncident,
     incident = seq('Critical Incident '),
@@ -39,3 +40,8 @@ reviewer = Recipe(Reviewer,
 
 reporter = Recipe(Reporter,
     user__username = seq('rep'))
+
+department = Recipe(Department,
+    label = seq('Dept '),
+    reporter__user__username = seq('rep')
+)

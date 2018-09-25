@@ -21,6 +21,7 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from model_mommy import mommy
 
 from cirs.models import LabCIRSConfig
 
@@ -31,17 +32,20 @@ NOTIFICATION_TEXT = "A new incident was just reported. Plese check it."
 
 class LabCIRSConfigModels(TestCase):
     """Tests LabCIRSConfig model"""
+    
+    def setUp(self):
+        dept = mommy.make_recipe('cirs.department')
+        self.config = dept.labcirsconfig
 
     def test_labcirs_config_save_and_retrieve(self):
-        config = LabCIRSConfig()
-        config.login_info_en = LOGIN_INFO
-        config.login_info_url = reverse('demo_login_data_page')
-        config.login_info_link_text_en = LINK_TEXT
-        config.send_notification = False
-        config.notification_sender_email = 'a@test.edu'
-        config.notification_text = NOTIFICATION_TEXT
-        config.clean()
-        config.save()
+        self.config.login_info_en = LOGIN_INFO
+        self.config.login_info_url = reverse('demo_login_data_page') # TODO: remove to clean urls.py
+        self.config.login_info_link_text_en = LINK_TEXT
+        self.config.send_notification = False
+        self.config.notification_sender_email = 'a@test.edu'
+        self.config.notification_text = NOTIFICATION_TEXT
+        self.config.clean()
+        self.config.save()
 
         saved_config = LabCIRSConfig.objects.first()
 
@@ -49,16 +53,16 @@ class LabCIRSConfigModels(TestCase):
                       'login_info_link_text_en', 'send_notification',
                       'notification_sender_email', 'notification_text'):
             self.assertEqual(getattr(saved_config, field),
-                             getattr(config, field)
+                             getattr(self.config, field)
                              )
 
     def test_login_info_in_response(self):
-        LabCIRSConfig.objects.create(
-            login_info_en=LOGIN_INFO,
-            login_info_url=reverse('demo_login_data_page'),
-            login_info_link_text_en=LINK_TEXT,
-            send_notification=False
-        )
+        self.config.login_info_en = LOGIN_INFO
+        self.config.login_info_url = reverse('demo_login_data_page') # TODO: remove to clean urls.py
+        self.config.login_info_link_text_en = LINK_TEXT
+        self.config.clean()
+        self.config.save()
+
         response = self.client.get(reverse('login'))
         for text in (LOGIN_INFO, LINK_TEXT):
             self.assertIn(text, str(response))
@@ -66,8 +70,7 @@ class LabCIRSConfigModels(TestCase):
     def test_add_reviewer_as_notification_recipient(self):
         reviewer = User.objects.create_user("reviewer", "reviewer@test.edu",
                                             "reviewer")
-        config = LabCIRSConfig.objects.create(send_notification=False)
-        config.notification_recipients.add(reviewer)
+        self.config.notification_recipients.add(reviewer)
 
         self.assertIn(
             reviewer,
