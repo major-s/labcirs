@@ -24,6 +24,8 @@ from model_mommy.recipe import Recipe, seq
 from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter
 from cirs.models import Department
 
+REPORTER_NAME = 'rep'
+
 public_ci = Recipe(CriticalIncident,
     incident = seq('Critical Incident '),
     public = True
@@ -32,16 +34,20 @@ public_ci = Recipe(CriticalIncident,
 published_incident = Recipe(PublishableIncident,
     incident_de = seq('Published Incident '),
     publish = True,
-    critical_incident__public = True
+    critical_incident__public = True,
+    critical_incident__department__label = seq('Dept_'),
+    critical_incident__department__reporter__user__username = seq(REPORTER_NAME),
 )
 
 reviewer = Recipe(Reviewer,
-    user__username = seq('rev'))
+    user__username = seq('rev'),
+    user__email = seq('rev@localhost'),
+)
 
 reporter = Recipe(Reporter,
-    user__username = seq('rep'))
+    user__username = seq(REPORTER_NAME))
 
 department = Recipe(Department,
-    label = seq('Dept '),
-    reporter__user__username = seq('rep')
+    label = seq('Dept_'),
+    reporter__user__username = seq(REPORTER_NAME)
 )

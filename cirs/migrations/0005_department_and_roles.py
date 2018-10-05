@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             name='Department',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(max_length=32, unique=True, verbose_name='Label')),
+                ('label', models.SlugField(help_text='Label can only consist of letters, numbers, underscores and hyphens.', max_length=32, unique=True, verbose_name='Label')),
                 ('name', models.CharField(max_length=255, unique=True, verbose_name='Name')),
             ],
             options={

@@ -147,7 +147,7 @@ class CommentViewTest(BaseFeedbackTest):
 
     def test_send_email_after_form_is_saved(self):
         reviewer = create_user('reviewer')
-        config = LabCIRSConfig.objects.first()
+        config = self.ci.department.labcirsconfig
         config.send_notification=True
         config.notification_recipients.add(reviewer)
         config.save()

@@ -24,12 +24,37 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.urls import resolve
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 
 from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
-from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig
+from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department
+
+import traceback
+
+class DepartmentList(ListView):
+    model = Department
+    
+    def dispatch(self, *args, **kwargs):
+        if hasattr(self.request.user, 'reporter'):
+            dept = self.request.user.reporter.department
+            return redirect('incidents_for_department', dept=dept.label)
+        elif hasattr(self.request.user, 'reviewer'):
+            if self.request.user.reviewer.departments.count() == 1:
+                dept = self.request.user.reviewer.departments.get()
+                return redirect('incidents_for_department', dept=dept.label)
+            else:
+                return super(DepartmentList, self).dispatch(*args, **kwargs)
+        else:
+            return super(DepartmentList, self).dispatch(*args, **kwargs)
+        
+    def get_queryset(self):
+        if hasattr(self.request.user, 'reviewer'):
+            return self.request.user.reviewer.departments.all()
+        else:
+            return super(DepartmentList, self).get_queryset()
 
 
 class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -42,7 +67,7 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         if hasattr(self.request.user, 'reporter'):
             return super(IncidentCreate, self).dispatch(*args, **kwargs)
         elif hasattr(self.request.user, 'reviewer'):
-            return HttpResponseRedirect(reverse_lazy('incidents_list'))
+            return HttpResponseRedirect(reverse_lazy('labcirs_home'))
         elif self.request.user.is_superuser:
             return HttpResponseRedirect(reverse_lazy('admin:index'))
         else:
@@ -70,7 +95,7 @@ class IncidentSearch(LoginRequiredMixin, FormView):
         self.request.session['accessible_incident'] = incident_id
         return redirect('incident_detail', pk=incident_id)
 
-
+# TODO: Rename to Comment view?
 class IncidentDetailView(LoginRequiredMixin, CreateView):
     """
     Delivers detail view of an incident for commenting. Simple form for comments
@@ -80,6 +105,12 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
     form_class = CommentForm
     template_name = 'cirs/criticalincident_detail.html'
 
+    def dispatch(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return redirect('admin:index')
+        else:
+            return super(IncidentDetailView, self).dispatch(*args, **kwargs)
+    
     def get_success_url(self):
         # returns the absolute URL of the parent (and current incident)
         return CriticalIncident.objects.get(pk=self.kwargs['pk']).get_absolute_url()
@@ -95,8 +126,11 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        if self.request.user.has_perm('cirs.change_criticalincident'):
-            return super(IncidentDetailView, self).render_to_response(context, **kwargs)
+        if hasattr(self.request.user, 'reviewer'):
+            if context['incident'].department in self.request.user.reviewer.departments.all():
+                return super(IncidentDetailView, self).render_to_response(context, **kwargs)
+            else:
+                return redirect('labcirs_home')
         accessible_incident_id = None
         try:
             accessible_incident_id = self.request.session['accessible_incident']
@@ -113,13 +147,29 @@ class PublishableIncidentList(LoginRequiredMixin, ListView):
     Returns a simple list of publishable incidents where "publish" is set to true
     and the department matches the reporters department
     """
+    
+    def get_context_data(self, **kwargs):
+        context = super(PublishableIncidentList, self).get_context_data(**kwargs)
+        try:
+            context['department'] = self.kwargs['dept']
+        except KeyError:
+            pass
+            # TODO: handle it
+            #print e
+            #traceback.print_exc()
+        return context
+    
     def get_queryset(self):
         if hasattr(self.request.user, 'reporter'):
             return PublishableIncident.objects.filter(publish=True,
                 critical_incident__department=self.request.user.reporter.department)
         elif hasattr(self.request.user, 'reviewer'):
-            return PublishableIncident.objects.filter(publish=True,
-                critical_incident__department__in=self.request.user.reviewer.departments.all())
+
+            qs =  PublishableIncident.objects.filter(publish=True,
+                critical_incident__department__in=self.request.user.reviewer.departments.filter(
+                    label=self.kwargs['dept']
+                    ))
+            return qs
         else:
             return PublishableIncident.objects.none()
 
@@ -135,6 +185,7 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
     redirect_url = request.GET.get(redirect_field_name, '')
     if len(redirect_url) == 0:
         redirect_url = reverse_lazy('labcirs_home')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -172,8 +223,17 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                'message_class': message_class,
                'username': username,
                redirect_field_name: redirect_url,
-               'labcirs_config': LabCIRSConfig.objects.first()
                }
+    
+    try:
+        match = resolve(redirect_url)
+        context['department'] = match.kwargs['dept']
+        context['labcirs_config'] = LabCIRSConfig.objects.get(
+            department__label=match.kwargs['dept'])
+    except Exception as e:
+        pass
+        #print e
+        #traceback.print_exc()
     return render(request, 'cirs/login.html', context)
 
 

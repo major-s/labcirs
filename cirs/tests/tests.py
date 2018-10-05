@@ -183,6 +183,20 @@ class SendNotificationEmailTest(TestCase):
         self.save_form()
         self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual('labcirs@labcirs.edu', mail.outbox[0].from_email)
+        
+    def test_sender_email_for_dept_in_email_header(self):
+        dept2 = mommy.make_recipe('cirs.department')
+        config2 = dept2.labcirsconfig
+        config2.notification_sender_email = 'labcirs@localhost'
+        config2.send_notification = True
+        config2.save()
+        config2.notification_recipients.add(self.reviewer)
+        form = IncidentCreateForm(self.test_incident)
+        form.instance.department = dept2
+        form.save()
+
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
+        self.assertEqual('labcirs@localhost', mail.outbox[0].from_email)
 
 
 class CriticalIncidentAdminTest(TestCase):

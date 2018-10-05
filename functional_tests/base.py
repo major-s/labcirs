@@ -122,7 +122,6 @@ class FunctionalTest(StaticLiveServerTestCase):
     
     def login_user(self, username=REPORTER, password=REPORTER_PASSWORD):
         """Loggs user into the frontend of the webproject"""
-        self.browser.get(self.live_server_url)
         self.find_input_and_enter_text('username', username, By.NAME)
         self.find_input_and_enter_text('password', password, By.NAME)
         self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)

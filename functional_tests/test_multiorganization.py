@@ -171,11 +171,18 @@ class SecurityFrontendTest(FunctionalTest):
     Reporter without department sees error message
     Reporter with department sees only incidents belonging to his department
     """
+    def setUp(self):
+        super(SecurityFrontendTest, self).setUp()
+        self.dept = mommy.make_recipe('cirs.department')
+        
+    def login_to_department(self, user):
+        self.browser.get(self.live_server_url + self.dept.get_absolute_url())
+        self.login_user(user.username, user.username)
  
     def test_log_out_and_error_message_for_user_without_role(self):
         from cirs.views import MISSING_ROLE_MSG  # necessary only here so far
         user = create_user('cirs_user')
-        self.login_user(username=user.username, password=user.username)
+        self.login_to_department(user)
 
         error_alert = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger')))
@@ -194,7 +201,7 @@ class SecurityFrontendTest(FunctionalTest):
     def test_log_out_and_error_message_for_role_without_department(self, name, role_cls):
         from cirs.views import MISSING_DEPARTMENT_MSG  # necessary only here so far
         role = create_role(role_cls, name)
-        self.login_user(username=role.user.username, password=role.user.username)
+        self.login_to_department(role.user)
 
         error_alert = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger')))
@@ -205,22 +212,23 @@ class SecurityFrontendTest(FunctionalTest):
 
     def test_reporter_with_department_is_redirected_to_incident_list(self):
         reporter = create_role(Reporter, 'rep')
-        mommy.make(Department, reporter=reporter)
-        self.login_user(username=reporter.user.username, password=reporter.user.username)
-        time.sleep(2)
-        redirect_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
+        self.dept.reporter = reporter
+        self.dept.save()
+        self.login_to_department(reporter.user)
+        time.sleep(1)
+        redirect_url = '{}{}'.format(self.live_server_url, self.dept.get_absolute_url())
         self.assertEqual(self.browser.current_url, redirect_url)
         
     def test_reviewer_with_department_is_redirected_to_admin(self):
-        reporter = create_role(Reporter, 'rep')
         reviewer = create_role(Reviewer, 'rev')
-        dept = mommy.make(Department, reporter=reporter)
-        dept.reviewers.add(reviewer)
-        self.login_user(username=reviewer.user.username, password=reviewer.user.username)
-        time.sleep(2)
+        self.dept.reviewers.add(reviewer)
+        self.login_to_department(reviewer.user)
+        time.sleep(1)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
         self.assertEqual(self.browser.current_url, redirect_url)
-        
+
+
+class SecurityFrontendDirectAccessTest(FunctionalTest):        
 #     @parameterized.expand([
 #         param('cirs_user'),
 #         param('rep', Reporter),
@@ -234,9 +242,11 @@ class SecurityFrontendTest(FunctionalTest):
         self.assertEqual(self.browser.current_url, target_url)
         
     def test_redirect_reviewer_from_create_incident_view_to_list(self):
+        dept = mommy.make_recipe('cirs.department')
         user = create_role(Reviewer, 'rev').user
+        dept.reviewers.add(user.reviewer)
         self.quick_login(user, reverse('create_incident'))
-        target_url = '{}{}'.format(self.live_server_url, reverse('incidents_list'))
+        target_url = '{}{}'.format(self.live_server_url, dept.get_absolute_url())
         self.assertEqual(self.browser.current_url, target_url)
 
     def test_user_cannot_access_create_incident_view(self):
@@ -298,7 +308,9 @@ class AccessDataWithMultipleDepts(FunctionalTest):
         role = getattr(self, user)
         own_pi = getattr(self, pi1)
         alien_pi = getattr(self, pi2)
-        self.quick_login(role.user)
+        target_url = own_pi.critical_incident.department.get_absolute_url()#reverse(
+            #'incidents_for_department', kwargs={'dept': own_pi.critical_incident.department.label})
+        self.quick_login(role.user, target_url)
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         rows = table.find_elements_by_tag_name('tr')
         

@@ -21,7 +21,7 @@
 import itertools
 
 from django.contrib import admin, auth
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
@@ -107,6 +107,16 @@ class DepartmentTest(DepartmentBase):
 
     def test_reviewers_use_filter_horizontal(self):
         self.assertIn('reviewers', DepartmentAdmin.filter_horizontal)
+        
+    def test_department_label_cannot_contain_spaces(self):
+        dept = Department({'label': 'x y', 'name': 'Name', 
+                           'reporter': mommy.make_recipe('cirs.reporter')})
+        with self.assertRaises(ValidationError):
+            dept.full_clean()
+            
+    def test_department_has_get_abs_url(self):
+        dept = mommy.make(Department)
+        self.assertEqual(dept.get_absolute_url(), '/incidents/{}/'.format(dept.label))
 
 
 class ReviewerReporterModel(DepartmentBase):
@@ -370,7 +380,7 @@ class IncidentCreationViewSecurityTest(TestCase):
         self.client.force_login(user)
         response = self.client.get(reverse('create_incident'), follow=True)
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
-        self.assertTemplateUsed(response, 'cirs/publishableincident_list.html')
+        self.assertTemplateUsed(response, 'cirs/department_list.html')
         
     def test_admin_cannot_access_create_view(self):
         user = create_user('admin', superuser=True)
@@ -412,23 +422,20 @@ class CriticalIncidentWithDepartment(TestCase):
                          reporter.department)
     
     @parameterized.expand([
-        ('reporter',),
+        ('rep1',),
         ('reviewer',),
         ])
-    def test_publishable_incident_list_view_returns_only_incidents_with_reporters_department(self, role):
-        self.reporter = create_role(Reporter, 'reporter')
-        self.reviewer = create_role(Reviewer, 'reviewer')
-        pi = mommy.make(PublishableIncident, publish=True,
-                        critical_incident__public=True, 
-                        critical_incident__department__reporter=self.reporter)
-        pi.critical_incident.department.reviewers.add(self.reviewer)
-        pi2 = mommy.make(PublishableIncident, critical_incident__public=True, publish=True)
-        
+    def test_publishable_incident_list_view_returns_only_incidents_with_ci_department(self, role):
+        reviewer = create_role(Reviewer, 'reviewer')
+        pi, pi2 = mommy.make_recipe('cirs.published_incident', _quantity=2)
+        pi.critical_incident.department.reviewers.add(reviewer)
+       
         factory = RequestFactory()
+        kwargs={'dept': pi.critical_incident.department.label}
+        request = factory.get(reverse('incidents_for_department', kwargs=kwargs))
+        request.user = User.objects.get(username=role)
 
-        request = factory.get(reverse('incidents_list'))
-        request.user = getattr(self, role).user
-        response = PublishableIncidentList.as_view()(request)
+        response = PublishableIncidentList.as_view()(request, **kwargs)
         
         qs = response.context_data['object_list']
         self.assertIn(pi, qs)

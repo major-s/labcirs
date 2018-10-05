@@ -34,8 +34,8 @@ class LabCIRSConfigModels(TestCase):
     """Tests LabCIRSConfig model"""
     
     def setUp(self):
-        dept = mommy.make_recipe('cirs.department')
-        self.config = dept.labcirsconfig
+        self.dept = mommy.make_recipe('cirs.department')
+        self.config = self.dept.labcirsconfig
 
     def test_labcirs_config_save_and_retrieve(self):
         self.config.login_info_en = LOGIN_INFO
@@ -63,7 +63,7 @@ class LabCIRSConfigModels(TestCase):
         self.config.clean()
         self.config.save()
 
-        response = self.client.get(reverse('login'))
+        response = self.client.get(self.dept.get_absolute_url(), follow=True)
         for text in (LOGIN_INFO, LINK_TEXT):
             self.assertIn(text, str(response))
 

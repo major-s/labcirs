@@ -53,6 +53,7 @@ class FunctionalTestWithBackendLogin(FunctionalTest):
 
     def go_to_test_incident_as_reviewer(self):
         self.dept.reviewers.add(create_role(Reviewer, self.reviewer))
+        self.browser.get(self.live_server_url + reverse('admin:index'))
         self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
         self.wait.until(EC.presence_of_element_located((By.ID, 'site-name')))
         self.assertIn("/admin/", self.browser.current_url)
@@ -65,7 +66,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
     def setUp(self):
         super(CriticalIncidentListTest, self).setUp()
         create_role(Reporter, self.reporter)
-        self.dept = mommy.make(Department, reporter=self.reporter.reporter)
+        self.dept = mommy.make_recipe('cirs.department', reporter=self.reporter.reporter)
     
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
@@ -96,7 +97,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.assertIn("Select Critical incident to change", [header1.text for header1 in headers1])
         # logout and check as normal user if photo is visible
         self.logout()
-        self.quick_login_reporter()
+        self.quick_login_reporter(self.dept.get_absolute_url())
         # check if all expected fields are present in the table
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
         EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo']
@@ -119,7 +120,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
 
         # Now reporter goes to the list and should see the list of
         # published incidents in order b, a, c
-        self.quick_login_reporter()
+        self.quick_login_reporter(self.dept.get_absolute_url())
         table = self.browser.find_element_by_id('tableIncidents')
         rows = table.find_elements_by_tag_name('tr')
 

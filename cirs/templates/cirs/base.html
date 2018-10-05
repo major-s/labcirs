@@ -20,7 +20,7 @@
 
 <body>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-    	<span class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</span>
+    	<span class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}{% if department %}/{{ department }}{% endif %}</span>
  
     	{% if user.is_authenticated == True %}
     	<div> 

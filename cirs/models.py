@@ -85,7 +85,8 @@ class Reviewer(Role):
 
 
 class Department(models.Model):
-    label = models.CharField(_('Label'), max_length=32, unique=True)
+    label = models.SlugField(_('Label'), max_length=32, unique=True,
+            help_text=_('Label can only consist of letters, numbers, underscores and hyphens.'))
     name = models.CharField(_('Name'), max_length=255, unique=True)
     reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT,
             help_text='Reporters assigned to other departments are not listed here!')
@@ -94,6 +95,9 @@ class Department(models.Model):
     class Meta:
         verbose_name = _('Department')
         verbose_name_plural = _('Departments')
+
+    def get_absolute_url(self):
+        return reverse('incidents_for_department', kwargs={'dept': self.label})
 
     def __unicode__(self):
         return self.label

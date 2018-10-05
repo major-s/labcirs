@@ -25,10 +25,11 @@ from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, Department, Reporter
+from cirs.models import Comment, CriticalIncident, Department, Reporter, Reviewer
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
+import time
 
 
 DEFAULT_WAIT = 5
@@ -108,6 +109,10 @@ class CommentTest(FunctionalTest):
         Comment.objects.create(critical_incident=self.incident,
                                author=self.reporter, text=comment_text)
         # reviewer logs in and goes to the incident page
+        # he needs a reviewer role
+        # and has belong to the department 
+        create_role(Reviewer, self.reviewer)
+        self.incident.department.reviewers.add(self.reviewer.reviewer)
         self.quick_backend_login(self.reviewer, self.incident.get_absolute_url())
 
         # and sees the coment made by the reporter
@@ -136,6 +141,7 @@ class CommentTest(FunctionalTest):
         comment_text = "I have some remarks on this incident!"
         self.create_comment(comment_text)
         # check if incident was sent by email
+        time.sleep(1)
         self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New LabCIRS comment')
 
@@ -171,8 +177,12 @@ class SecurityTest(FunctionalTest):
         self.assertEqual(self.browser.current_url, self.absolute_incident_url)
 
     def test_reviewer_can_access_incident_without_code(self):
+        # he has to have reviewer role and belong to the department
+        create_role(Reviewer, self.reviewer)
+        self.incident.department.reviewers.add(self.reviewer.reviewer)
         self.quick_backend_login(self.reviewer)
         self.browser.get(self.absolute_incident_url)
+        time.sleep(1) # TODO: chang to location of item!
         self.assertEqual(self.browser.current_url, self.absolute_incident_url)
 
     def test_wrong_code_redirects_to_search_page(self):
