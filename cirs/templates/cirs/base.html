@@ -29,7 +29,7 @@
   			</button>
 	  		<div class="collapse navbar-collapse" id="navbarMenu">
         		<ul class="navbar-nav nav-pills">
-	                {% url 'incidents_list' as url %}
+	                {% url 'incidents_for_department' dept=department as url %}
 	                <li class="nav-item">
 	                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
 	                		{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>

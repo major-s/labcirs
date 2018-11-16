@@ -36,6 +36,35 @@ DEFAULT_WAIT = 8
 
 
 class FunctionalTest(StaticLiveServerTestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        super(FunctionalTest, cls).setUpClass()
+        # just to run tests against real test server
+        staging_server = settings.STAGING_SERVER
+        if staging_server != '':
+            cls.live_server_url = 'http://' + staging_server
+        # Initialise browser for testing
+        # the noninternationalized version is checked
+        if settings.BROWSER == 'Chrome':
+            chrome_driver_location = settings.CHROME_DRIVER
+            options = webdriver.ChromeOptions()
+            options.add_argument('--lang=en')
+            cls.browser = webdriver.Chrome(
+                executable_path=chrome_driver_location, chrome_options=options)
+        elif settings.BROWSER == 'Firefox':
+            profile = webdriver.FirefoxProfile()
+            profile.set_preference('intl.accept_languages', 'en')
+            cls.browser = webdriver.Firefox(profile)
+
+        cls.browser.implicitly_wait(DEFAULT_WAIT)
+        cls.maxDiff = None
+        cls.wait = WebDriverWait(cls.browser, DEFAULT_WAIT)
+    
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.quit()
+        super(FunctionalTest, cls).tearDownClass()
 
     REPORTER = 'reporter'
     REPORTER_EMAIL = 'reporter@example.com'
@@ -67,25 +96,6 @@ class FunctionalTest(StaticLiveServerTestCase):
             self.reviewer.user_permissions.add(permission)
         self.admin = User.objects.create_superuser(
             self.ADMIN, self.ADMIN_EMAIL, self.ADMIN_PASSWORD)
-        # Initialise browser for testing
-        # the noninternationalized version is checked
-        if settings.BROWSER == 'Chrome':
-            chrome_driver_location = settings.CHROME_DRIVER
-            options = webdriver.ChromeOptions()
-            options.add_argument('--lang=en')
-            self.browser = webdriver.Chrome(
-                executable_path=chrome_driver_location, chrome_options=options)
-        elif settings.BROWSER == 'Firefox':
-            profile = webdriver.FirefoxProfile()
-            profile.set_preference('intl.accept_languages', 'en')
-            self.browser = webdriver.Firefox(profile)
-
-        self.browser.implicitly_wait(DEFAULT_WAIT)
-        self.maxDiff = None
-        self.wait = WebDriverWait(self.browser, DEFAULT_WAIT)
-
-    def tearDown(self):
-        self.browser.quit()
 
     def click_link_with_text(self, link_text):
         self.wait.until(
@@ -121,7 +131,9 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.quick_login(user, target_url)
     
     def login_user(self, username=REPORTER, password=REPORTER_PASSWORD):
-        """Loggs user into the frontend of the webproject"""
+        """
+        Loggs user into the frontend of the webproject
+        """
         self.find_input_and_enter_text('username', username, By.NAME)
         self.find_input_and_enter_text('password', password, By.NAME)
         self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)

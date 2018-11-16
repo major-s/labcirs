@@ -10,7 +10,7 @@
     {{ block.super }}
     {% load i18n %}
     <div class="container">
-	    <h2>{% trans "Critical incidents" %}</h2>
+	    <h2>{% trans "Critical incidents for" %} {{ department }}</h2>
 		<div class="table-responsive">
 		    <table class="table table-striped table-bordered" id="tableIncidents">
 				<thead>

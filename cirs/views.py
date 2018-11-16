@@ -148,6 +148,13 @@ class PublishableIncidentList(LoginRequiredMixin, ListView):
     and the department matches the reporters department
     """
     
+    def dispatch(self, *args, **kwargs):
+        if hasattr(self.request.user, 'reporter'):
+            if self.request.user.reporter.department.label != self.kwargs['dept']:
+                return redirect('labcirs_home')
+
+        return super(PublishableIncidentList, self).dispatch(*args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super(PublishableIncidentList, self).get_context_data(**kwargs)
         try:
@@ -205,7 +212,11 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                         logout(request)
                 elif hasattr(user, 'reporter'):
                     if hasattr(user.reporter, 'department'):
-                        return HttpResponseRedirect(redirect_url)
+                        #return dept = self.request.user.reporter.department
+                        return redirect('incidents_for_department', 
+                                        dept=user.reporter.department.label)
+                        #return HttpResponseRedirect(redirect_url)
+                        
                     else:
                         message = MISSING_DEPARTMENT_MSG
                         logout(request)

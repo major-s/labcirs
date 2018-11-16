@@ -19,7 +19,7 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 from __future__ import unicode_literals
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.core.urlresolvers import reverse
 from model_mommy import mommy
 from parameterized import parameterized
@@ -143,3 +143,23 @@ class ViewRedirect(TestCase):
         session.save()
         response = self.client.get(ci.get_absolute_url(), follow=True)
         self.assertRedirects(response, reverse('admin:index'))
+    
+    def test_login_redirects_reporter_to_his_department(self):
+        # Reporte might click wrong departmetn and still login, 
+        # so he should be redirected to his dept or to the home page
+        # (which then redirects to dept anyway!)
+        dept2 = mommy.make_recipe('cirs.department')
+        self.client.force_login(self.dept.reporter.user)
+        response = self.client.get(dept2.get_absolute_url(), follow=True)
+        self.assertRedirects(response, self.dept.get_absolute_url())
+        
+    def test_dept_label_in_heading_over_table(self):
+        self.client.force_login(self.dept.reporter.user)
+        response = self.client.get(self.dept.get_absolute_url(), follow=True)
+        title = 'Critical incidents for {}'.format(self.dept.label)
+        self.assertIn(title, response.rendered_content)
+        
+    def test_nav_link_to_list_has_department(self):
+        self.client.force_login(self.dept.reporter.user)
+        response = self.client.get(self.dept.get_absolute_url(), follow=True)
+        self.assertContains(response, self.dept.get_absolute_url())

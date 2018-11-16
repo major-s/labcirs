@@ -33,9 +33,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 from cirs.models import Department, Reporter, PublishableIncident, Reviewer, CriticalIncident
+from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-from cirs.tests.helpers import create_role
+
 
 
 class FrontendBaseTest(FunctionalTest):
@@ -44,15 +45,27 @@ class FrontendBaseTest(FunctionalTest):
         table = self.wait.until(EC.presence_of_element_located((By.ID, table_id)))
         return table.find_elements_by_tag_name('tr')
     
+    def get_column_from_table_as_list(self, table_id, column=0, start_row=1):
+        """Returns text content of one column of given table as list.
+        
+        :param table_id: id of html object
+        :param column: desired column
+        :param start_row: default is row 1 for tables with header, if there is no header, use 0
+        """
+        rows = self.get_rows_from_table(table_id)
+        return [row.find_elements_by_tag_name("td")[column].text for row in rows[start_row:]]
+    
     def assertCurrentUrlIs(self, url):
         target_url = '{}{}'.format(self.live_server_url, url)
         self.assertEqual(self.browser.current_url, target_url)
+        
+    def assertBrandIs(self, label):
+        brand = self.browser.find_element_by_class_name('navbar-brand')
+        self.assertEqual(brand.text, '{}/{}'.format(settings.ORGANIZATION, label))
 
 
 class FrontendWithDepartments(FrontendBaseTest):
-    """
-    Test frontend after departments were aded to the models.
-    """
+    """Test frontend after departments were aded to the models."""
     
    
     #@override_settings(DEBUG=True)
@@ -64,17 +77,13 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.browser.get(self.live_server_url)
         
         # and sees a list of all departments
-        #table = self.wait.until(EC.presence_of_element_located((By.ID, 'table_departments')))
-        rows = self.get_rows_from_table('table_departments')#table.find_elements_by_tag_name('tr')
-        ## first row consists of headers with the tag 'th' therefore start from index 1
-        labels = [row.find_elements_by_tag_name("td")[0].text for row in rows[1:]]
+        labels = self.get_column_from_table_as_list('table_departments')
         for dept in Department.objects.all():
             self.assertIn(dept.label, labels)
             
         # At the top of the page he sees the name of the organization
         brand = self.browser.find_element_by_class_name('navbar-brand')
         self.assertEqual(brand.text, settings.ORGANIZATION)
-        
         
         # he clicks on one of the links and is redirected to the login page
         # for the department
@@ -83,8 +92,7 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.assertIn(reverse('login'), self.browser.current_url)
         
         # At the top of the page he sees the name of the organization and the department
-        brand = self.browser.find_element_by_class_name('navbar-brand')
-        self.assertEqual(brand.text, '{}/{}'.format(settings.ORGANIZATION, dept.label))
+        self.assertBrandIs(dept.label)
         
         
     def test_reporter_logs_in_after_he_clicked_on_his_department(self):
@@ -105,9 +113,8 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.find_input_and_enter_text('password', rep1.user.username, By.NAME)
         self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)
         
-        rows = self.get_rows_from_table('tableIncidents')
-        incidents = [row.find_elements_by_tag_name("td")[0].text for row in rows[1:]]
-        
+        incidents = self.get_column_from_table_as_list('tableIncidents')
+    
         # and sees table with published incident from his department, but not from another
         for pi in PublishableIncident.objects.filter(critical_incident__department=dept1):
             self.assertIn(pi.incident_en, incidents)
@@ -140,10 +147,8 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.click_link_with_text(dept1.label)
 
         # and sees table with incidents for dept1        
-        rows = self.get_rows_from_table('tableIncidents')
-        incidents = [row.find_elements_by_tag_name("td")[0].text for row in rows[1:]]
+        incidents = self.get_column_from_table_as_list('tableIncidents')
         
-
         for pi in PublishableIncident.objects.filter(critical_incident__department=dept1):
             self.assertIn(pi.incident_en, incidents)
         for pi in PublishableIncident.objects.exclude(critical_incident__department=dept1):
@@ -238,9 +243,8 @@ class RedirectKnownUsers(FrontendBaseTest):
         dept2, dept3 = mommy.make_recipe('cirs.department', _quantity=2)
         dept2.reviewers.add(self.rev)
         self.quick_login(self.rev.user)
-        table = self.wait.until(EC.presence_of_element_located((By.ID, 'table_departments')))
-        rows = table.find_elements_by_tag_name('tr')
-        labels = [row.find_elements_by_tag_name("td")[0].text for row in rows[1:]]
+        labels = self.get_column_from_table_as_list('table_departments')
+
         for dept in (self.dept, dept2):
             self.assertIn(dept.label, labels)
         self.assertNotIn(dept3.label, labels)
@@ -252,3 +256,33 @@ class RedirectKnownUsers(FrontendBaseTest):
         self.find_input_and_enter_text('id_incident_code', CODE)
         self.browser.find_element_by_class_name("btn-info").click()
         self.assertCurrentUrlIs(reverse('admin:index'))
+    # TODO:    
+    def test_redirect_reporter_with_correct_code_but_wrong_dept_from_details_view(self):
+        pass
+
+
+class CorrectDepartmentInURL(FrontendBaseTest):
+    
+    def test_rep1_logs_in_via_dept2_and_sees_his_dept_and_message(self):
+        dept1, dept2 = mommy.make_recipe('cirs.department', _quantity=2)
+        mommy.make_recipe('cirs.published_incident', _quantity=5, 
+                          critical_incident__department=dept1)
+        self.quick_login(dept1.reporter.user, dept2.get_absolute_url())
+        #time.sleep(1)
+        self.assertCurrentUrlIs(dept1.get_absolute_url())
+        self.assertBrandIs(dept1.label)
+        heading1 = self.browser.find_element_by_tag_name('h2')
+        self.assertIn(dept1.label, heading1.text)
+        # check also for message
+        #self.assertIn
+        error_message = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger'))
+        ).text
+        self.assertIn(error_message, dept1.label)
+        
+    def test_nav_link_leads_to_list_with_department(self):
+        # BUGFIX: After adding the departments, the links points to nowhere as there is no dept
+        dept = mommy.make_recipe('cirs.department')
+        self.quick_login(dept.reporter.user)
+        self.click_link_with_text("View incidents")
+        self.assertCurrentUrlIs(dept.get_absolute_url())

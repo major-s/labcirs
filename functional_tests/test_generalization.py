@@ -62,34 +62,6 @@ class OrganizationNameTest(FunctionalTest):
         self.assertEqual(organization, self.ORGANIZATION)
 
 
-class ConfigurationInBackend(FunctionalTest):
-    """Reviewer can specify information about login data for the reporter."""
-
-    LOGIN_INFO = "You can find the login data for this demo installation at "
-    LINK_TEXT = "the demo login data page"
-
-    def test_reviewer_can_set_the_message_text(self):
-        login_url = self.live_server_url + reverse('demo_login_data_page')
-        dept = mommy.make_recipe('cirs.department')
-        reviewer = mommy.make_recipe('cirs.reviewer')
-        dept.reviewers.add(reviewer)
-        self.quick_backend_login(reviewer.user)
-        self.click_link_with_text('LabCIRS configuration')
-        self.click_link_with_text(str(dept.labcirsconfig))
-        self.find_input_and_enter_text('id_login_info_en', self.LOGIN_INFO)
-        self.find_input_and_enter_text('id_login_info_de', self.LOGIN_INFO)
-        self.find_input_and_enter_text('id_login_info_url', login_url)
-        self.find_input_and_enter_text('id_login_info_link_text_en', self.LINK_TEXT)
-        self.find_input_and_enter_text('id_login_info_link_text_de', self.LINK_TEXT)
-        self.browser.find_element_by_name('_save').click()
-        self.logout()
-        time.sleep(1)
-        self.browser.get(self.live_server_url + dept.get_absolute_url())
-        current_login_info = self.browser.find_element_by_class_name('alert-success').text
-        self.assertIn(self.LOGIN_INFO, current_login_info)
-        self.browser.find_element_by_link_text(self.LINK_TEXT)
-
-
 class EmailSettingsInBackend(FunctionalTest):
     """Settings for sending notifications."""
     

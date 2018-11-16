@@ -25,13 +25,13 @@ from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import TestCase, override_settings
 
 from model_mommy import mommy
 
 from cirs.admin import CriticalIncidentAdmin
 from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Department, Reporter
-from cirs.views import IncidentCreateForm, PublishableIncidentList
+from cirs.views import IncidentCreateForm
 
 from .helpers import create_role, create_user, create_user_with_perm
 
@@ -234,11 +234,9 @@ class PublishedIncidentTest(TestCase):
         department = mommy.make(Department, reporter=reporter)
         generate_three_incidents(department)
 
-        factory = RequestFactory()
+        self.client.force_login(reporter.user)
 
-        request = factory.get(reverse('incidents_list'))
-        request.user = reporter.user
-        response = PublishableIncidentList.as_view()(request)
+        response = self.client.get(department.get_absolute_url(), follow=True)
 
         # newest should come first
         wanted_order = ['b', 'a', 'c']

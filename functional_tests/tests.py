@@ -129,7 +129,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.assertIn('c', rows[3].text)
 
     @override_settings(EMAIL_HOST='smtp.example.com')
-    def test_send_email_after_reviewer_creates_an_incident(self):
+    def test_send_email_after_reporter_creates_an_incident(self):
         config = self.dept.labcirsconfig
         config.send_notification = True
         config.notification_sender_email = 'labcirs@labcirs.edu'
@@ -143,14 +143,3 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         # check if incident was sent by email
         self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New critical incident')
-
-
-class CriticalIncidentBackendTest(FunctionalTestWithBackendLogin):
-
-    def test_reviewer_can_chose_category_of_incident(self):
-        self.dept = mommy.make(Department)
-        CriticalIncident.objects.create(department=self.dept, **test_incident)
-        self.go_to_test_incident_as_reviewer()
-        Select(self.browser.find_element_by_id(
-            'id_status')).select_by_value("in process")
-        self.browser.find_element_by_id('id_category')

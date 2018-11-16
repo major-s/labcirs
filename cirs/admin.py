@@ -73,7 +73,7 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
                        'public', 'reported', 'preventability', 'photo',
                        'photo_tag')
-    list_filter = ('status', 'date', 'reported', 'public', 'risk',
+    list_filter = ('department', 'status', 'date', 'reported', 'public', 'risk',
                    HasPublishableIncidentListFilter)
     list_display = ('incident', 'date', 'reported', 'status', 'risk')
     list_display_links = ('incident', 'status', 'risk')

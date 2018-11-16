@@ -22,17 +22,13 @@ import datetime as dt
 import random
 import string
 
-from collections import OrderedDict
-
-from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from model_mommy import mommy
 
-from cirs.forms import CommentForm, IncidentSearchForm
-from cirs.models import CriticalIncident, Comment, LabCIRSConfig
-from cirs.views import IncidentDetailView
+from cirs.forms import CommentForm
+from cirs.models import CriticalIncident, Comment
 
 from .helpers import create_user
 
@@ -58,7 +54,7 @@ class SecurityTest(BaseFeedbackTest):
         self.assertRedirects(response, reverse('incident_search'))
             
     def test_incident_search_sets_session_var_on_success(self):
-        response = self.client.post(reverse('incident_search'), {'incident_code':self.ci.comment_code}, follow=True)
+        self.client.post(reverse('incident_search'), {'incident_code':self.ci.comment_code}, follow=True)
         self.assertEqual(self.client.session['accessible_incident'], self.ci.id)
         
     def test_reporter_can_acces_incident_if_session_var_is_set(self):
@@ -92,16 +88,16 @@ class CommentModelTest(BaseFeedbackTest):
                              'status': 'open'} 
     
     def test_comment_save_and_retrieve(self):
-        comment = Comment.objects.create(**self.test_comment)
+        Comment.objects.create(**self.test_comment)
         self.assertEqual(Comment.objects.first().critical_incident, self.ci)
 
     def test_comment_has_creation_date_of_today(self):
-        comment = Comment.objects.create(**self.test_comment)
+        Comment.objects.create(**self.test_comment)
         self.assertEqual(Comment.objects.first().created, dt.date.today())
         
     def test_comment_string_is_made_from_first_64_letters_of_text(self):
         comment_dict = self.test_comment.copy()
-        comment_dict['text'] = ''.join(random.choice(string.printable) for n in range(128))
+        comment_dict['text'] = ''.join(random.choice(string.printable) for _ in range(128))
         comment = Comment.objects.create(**comment_dict)
         self.assertEqual(str(comment), comment_dict['text'][:64])
         
@@ -124,16 +120,13 @@ class CommentViewTest(BaseFeedbackTest):
     def test_comment_is_added_to_incident_after_post(self):
         Comment.objects.create(**self.test_comment)
         num_comments = Comment.objects.filter(critical_incident=self.ci).count()
-        response = self.client.post(self.ci_url, data={'text': 'New comment!'},
-                                    follow=True)
-        self.assertEqual(
-            Comment.objects.filter(critical_incident=self.ci).count(),
-            num_comments + 1)
+        self.client.post(self.ci_url, data={'text': 'New comment!'}, follow=True)
+        self.assertEqual(Comment.objects.filter(critical_incident=self.ci).count(),
+                         num_comments + 1)
 
     def test_comment_text_in_comments_after_post(self):
         comment_text = 'I have another comment!'
-        response = self.client.post(self.ci_url, data={'text': comment_text},
-                                     follow=True)
+        self.client.post(self.ci_url, data={'text': comment_text}, follow=True)
         self.assertEqual(Comment.objects.first().text, comment_text)
     
     def test_right_template_is_used(self):
@@ -157,5 +150,5 @@ class CommentViewTest(BaseFeedbackTest):
         form.instance.critical_incident = self.ci
         form.save()
 
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)  # @UndefinedVariable
         self.assertEqual(mail.outbox[0].subject, 'New LabCIRS comment')
