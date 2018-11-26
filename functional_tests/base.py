@@ -82,8 +82,6 @@ class FunctionalTest(StaticLiveServerTestCase):
         # generate reporter user
         self.reporter = User.objects.create_user(
             self.REPORTER, self.REPORTER_EMAIL, self.REPORTER_PASSWORD)
-        permission = Permission.objects.get(codename='add_criticalincident')
-        self.reporter.user_permissions.add(permission)
         # Generate reviewer user
         self.reviewer = User.objects.create_user(
             self.REVIEWER, self.REVIEWER_EMAIL, self.REVIEWER_PASSWORD)
@@ -172,3 +170,17 @@ class FunctionalTest(StaticLiveServerTestCase):
         if absent:
             with self.assertRaises(NoSuchElementException):
                 self.browser.find_element_by_link_text(absent)
+
+    def get_rows_from_table(self, table_id):
+        table = self.wait.until(EC.presence_of_element_located((By.ID, table_id)))
+        return table.find_elements_by_tag_name('tr')
+    
+    def get_column_from_table_as_list(self, table_id, column=0, start_row=1):
+        """Returns text content of one column of given table as list.
+        
+        :param table_id: id of html object
+        :param column: desired column
+        :param start_row: default is row 1 for tables with header, if there is no header, use 0
+        """
+        rows = self.get_rows_from_table(table_id)
+        return [row.find_elements_by_tag_name("td")[column].text for row in rows[start_row:]]

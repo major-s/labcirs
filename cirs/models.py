@@ -204,7 +204,7 @@ class CriticalIncident(models.Model):
                         raise ValidationError(_('If anything was changed in the QMB block, please set status at least to "in process".'))
     
     def get_absolute_url(self):
-        return reverse('incident_detail', args=[str(self.id)])
+        return reverse('incident_detail', kwargs={'dept': self.department.label, 'pk':self.id})
     
     def __unicode__(self):
         info = (self.incident[:25] + '..') if len(self.incident) > 25 else self.incident

@@ -69,7 +69,7 @@ class CriticalIncidentModelTest(TestCase):
         
     def test_get_absolute_url_returns_valid_url(self):
         my_incident = CriticalIncident.objects.get(pk=1)
-        self.assertEqual(my_incident.get_absolute_url(), '/incidents/1/')
+        self.assertEqual(my_incident.get_absolute_url(), '/incidents/{}/1/'.format(my_incident.department.label))
 
 class CriticalIncidentFormTest(TestCase):
 
@@ -99,8 +99,8 @@ class CriticalIncidentCreateViewTest(TestCase):
                          }
           
         self.client.login(username=user.username, password=user.username)
-
-        response = self.client.post(reverse('create_incident'),  test_incident, follow=True)
+        create_url = reverse('create_incident', kwargs={'dept': user.reporter.department.label})
+        response = self.client.post(create_url, test_incident, follow=True)
         comment_code = CriticalIncident.objects.last().comment_code
         messages = list(response.context['messages'])
         self.assertEqual(comment_code, messages[0].message, "Comment code should be sent as message")

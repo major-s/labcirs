@@ -368,24 +368,29 @@ class IncidentCreationViewSecurityTest(TestCase):
     # Role based access!
     def setUp(self):
         factory = RequestFactory()
-        self.request = factory.get(reverse('create_incident'))
+        self.dept = mommy.make_recipe('cirs.department')
+        self.create_url = reverse('create_incident', kwargs={'dept': self.dept.label})
+        self.request = factory.get(self.create_url)
     
     def test_reporter_can_access_create_view(self):
-        self.request.user = create_role(Reporter, 'reporter').user
+        # TODO: check also for rep with other department? 
+        # Not necessary. Report always uses department form reporter
+        # TODO: Change to normal client to remove RequestFactory
+        self.request.user = self.dept.reporter.user
         response =IncidentCreate.as_view()(self.request)
         self.assertIn('cirs/criticalincident_form.html', response.template_name)
         
     def test_reviewer_cannot_access_create_view(self):
         user = create_role(Reviewer, 'reviewer').user
         self.client.force_login(user)
-        response = self.client.get(reverse('create_incident'), follow=True)
+        response = self.client.get(self.create_url, follow=True)
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'cirs/department_list.html')
         
     def test_admin_cannot_access_create_view(self):
         user = create_user('admin', superuser=True)
         self.client.force_login(user)
-        response = self.client.get(reverse('create_incident'), follow=True)
+        response = self.client.get(self.create_url, follow=True)
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'admin/index.html')
     
@@ -393,14 +398,14 @@ class IncidentCreationViewSecurityTest(TestCase):
     def test_user_cannot_access_create_view(self):
         user = create_user('cirs_user')
         self.client.force_login(user)
-        response = self.client.get(reverse('create_incident'), follow=True)
+        response = self.client.get(self.create_url, follow=True)
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'cirs/login.html')
         session_user = auth.get_user(self.client)
         self.assertNotEqual(session_user, user)
         
     def test_anonymous_cannot_access_create_view(self):
-        response = self.client.get(reverse('create_incident'), follow=True)
+        response = self.client.get(self.create_url, follow=True)
         self.assertTemplateNotUsed(response, 'cirs/criticalincident_form.html')
         self.assertTemplateUsed(response, 'cirs/login.html')
 
@@ -409,14 +414,10 @@ class CriticalIncidentWithDepartment(TestCase):
     
     def test_critical_incident_inherits_department_from_creating_reporter(self):
         reporter = create_role(Reporter, 'reporter')
-        # TODO: check if permission is still necessary or if reporter role is enough
-        permission = Permission.objects.get(codename='add_criticalincident')
-        reporter.user.user_permissions.add(permission)
-        mommy.make(Department, reporter=reporter)
+        dept = mommy.make(Department, reporter=reporter)
         ci = mommy.prepare(CriticalIncident, public=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
-
-        self.client.post(reverse('create_incident'), data=ci.__dict__, follow=True)
+        self.client.post(reverse('create_incident', kwargs={'dept': dept.label}), data=ci.__dict__)
 
         self.assertEqual(CriticalIncident.objects.first().department, 
                          reporter.department)

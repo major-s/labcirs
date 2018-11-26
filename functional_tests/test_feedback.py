@@ -44,7 +44,7 @@ class CriticalIncidentFeedbackTest(FunctionalTest):
         # an department in the view, but acutally users who are not superuser 
         # and don't have assoziated department cannot efectivly log in
         mommy.make(Department, reporter=reporter)
-        self.quick_login_reporter(reverse('create_incident'))
+        self.quick_login_reporter(reverse('create_incident', kwargs={'dept': reporter.department.label}))
 
         # the reporter enters incident data
         self.enter_test_incident()
@@ -151,27 +151,28 @@ class SecurityTest(FunctionalTest):
         super(SecurityTest, self).setUp()
         self.incident = mommy.make(CriticalIncident, public=True)
         self.absolute_incident_url = self.live_server_url + self.incident.get_absolute_url()
+        self.search_url = reverse('incident_search',
+                                  kwargs={'dept': self.incident.department.label})
 
     def test_anon_user_cannot_access_incident(self):
         incident_url = self.incident.get_absolute_url()
         redirect_url = '{}{}?next={}'.format(self.live_server_url,
                                              reverse('login'),  incident_url)
         # should go to login page
-        self.browser.get(self.absolute_incident_url)#'%s%s' % (self.live_server_url, incident_url))
+        self.browser.get(self.absolute_incident_url)
         self.assertEqual(self.browser.current_url, redirect_url)
     
     def test_reporter_cannot_access_incident_without_comment_code(self):
         # User logs in as reporter and tries to access directly detail view of an incident
         # this redirects him to the incident search page.
-        self.quick_login_reporter()
-        redirect_url = '{}{}'.format(self.live_server_url,
-                                     reverse('incident_search'))
+        self.quick_login(self.incident.department.reporter.user)
+        redirect_url = '{}{}'.format(self.live_server_url, self.search_url)
         self.browser.get(self.absolute_incident_url)
         self.assertEqual(self.browser.current_url, redirect_url)
         
     @override_settings(DEBUG=True)
     def test_reporter_can_access_incident_with_correct_comment_code(self):
-        self.quick_login_reporter(reverse('incident_search'))
+        self.quick_login(self.incident.department.reporter.user, self.search_url)
         self.find_input_and_enter_text('id_incident_code', self.incident.comment_code)
         self.browser.find_element_by_class_name("btn-info").click()
         self.assertEqual(self.browser.current_url, self.absolute_incident_url)
@@ -187,7 +188,7 @@ class SecurityTest(FunctionalTest):
 
     def test_wrong_code_redirects_to_search_page(self):
         # Reporter logs in and enters a code which does not exist
-        self.quick_login_reporter(reverse('incident_search'))
+        self.quick_login(self.incident.department.reporter.user, self.search_url)
         self.find_input_and_enter_text('id_incident_code', 'abc')
         self.browser.find_element_by_class_name("btn-info").click()
 

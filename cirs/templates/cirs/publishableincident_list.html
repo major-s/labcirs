@@ -10,6 +10,11 @@
     {{ block.super }}
     {% load i18n %}
     <div class="container">
+    	{% if messages %}
+    		{% for message in messages %}
+	    		<p class="alert alert-warning"">{{ message }}</p>
+	    	{% endfor %}
+	    {% endif %}
 	    <h2>{% trans "Critical incidents for" %} {{ department }}</h2>
 		<div class="table-responsive">
 		    <table class="table table-striped table-bordered" id="tableIncidents">
@@ -18,7 +23,10 @@
 					    <th>{% trans "Incident" %}</th>
 					    <th>{% trans "Description" %}</th>
 					    <th>{% trans "Measures and consequences" %}</th>
-						<th>{% trans "Photo" %}</th>    
+						<th>{% trans "Photo" %}</th>
+						{% if user.reviewer %}
+							<th>{% trans "No. of comments" %}</th>
+						{% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -40,6 +48,11 @@
 							</a>
 						{% endif %}
 						</td>
+						{% if user.reviewer %}
+							<td><a href={{ incident.critical_incident.get_absolute_url }}>
+								{{ incident.critical_incident.comments.count }}
+							</a></td>
+						{% endif %}
 					</tr>
 				{% endfor %}
 				</tbody>
@@ -67,7 +80,9 @@
 				</div>
 			{% endif %}
 		{% endfor %}
-		<a href="{% url 'create_incident'%}" class="btn btn-info btn-lg" role="button">{% trans "Add new incident" %}</a>
+		{% if user.reporter %}
+			<a href="{% url 'create_incident' dept=department %}" class="btn btn-info btn-lg" role="button">{% trans "Add new incident" %}</a>
+		{% endif %}
     </div>
 
 {% endblock %}

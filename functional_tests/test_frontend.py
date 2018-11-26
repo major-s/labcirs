@@ -40,28 +40,14 @@ from .base import FunctionalTest
 
 
 class FrontendBaseTest(FunctionalTest):
-    
-    def get_rows_from_table(self, table_id):
-        table = self.wait.until(EC.presence_of_element_located((By.ID, table_id)))
-        return table.find_elements_by_tag_name('tr')
-    
-    def get_column_from_table_as_list(self, table_id, column=0, start_row=1):
-        """Returns text content of one column of given table as list.
-        
-        :param table_id: id of html object
-        :param column: desired column
-        :param start_row: default is row 1 for tables with header, if there is no header, use 0
-        """
-        rows = self.get_rows_from_table(table_id)
-        return [row.find_elements_by_tag_name("td")[column].text for row in rows[start_row:]]
-    
+     
     def assertCurrentUrlIs(self, url):
         target_url = '{}{}'.format(self.live_server_url, url)
         self.assertEqual(self.browser.current_url, target_url)
         
     def assertBrandIs(self, label):
         brand = self.browser.find_element_by_class_name('navbar-brand')
-        self.assertEqual(brand.text, '{}/{}'.format(settings.ORGANIZATION, label))
+        self.assertEqual(brand.text, '{} / {}'.format(settings.ORGANIZATION, label))
 
 
 class FrontendWithDepartments(FrontendBaseTest):
@@ -205,8 +191,8 @@ class FrontendWithDepartmentsConfig(FunctionalTest):
             dept.labcirsconfig.send_notification = True
             dept.labcirsconfig.notification_sender_email = 'labcirs@labcirs.edu'
             dept.labcirsconfig.save()
-
-            self.quick_login(dept.reporter.user, reverse('create_incident'))
+            self.quick_login(dept.reporter.user, 
+                             reverse('create_incident', kwargs={'dept':dept.label}))
             # reporter enters incident data
             self.enter_test_incident(wait_for_success=True)
 
@@ -229,7 +215,6 @@ class RedirectKnownUsers(FrontendBaseTest):
     @parameterized.expand([
         ('rep1',),
         ('rev1',), # has only one department
-        #('admin',), all views should redirect to admin, so test for all
     ])        
     def test_redirect_after_home_access(self, name):
         ## Reporter and reviewer with only one department should be redirected
@@ -249,17 +234,27 @@ class RedirectKnownUsers(FrontendBaseTest):
             self.assertIn(dept.label, labels)
         self.assertNotIn(dept3.label, labels)
     
-    def test_redirect_admin_from_detail_view_after_search(self):
-        CODE = 'abcdef' # useful if comment_code will be encrypted in the future
-        mommy.make_recipe('cirs.public_ci', comment_code=CODE)
-        self.quick_login(self.admin, reverse('incident_search'))
-        self.find_input_and_enter_text('id_incident_code', CODE)
-        self.browser.find_element_by_class_name("btn-info").click()
+    def test_redirect_admin_from_detail_view(self):
+        ci = mommy.make_recipe('cirs.public_ci')
+        self.quick_login(self.admin, ci.get_absolute_url())
         self.assertCurrentUrlIs(reverse('admin:index'))
     # TODO:    
     def test_redirect_reporter_with_correct_code_but_wrong_dept_from_details_view(self):
         pass
 
+    def test_redirect_superuser_from_department_list(self):
+        self.quick_login(self.admin, reverse('departments_list'))
+        self.assertCurrentUrlIs(reverse('admin:index'))
+
+    @parameterized.expand([
+        ('create_incident',),
+        #('success',), # not necessary
+        ('incident_search',),
+        ('incidents_for_department',)
+    ])
+    def test_superuser_is_always_redirected(self, view):
+        self.quick_login(self.admin, reverse(view, kwargs={'dept':self.dept.label}))
+        self.assertCurrentUrlIs(reverse('admin:index'))
 
 class CorrectDepartmentInURL(FrontendBaseTest):
     
@@ -276,9 +271,9 @@ class CorrectDepartmentInURL(FrontendBaseTest):
         # check also for message
         #self.assertIn
         error_message = self.wait.until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'alert-danger'))
+            EC.presence_of_element_located((By.CLASS_NAME, 'alert-warning'))
         ).text
-        self.assertIn(error_message, dept1.label)
+        self.assertIn(dept1.label, error_message)
         
     def test_nav_link_leads_to_list_with_department(self):
         # BUGFIX: After adding the departments, the links points to nowhere as there is no dept

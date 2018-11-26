@@ -74,13 +74,15 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.click_link_with_text('Add incident')
 
         # change to besser test
-        self.assertIn("incidents/create", self.browser.current_url)
+        self.assertIn(reverse('create_incident', kwargs={'dept': self.dept.label}),
+                      self.browser.current_url)
 
         # the reporter enters incident data
         self.enter_test_incident(with_photo=True)
         # check for success
         time.sleep(2)
-        self.assertIn("/incidents/create/success/", self.browser.current_url)
+        self.assertIn(reverse('success', kwargs={'dept': self.dept.label}),
+                      self.browser.current_url)
 
         # the reporter has to logout and the reviewer has to "publish" the incident
         self.logout()
@@ -135,7 +137,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         config.notification_sender_email = 'labcirs@labcirs.edu'
         config.notification_recipients.add(self.reviewer)
         config.save()
-        self.quick_login_reporter(reverse('create_incident'))
+        self.quick_login_reporter(reverse('create_incident', kwargs={'dept': self.dept.label}))
 
         # reporter enters incident data
         self.enter_test_incident(wait_for_success=True)

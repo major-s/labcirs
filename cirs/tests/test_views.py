@@ -107,6 +107,7 @@ class ViewRedirect(TestCase):
         self.dept = mommy.make_recipe('cirs.department')
         self.rev = mommy.make_recipe('cirs.reviewer')
         self.dept.reviewers.add(self.rev)
+        self.superman =  create_user('admin', superuser=True)
     
     @parameterized.expand([
         ('rep1',),
@@ -135,13 +136,25 @@ class ViewRedirect(TestCase):
         self.assertNotIn(dept3, qs)
         
     def test_detail_view_redirects_superuser_to_admin(self):
-        superman =  create_user('admin', superuser=True)
         ci = mommy.make_recipe('cirs.public_ci')
-        self.client.force_login(superman)
-        session = self.client.session
-        session['accessible_incident'] = ci.id
-        session.save()
+        self.client.force_login(self.superman)
         response = self.client.get(ci.get_absolute_url(), follow=True)
+        self.assertRedirects(response, reverse('admin:index'))
+
+    def test_department_list_redirects_superuser(self):
+        self.client.force_login(self.superman)
+        response = self.client.get(reverse('departments_list'), follow=True)
+        self.assertRedirects(response, reverse('admin:index'))
+
+    @parameterized.expand([
+        #('departments_list',),
+        ('create_incident',),
+        ('incident_search',),
+        ('incidents_for_department',)
+    ])
+    def test_superuser_is_always_redirected(self, view):
+        self.client.force_login(self.superman)
+        response = self.client.get(reverse(view, kwargs={'dept':self.dept.label}), follow=True)
         self.assertRedirects(response, reverse('admin:index'))
     
     def test_login_redirects_reporter_to_his_department(self):
@@ -152,7 +165,10 @@ class ViewRedirect(TestCase):
         self.client.force_login(self.dept.reporter.user)
         response = self.client.get(dept2.get_absolute_url(), follow=True)
         self.assertRedirects(response, self.dept.get_absolute_url())
-        
+        expected_message = 'You were redirected from {} to {}!'.format(dept2.label, self.dept.label)
+        self.assertIn(expected_message, [message.message for message in response.context['messages']])
+    
+    # TODO: move to another class    
     def test_dept_label_in_heading_over_table(self):
         self.client.force_login(self.dept.reporter.user)
         response = self.client.get(self.dept.get_absolute_url(), follow=True)
@@ -163,3 +179,13 @@ class ViewRedirect(TestCase):
         self.client.force_login(self.dept.reporter.user)
         response = self.client.get(self.dept.get_absolute_url(), follow=True)
         self.assertContains(response, self.dept.get_absolute_url())
+        
+    def test_user_without_role_sees_error_message(self):
+        from cirs.views import MISSING_ROLE_MSG  # necessary only here so far
+        user = create_user('cirs_user')
+        response = self.client.post(
+            reverse('login'), {'username': user.username, 'password': user.username},
+            follow=True)
+    
+        self.assertEqual(response.context['message'], MISSING_ROLE_MSG)
+        self.assertEqual(response.context['message_class'], 'danger')

@@ -28,7 +28,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from cirs.forms import CommentForm
-from cirs.models import CriticalIncident, Comment
+from cirs.models import Comment
 
 from .helpers import create_user
 
@@ -36,25 +36,25 @@ from .helpers import create_user
 class BaseFeedbackTest(TestCase):
     def setUp(self):
         self.reporter = create_user('reporter')
-        self.ci = mommy.make(CriticalIncident, public=True)
+        self.ci = mommy.make_recipe('cirs.public_ci')
 
 
 class SecurityTest(BaseFeedbackTest):
     
     def setUp(self):
         super(SecurityTest,self).setUp()
-        self.client.login(username=self.reporter.username, 
-                          password=self.reporter.username)
+        self.client.force_login(self.ci.department.reporter.user)
+        self.search_url = reverse('incident_search', kwargs={'dept': self.ci.department.label})
 
     def test_reporter_cannot_acces_incident_directly(self):
         """Tests if reporter gets redirected to the search page
         if he tries to access the detail view of an incident."""
 
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
-        self.assertRedirects(response, reverse('incident_search'))
+        self.assertRedirects(response, self.search_url)
             
     def test_incident_search_sets_session_var_on_success(self):
-        self.client.post(reverse('incident_search'), {'incident_code':self.ci.comment_code}, follow=True)
+        self.client.post(self.search_url, {'incident_code':self.ci.comment_code}, follow=True)
         self.assertEqual(self.client.session['accessible_incident'], self.ci.id)
         
     def test_reporter_can_acces_incident_if_session_var_is_set(self):
@@ -73,10 +73,10 @@ class SecurityTest(BaseFeedbackTest):
         session['accessible_incident'] = self.ci.id + 1
         session.save()
         response = self.client.get(self.ci.get_absolute_url(), follow=True)
-        self.assertRedirects(response, reverse('incident_search'))
+        self.assertRedirects(response, self.search_url)
 
     def test_wrong_code_causes_form_error(self):
-        response = self.client.post(reverse('incident_search'), {'incident_code':'ab'}, follow=True)
+        response = self.client.post(self.search_url, {'incident_code':'ab'}, follow=True)
         self.assertFormError(response, 'form', 'incident_code', 'No matching critical incident found!')
 
 class CommentModelTest(BaseFeedbackTest):
@@ -105,14 +105,13 @@ class CommentModelTest(BaseFeedbackTest):
 class CommentViewTest(BaseFeedbackTest):
     def setUp(self):
         super(CommentViewTest,self).setUp()
-        self.ci_url = reverse('incident_detail', kwargs={'pk': self.ci.pk})
+        self.ci_url = self.ci.get_absolute_url()
         self.test_comment = {'critical_incident': self.ci,
                              'text': 'I have a comment on it',
                              'author': self.reporter,
                              'status': 'open'} 
 
-        self.client.login(username=self.reporter.username, 
-                          password=self.reporter.username)
+        self.client.force_login(self.ci.department.reporter.user)
         session = self.client.session
         session['accessible_incident'] = self.ci.id
         session.save()

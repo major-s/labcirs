@@ -228,7 +228,11 @@ class SecurityFrontendTest(FunctionalTest):
         self.assertEqual(self.browser.current_url, redirect_url)
 
 
-class SecurityFrontendDirectAccessTest(FunctionalTest):        
+class SecurityFrontendDirectAccessTest(FunctionalTest):
+    def setUp(self):
+        super(SecurityFrontendDirectAccessTest, self).setUp()
+        self.dept = mommy.make_recipe('cirs.department')
+        self.create_url = reverse('create_incident', kwargs={'dept': self.dept.label})
 #     @parameterized.expand([
 #         param('cirs_user'),
 #         param('rep', Reporter),
@@ -237,37 +241,29 @@ class SecurityFrontendDirectAccessTest(FunctionalTest):
 #     ]) 
     def test_reporter_can_access_create_incident_view(self):
         user = create_role(Reporter, 'rep').user
-        self.quick_login(user, reverse('create_incident'))
-        target_url = '{}{}'.format(self.live_server_url, reverse('create_incident'))
+        self.quick_login(user, self.create_url)
+        target_url = '{}{}'.format(self.live_server_url, self.create_url)
         self.assertEqual(self.browser.current_url, target_url)
         
     def test_redirect_reviewer_from_create_incident_view_to_list(self):
-        dept = mommy.make_recipe('cirs.department')
         user = create_role(Reviewer, 'rev').user
-        dept.reviewers.add(user.reviewer)
-        self.quick_login(user, reverse('create_incident'))
-        target_url = '{}{}'.format(self.live_server_url, dept.get_absolute_url())
+        self.dept.reviewers.add(user.reviewer)
+        self.quick_login(user, self.create_url)
+        target_url = '{}{}'.format(self.live_server_url, self.dept.get_absolute_url())
         self.assertEqual(self.browser.current_url, target_url)
 
     def test_user_cannot_access_create_incident_view(self):
         user = create_user('cirs_user')
-        self.quick_login(user, reverse('create_incident'))
+        self.quick_login(user, self.create_url)
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
-        self.assertEqual(self.browser.current_url, target_url)
+        self.assertIn(target_url, self.browser.current_url)
         with self.assertRaises(NoSuchElementException):
             self.browser.find_element_by_id('navbarMenu')
         
-    def test_redirect_admin_from_create_incident_view_to_admin(self):
-        user = create_user('superman', superuser=True)
-        self.quick_login(user, reverse('create_incident'))
-        target_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
-        self.assertEqual(self.browser.current_url, target_url)
-        
     def test_anonymous_cannot_access_create_incident_view(self):
-        self.browser.get('{}{}'.format(self.live_server_url,
-                                       reverse('create_incident')))
+        self.browser.get('{}{}'.format(self.live_server_url, self.create_url))
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
-        self.assertEqual(self.browser.current_url, target_url)
+        self.assertIn(target_url, self.browser.current_url)
         with self.assertRaises(NoSuchElementException):
             self.browser.find_element_by_id('navbarMenu')
 
@@ -308,14 +304,13 @@ class AccessDataWithMultipleDepts(FunctionalTest):
         role = getattr(self, user)
         own_pi = getattr(self, pi1)
         alien_pi = getattr(self, pi2)
-        target_url = own_pi.critical_incident.department.get_absolute_url()#reverse(
-            #'incidents_for_department', kwargs={'dept': own_pi.critical_incident.department.label})
+        target_url = own_pi.critical_incident.department.get_absolute_url()
         self.quick_login(role.user, target_url)
-        table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
-        rows = table.find_elements_by_tag_name('tr')
         
-        self.assertIn(own_pi.incident_en, [row.text for row in rows])
-        self.assertNotIn(alien_pi.incident_en, [row.text for row in rows])
+        incidents = self.get_column_from_table_as_list('tableIncidents')
+        
+        self.assertIn(own_pi.incident_en, incidents)
+        self.assertNotIn(alien_pi.incident_en, incidents)
 
 
     def get_test_reviewers():  # @NoSelf

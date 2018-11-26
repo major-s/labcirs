@@ -18,11 +18,11 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import resolve
 from django.utils.translation import ugettext_lazy as _
@@ -34,7 +34,20 @@ from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfi
 
 import traceback
 
-class DepartmentList(ListView):
+
+class RedirectMixin(object):
+       
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        if user.is_superuser:
+            return redirect('admin:index')
+        elif not (hasattr(user, 'reporter') or hasattr(user, 'reviewer')):
+            logout(self.request)
+            redirect('login')
+        return super(RedirectMixin, self).dispatch(request, *args, **kwargs)
+
+
+class DepartmentList(RedirectMixin, ListView):
     model = Department
     
     def dispatch(self, *args, **kwargs):
@@ -57,22 +70,17 @@ class DepartmentList(ListView):
             return super(DepartmentList, self).get_queryset()
 
 
-class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class IncidentCreate(RedirectMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = CriticalIncident
     form_class = IncidentCreateForm
     success_url = 'success'
     success_message = "%(comment_code)s"
-
-    def dispatch(self, *args, **kwargs):
-        if hasattr(self.request.user, 'reporter'):
-            return super(IncidentCreate, self).dispatch(*args, **kwargs)
-        elif hasattr(self.request.user, 'reviewer'):
-            return HttpResponseRedirect(reverse_lazy('labcirs_home'))
-        elif self.request.user.is_superuser:
-            return HttpResponseRedirect(reverse_lazy('admin:index'))
+    
+    def dispatch(self, request, *args, **kwargs):
+        if hasattr(self.request.user, 'reviewer'):
+            return redirect('labcirs_home')
         else:
-            logout(self.request)
-            return HttpResponseRedirect(reverse_lazy('login'))
+            return super(IncidentCreate, self).dispatch(request, *args, **kwargs)
     
     def get_success_message(self, cleaned_data):
         return self.success_message % dict(
@@ -83,20 +91,45 @@ class IncidentCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def form_valid(self, form):
         form.instance.department = self.request.user.reporter.department
         return super(IncidentCreate, self).form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(IncidentCreate, self).get_context_data(**kwargs)
+        # only reporter can access this view, so it always should be valid
+        context['department'] = self.request.user.reporter.department.label
+        return context
 
 
-class IncidentSearch(LoginRequiredMixin, FormView):
+class IncidentSearch(RedirectMixin, LoginRequiredMixin, FormView):
     form_class = IncidentSearchForm
     template_name = 'cirs/incident_search_form.html'
+    
+    REDIRECT_MESSAGE = _('If you want comment on any incident, please click on the number of '
+                         'comments in the last column for published incidents or use the '
+                         '"View on site" link in the admin interface!')
+
+    def dispatch(self, *args, **kwargs):
+        if hasattr(self.request.user, 'reviewer'):
+            messages.warning(self.request, self.REDIRECT_MESSAGE)
+            return redirect('incidents_for_department', dept=self.kwargs['dept'])
+        else:
+            return super(IncidentSearch, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
         comment_code = form.cleaned_data.get('incident_code')
-        incident_id = CriticalIncident.objects.get(comment_code=comment_code).id
-        self.request.session['accessible_incident'] = incident_id
-        return redirect('incident_detail', pk=incident_id)
+        incident = CriticalIncident.objects.get(comment_code=comment_code)
+        self.request.session['accessible_incident'] = incident.id
+        return redirect(incident.get_absolute_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(IncidentSearch, self).get_context_data(**kwargs)
+        if hasattr(self.request.user, 'reporter'):
+            context['department'] = self.request.user.reporter.department.label
+        else:
+            context['department'] = self.kwargs['dept']
+        return context
 
 # TODO: Rename to Comment view?
-class IncidentDetailView(LoginRequiredMixin, CreateView):
+class IncidentDetailView(RedirectMixin, LoginRequiredMixin, CreateView):
     """
     Delivers detail view of an incident for commenting. Simple form for comments
     is included and followed by a list of comments for this incident
@@ -104,12 +137,6 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentForm
     template_name = 'cirs/criticalincident_detail.html'
-
-    def dispatch(self, *args, **kwargs):
-        if self.request.user.is_superuser:
-            return redirect('admin:index')
-        else:
-            return super(IncidentDetailView, self).dispatch(*args, **kwargs)
     
     def get_success_url(self):
         # returns the absolute URL of the parent (and current incident)
@@ -123,10 +150,15 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(IncidentDetailView, self).get_context_data(**kwargs)
         context['incident'] = CriticalIncident.objects.get(pk=self.kwargs['pk'])
+        if hasattr(self.request.user, 'reporter'):
+            context['department'] = self.request.user.reporter.department.label
+        else:
+            context['department'] = self.kwargs['dept']
         return context
 
     def render_to_response(self, context, **kwargs):
         if hasattr(self.request.user, 'reviewer'):
+            # display only if reviewer belongs to incidents department
             if context['incident'].department in self.request.user.reviewer.departments.all():
                 return super(IncidentDetailView, self).render_to_response(context, **kwargs)
             else:
@@ -135,22 +167,24 @@ class IncidentDetailView(LoginRequiredMixin, CreateView):
         try:
             accessible_incident_id = self.request.session['accessible_incident']
         except KeyError:
-            return redirect('incident_search')
+            return redirect('incident_search', dept=context['department'])
         if accessible_incident_id != context['incident'].pk:
-            return redirect('incident_search')
+            return redirect('incident_search', dept=context['department'])
         else:
             return super(IncidentDetailView, self).render_to_response(context, **kwargs)
 
 
-class PublishableIncidentList(LoginRequiredMixin, ListView):
+class PublishableIncidentList(RedirectMixin, LoginRequiredMixin, ListView):
     """
     Returns a simple list of publishable incidents where "publish" is set to true
     and the department matches the reporters department
     """
-    
+
     def dispatch(self, *args, **kwargs):
         if hasattr(self.request.user, 'reporter'):
             if self.request.user.reporter.department.label != self.kwargs['dept']:
+                messages.warning(self.request, _('You were redirected from {} to {}!').format(
+                    self.kwargs['dept'], self.request.user.reporter.department.label))
                 return redirect('labcirs_home')
 
         return super(PublishableIncidentList, self).dispatch(*args, **kwargs)
@@ -171,15 +205,15 @@ class PublishableIncidentList(LoginRequiredMixin, ListView):
             return PublishableIncident.objects.filter(publish=True,
                 critical_incident__department=self.request.user.reporter.department)
         elif hasattr(self.request.user, 'reviewer'):
-
             qs =  PublishableIncident.objects.filter(publish=True,
                 critical_incident__department__in=self.request.user.reviewer.departments.filter(
                     label=self.kwargs['dept']
-                    ))
+                ))
             return qs
         else:
             return PublishableIncident.objects.none()
-
+        
+        
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
 
@@ -203,20 +237,17 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 # TODO: prevent superuser accessing frontend view
                 # Done here but other views are also important!
                 if user.is_superuser:
-                    return HttpResponseRedirect(reverse_lazy('admin:index'))
+                    return redirect('admin:index')
                 elif hasattr(user, 'reviewer'):
                     if user.reviewer.departments.count() > 0:
-                        return HttpResponseRedirect(reverse_lazy('admin:index'))
+                        return redirect('admin:index')
                     else:
                         message = MISSING_DEPARTMENT_MSG
                         logout(request)
                 elif hasattr(user, 'reporter'):
                     if hasattr(user.reporter, 'department'):
-                        #return dept = self.request.user.reporter.department
                         return redirect('incidents_for_department', 
                                         dept=user.reporter.department.label)
-                        #return HttpResponseRedirect(redirect_url)
-                        
                     else:
                         message = MISSING_DEPARTMENT_MSG
                         logout(request)
@@ -250,4 +281,4 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
 
 def logout_user(request):
     logout(request)
-    return HttpResponseRedirect(reverse_lazy('labcirs_home'))
+    return redirect('labcirs_home')
