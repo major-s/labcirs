@@ -32,8 +32,6 @@ from django.views.generic.edit import CreateView, FormView
 from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
 from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department
 
-import traceback
-
 
 class RedirectMixin(object):
        
@@ -46,6 +44,16 @@ class RedirectMixin(object):
             redirect('login')
         return super(RedirectMixin, self).dispatch(request, *args, **kwargs)
 
+
+class ContextAndRedirectMixin(RedirectMixin):
+    
+    def get_context_data(self, **kwargs):
+        context = super(ContextAndRedirectMixin, self).get_context_data(**kwargs)
+        if hasattr(self.request.user, 'reporter'):
+            context['department'] = self.request.user.reporter.department.label
+        else:
+            context['department'] = self.kwargs['dept']
+        return context
 
 class DepartmentList(RedirectMixin, ListView):
     model = Department
@@ -70,7 +78,7 @@ class DepartmentList(RedirectMixin, ListView):
             return super(DepartmentList, self).get_queryset()
 
 
-class IncidentCreate(RedirectMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class IncidentCreate(ContextAndRedirectMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = CriticalIncident
     form_class = IncidentCreateForm
     success_url = 'success'
@@ -91,15 +99,9 @@ class IncidentCreate(RedirectMixin, LoginRequiredMixin, SuccessMessageMixin, Cre
     def form_valid(self, form):
         form.instance.department = self.request.user.reporter.department
         return super(IncidentCreate, self).form_valid(form)
-    
-    def get_context_data(self, **kwargs):
-        context = super(IncidentCreate, self).get_context_data(**kwargs)
-        # only reporter can access this view, so it always should be valid
-        context['department'] = self.request.user.reporter.department.label
-        return context
 
 
-class IncidentSearch(RedirectMixin, LoginRequiredMixin, FormView):
+class IncidentSearch(ContextAndRedirectMixin, LoginRequiredMixin, FormView):
     form_class = IncidentSearchForm
     template_name = 'cirs/incident_search_form.html'
     
@@ -120,16 +122,9 @@ class IncidentSearch(RedirectMixin, LoginRequiredMixin, FormView):
         self.request.session['accessible_incident'] = incident.id
         return redirect(incident.get_absolute_url())
     
-    def get_context_data(self, **kwargs):
-        context = super(IncidentSearch, self).get_context_data(**kwargs)
-        if hasattr(self.request.user, 'reporter'):
-            context['department'] = self.request.user.reporter.department.label
-        else:
-            context['department'] = self.kwargs['dept']
-        return context
 
 # TODO: Rename to Comment view?
-class IncidentDetailView(RedirectMixin, LoginRequiredMixin, CreateView):
+class IncidentDetailView(ContextAndRedirectMixin, LoginRequiredMixin, CreateView):
     """
     Delivers detail view of an incident for commenting. Simple form for comments
     is included and followed by a list of comments for this incident
@@ -150,10 +145,6 @@ class IncidentDetailView(RedirectMixin, LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(IncidentDetailView, self).get_context_data(**kwargs)
         context['incident'] = CriticalIncident.objects.get(pk=self.kwargs['pk'])
-        if hasattr(self.request.user, 'reporter'):
-            context['department'] = self.request.user.reporter.department.label
-        else:
-            context['department'] = self.kwargs['dept']
         return context
 
     def render_to_response(self, context, **kwargs):
@@ -174,7 +165,7 @@ class IncidentDetailView(RedirectMixin, LoginRequiredMixin, CreateView):
             return super(IncidentDetailView, self).render_to_response(context, **kwargs)
 
 
-class PublishableIncidentList(RedirectMixin, LoginRequiredMixin, ListView):
+class PublishableIncidentList(ContextAndRedirectMixin, LoginRequiredMixin, ListView):
     """
     Returns a simple list of publishable incidents where "publish" is set to true
     and the department matches the reporters department
@@ -188,17 +179,6 @@ class PublishableIncidentList(RedirectMixin, LoginRequiredMixin, ListView):
                 return redirect('labcirs_home')
 
         return super(PublishableIncidentList, self).dispatch(*args, **kwargs)
-    
-    def get_context_data(self, **kwargs):
-        context = super(PublishableIncidentList, self).get_context_data(**kwargs)
-        try:
-            context['department'] = self.kwargs['dept']
-        except KeyError:
-            pass
-            # TODO: handle it
-            #print e
-            #traceback.print_exc()
-        return context
     
     def get_queryset(self):
         if hasattr(self.request.user, 'reporter'):
@@ -234,8 +214,6 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                # TODO: prevent superuser accessing frontend view
-                # Done here but other views are also important!
                 if user.is_superuser:
                     return redirect('admin:index')
                 elif hasattr(user, 'reviewer'):
