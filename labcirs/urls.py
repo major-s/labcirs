@@ -12,6 +12,7 @@ cirs_url = settings.ROOT_URL + '/incidents/'
 urlpatterns = [
     url(r'^$', DepartmentList.as_view(), name='labcirs_home'),
     url(r'^incidents/', include('cirs.urls')),
+    url(r'^admin/logout/$', logout_user, name='logout_admin'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/$',  login_user, name='login'),
     url(r'^logout/$', logout_user, name='logout'),
