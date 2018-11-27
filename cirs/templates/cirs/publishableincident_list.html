@@ -24,6 +24,7 @@
 					    <th>{% trans "Description" %}</th>
 					    <th>{% trans "Measures and consequences" %}</th>
 						<th>{% trans "Photo" %}</th>
+						<th>{% trans "Date" %}</th>
 						{% if user.reviewer %}
 							<th>{% trans "No. of comments" %}</th>
 						{% endif %}
@@ -48,6 +49,7 @@
 							</a>
 						{% endif %}
 						</td>
+						<td>{{ incident.critical_incident.date|date:"F Y" }}</td>
 						{% if user.reviewer %}
 							<td><a href={{ incident.critical_incident.get_absolute_url }}>
 								{{ incident.critical_incident.comments.count }}

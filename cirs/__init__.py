@@ -1,6 +1,6 @@
 import subprocess
 
-VERSION = (4, 1, 1, "dev", 1)
+VERSION = (4, 1, 1, "dev", 3)
 __AUTHOR__ = "Sebastian Major"
 
 

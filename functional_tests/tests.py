@@ -102,7 +102,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         self.quick_login_reporter(self.dept.get_absolute_url())
         # check if all expected fields are present in the table
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))
-        EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo']
+        EXPECTED_HEADERS = [u'Incident', u'Description', u'Measures and consequences', u'Photo',
+                            u'Date']
         header_elements = table.find_elements_by_tag_name('th')
         table_headers_list = []
         for header in header_elements:
