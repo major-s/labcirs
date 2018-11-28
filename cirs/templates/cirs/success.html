@@ -11,9 +11,12 @@
 	    {{ message }}
 	    {% endfor %}
 	    </p>
+	    
 	    <a href="{% url 'logout' %}" class="btn btn-primary btn-lg" role="button">{% trans "Log out" %}</a>
-	    <a href="{% url 'incidents_list'%}" class="btn btn-primary btn-lg" role="button">{% trans "View incidents" %}</a>
-	    <a href="{% url 'create_incident'%}" class="btn btn-primary btn-lg" role="button">{% trans "One more" %}</a>
+	    {% with department=user.reporter.department.label %}
+	    	<a href="{% url 'incidents_for_department' dept=department %}" class="btn btn-primary btn-lg" role="button">{% trans "View incidents" %}</a>
+	    	<a href="{% url 'create_incident' dept=department %}" class="btn btn-primary btn-lg" role="button">{% trans "One more" %}</a>
+	    {% endwith %}
         </div>
     </div>
 {% endblock %}

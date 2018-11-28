@@ -19,11 +19,13 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
-from django import forms
 
-from cirs.models import *
+from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
+                         LabCIRSConfig, Department, Reporter, Reviewer)
 
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):
@@ -65,13 +67,13 @@ class CommentInline(admin.TabularInline):
     readonly_fields = ('author', 'text',)
     
     def has_add_permission(self, request):
-      return False
+        return False
 
 class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
                        'public', 'reported', 'preventability', 'photo',
                        'photo_tag')
-    list_filter = ('status', 'date', 'reported', 'public', 'risk',
+    list_filter = ('department', 'status', 'date', 'reported', 'public', 'risk',
                    HasPublishableIncidentListFilter)
     list_display = ('incident', 'date', 'reported', 'status', 'risk')
     list_display_links = ('incident', 'status', 'risk')
@@ -95,7 +97,13 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
             if isinstance(inline, PublishableIncidentInline) and obj.public is False:
                 continue
             yield inline.get_formset(request, obj)
-
+            
+    def get_queryset(self, request):
+        qs = super(CriticalIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
 class PublishableIncidentAdmin(admin.ModelAdmin):
 
@@ -116,9 +124,27 @@ class PublishableIncidentAdmin(admin.ModelAdmin):
         return readonly_fields
 
     formfield_overrides = pi_form_overrides
+    
+    def get_queryset(self, request):
+        qs = super(PublishableIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                critical_incident__department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
 
-class ConfigurationAdmin(admin.ModelAdmin):
+class AdminWithObject(admin.ModelAdmin):
+    
+    def get_form(self, request, obj=None, **kwargs):
+        self.model_instance = None
+        if obj:
+            self.model_instance = obj
+           
+        return super(AdminWithObject, self).get_form(request, obj, **kwargs)
+
+
+class ConfigurationAdmin(AdminWithObject):
     filter_horizontal = ('notification_recipients',)
     fieldsets = (
         (_('Login infos'), {
@@ -131,7 +157,51 @@ class ConfigurationAdmin(admin.ModelAdmin):
                        'notification_text', 'notification_recipients')
         })
     )
+
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # If by chance someone creates config in admin manually, the list will be empty!
+        if db_field.name == "notification_recipients":
+            kwargs["queryset"] = User.objects.filter(reviewer__in=self.model_instance.department.reviewers.all())
+        return super(ConfigurationAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super(ConfigurationAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            if request.user.is_superuser is True:
+                return qs
+
+
+class DepartmentAdmin(AdminWithObject):
+    filter_horizontal = ('reviewers',)
+       
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "reporter":
+            kwargs["queryset"] = (Reporter.objects.filter(department=None) 
+                                  | Reporter.objects.filter(department=self.model_instance))
+        return super(DepartmentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class RoleAdmin(AdminWithObject):
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            queryset = User.objects.filter(is_superuser=False, reporter=None, reviewer=None)
+            assigned_user = User.objects.none()
+            # add assigned user if existing object is provided
+            if self.model_instance:
+                assigned_user =  User.objects.filter(**{self.model._meta.model_name: self.model_instance})
+            kwargs["queryset"] = queryset | assigned_user
+            
+        return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
-admin.site.register(Comment)
+admin.site.register(Department, DepartmentAdmin)
+admin.site.register(Reporter, RoleAdmin)
+admin.site.register(Reviewer, RoleAdmin)

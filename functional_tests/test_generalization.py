@@ -22,11 +22,12 @@ import time
 
 from django.core.urlresolvers import reverse
 from django.test import override_settings
+from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig
+from cirs.models import LabCIRSConfig
 
 from .base import FunctionalTest
 
@@ -61,54 +62,30 @@ class OrganizationNameTest(FunctionalTest):
         self.assertEqual(organization, self.ORGANIZATION)
 
 
-class ConfigurationInBackend(FunctionalTest):
-    """Reviewer can specify information about login data for the reporter."""
-
-    LOGIN_INFO = "You can find the login data for this demo installation at "
-    LINK_TEXT = "the demo login data page"
-
-    def test_reviewer_can_set_the_message_text(self):
-        login_url = self.live_server_url + reverse('demo_login_data_page')
-
-        self.quick_backend_login(self.reviewer)
-        self.click_link_with_text('LabCIRS configuration')
-        self.click_link_case_insensitive('Add LabCIRS configuration')
-        self.find_input_and_enter_text('id_login_info_en', self.LOGIN_INFO)
-        self.find_input_and_enter_text('id_login_info_de', self.LOGIN_INFO)
-        self.find_input_and_enter_text('id_login_info_url', login_url)
-        self.find_input_and_enter_text('id_login_info_link_text_en', self.LINK_TEXT)
-        self.find_input_and_enter_text('id_login_info_link_text_de', self.LINK_TEXT)
-        self.browser.find_element_by_name('_save').click()
-        self.logout()
-        time.sleep(2)
-        self.browser.get(self.live_server_url)
-        current_login_info = self.browser.find_element_by_class_name('alert-success').text
-        self.assertIn(self.LOGIN_INFO, current_login_info)
-        self.browser.find_element_by_link_text(self.LINK_TEXT)
-
-
 class EmailSettingsInBackend(FunctionalTest):
     """Settings for sending notifications."""
-
+    
     def setUp(self):
         super(EmailSettingsInBackend, self).setUp()
-
+ 
         # make simple config in advance and go to the config page
-        self.config = LabCIRSConfig.objects.create(
-            login_info_en="English", login_info_de="Deutsch",
-            send_notification=False)
-        self.quick_backend_login(self.reviewer)
-        admin_url = reverse(
-            'admin:{}_{}_change'.format(
-                self.config._meta.app_label, self.config._meta.model_name
-            ),
-            args=(self.config.pk,)
-        )
-        self.browser.get(self.live_server_url + admin_url)
+        self.dept = mommy.make_recipe('cirs.department')
+        reviewer = mommy.make_recipe('cirs.reviewer')
+        self.dept.reviewers.add(reviewer)
+         
+        self.config = self.dept.labcirsconfig
+        self.config.login_info_en="English"
+        self.config.login_info_de="Deutsch"
+        self.config.save()
+        
+        admin_url = reverse('admin:cirs_labcirsconfig_change', args=(self.config.pk,))
+        self.quick_backend_login(reviewer.user, admin_url)
+
 
     @override_settings(EMAIL_HOST='localhost')
     def test_reviewer_can_switch_email_notifications(self):
-        """Email notifications can be (de)activatet if email settings are set.
+        """
+        Email notifications can be (de)activatet if email settings are set.
 
         Notifications are only send if a valid(?) SMTP server is defined
         and differs from localhost.
@@ -124,8 +101,11 @@ class EmailSettingsInBackend(FunctionalTest):
     def test_only_reviewers_in_the_recipient_list(self):
         recipient_select = Select(
             self.browser.find_element_by_id('id_notification_recipients_from'))
-        self.assertEqual(recipient_select._el.text, 'reviewer')
-
+        options = [opt.text for opt in recipient_select.options]
+        expected = [rev.user.username for rev in self.dept.reviewers.all()]
+        self.assertItemsEqual(options, expected,
+            'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
+        
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_no_notifications_if_no_recipient(self):
         self.browser.find_element_by_id('id_send_notification').click()
