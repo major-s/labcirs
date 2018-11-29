@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cirs',
     'multiselectfield',
+    'parler',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -121,7 +122,7 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
 
 USE_I18N = True
 
@@ -166,4 +167,20 @@ EMAIL_HOST_PASSWORD = get_local_setting('EMAIL_HOST_PASSWORD')
 EMAIL_HOST_USER = get_local_setting('EMAIL_HOST_USER')
 EMAIL_PORT = get_local_setting('EMAIL_PORT', 25)
 EMAIL_SUBJECT_PREFIX = '[LabCIRS] '
+
+
+# TODO: move to settings
+# Parler
+PARLER_DEFAULT_LANGUAGE_CODE = 'de'
+
+PARLER_LANGUAGES = {
+    None: (
+        {'code': 'de',},
+        {'code': 'en',},
+    ),
+    'default': {
+        'fallbacks': ['de'],          # defaults to PARLER_DEFAULT_LANGUAGE_CODE
+        'hide_untranslated': False,   # the default; let .active_translations() return fallbacks too.
+    }
+}
 

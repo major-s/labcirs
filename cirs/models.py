@@ -218,17 +218,16 @@ class CriticalIncident(models.Model):
                 self.comment_code = random_string
         super(CriticalIncident, self).save(*agrs, **kwargs)
 
-class PublishableIncident(models.Model):
+from parler.models import TranslatableModel, TranslatedFields, TranslationDoesNotExist
+class PublishableIncident(TranslatableModel):
     critical_incident = models.OneToOneField(CriticalIncident,
                                              verbose_name=_("Critical incident"))
-    incident_de = models.CharField(_("Incident (in German)"), max_length=255)
-    incident_en = models.CharField(_("Incident (in English)"), max_length=255)
-    description_de = models.TextField(_("Description (in German)"), blank=True)
-    description_en = models.TextField(_("Description (in English)"), blank=True)
-    measures_and_consequences_de = models.TextField(
-        _("Measures and consequences (in German)"), blank=True)
-    measures_and_consequences_en = models.TextField(
-        _("Measures and consequences (in English)"), blank=True)
+   
+    translstions = TranslatedFields(
+        incident=models.CharField(_("Incident"), max_length=255),
+        description=models.TextField(_("Description"), blank=True),
+        measures_and_consequences=models.TextField(_("Measures and consequences"), blank=True)
+        )
     publish = models.BooleanField(_("Publish"), default=False)
 
     class Meta:
@@ -237,19 +236,26 @@ class PublishableIncident(models.Model):
         ordering = ['-id']
 
     def clean(self):
-        forced_fields = (self.incident_de, self.incident_en,
-                         self.description_de, self.description_en,
-                         self.measures_and_consequences_de,
-                         self.measures_and_consequences_en)
         if self.critical_incident.public is False:
             raise ValidationError(_("The reporter did not agreed to publish this incident!"))
         if self.publish is True:
-            for field in forced_fields:
-                if field == "":
-                    raise ValidationError(_("All fields (in all languages) are mandatory for publication!"))
+            # TODO: make languages varialble in dept config and use this list
+            languages = [x['code'] for x in settings.PARLER_LANGUAGES[None]]
+            for code in languages:
+                try:
+                    translation = self.get_translation(code)
+                    for field_name in ('description', 'incident', 'measures_and_consequences'):
+                        field = getattr(translation, field_name)
+                        if field == "":
+                            raise ValidationError(
+                                _("All fields (in all languages) are mandatory for publication!"))
+                except TranslationDoesNotExist:
+                    raise ValidationError(
+                        _("All fields (in all languages) are mandatory for publication!"))
+                    
 
     def __unicode__(self):
-        return self.incident_de
+        return self.incident
 
 
 class LabCIRSConfig(models.Model):

@@ -12,7 +12,7 @@
     <div class="container">
     	{% if messages %}
     		{% for message in messages %}
-	    		<p class="alert alert-warning"">{{ message }}</p>
+	    		<p class="alert alert-warning">{{ message }}</p>
 	    	{% endfor %}
 	    {% endif %}
 	    <h2>{% trans "Critical incidents for" %} {{ department }}</h2>
@@ -33,15 +33,9 @@
 				<tbody>
 				{% for incident in object_list %}
 				    <tr>
-					{% if LANGUAGE_CODE == "de" %}
-						<td>{{ incident.incident_de }}</td>
-						<td>{{ incident.description_de }}</td>
-						<td>{{ incident.measures_and_consequences_de }}</td>
-					{% else %}
-					    <td>{{ incident.incident_en }}</td>
-					    <td>{{ incident.description_en }}</td>
-					    <td>{{ incident.measures_and_consequences_en }}</td>
-					{% endif %}
+				    	<td>{{ incident.incident }}</td>
+				    	<td>{{ incident.description }}</td>
+						<td>{{ incident.measures_and_consequences }}</td>
 						<td>
 						{% if incident.critical_incident.photo %}
 							<a href="#" data-toggle="modal" data-target="#id_{{ incident.critical_incident.photo|slugify }}">
@@ -50,6 +44,7 @@
 						{% endif %}
 						</td>
 						<td>{{ incident.critical_incident.date|date:"F Y" }}</td>
+						{# show whole column only to reviewer #}
 						{% if user.reviewer %}
 							<td><a href={{ incident.critical_incident.get_absolute_url }}>
 								{{ incident.critical_incident.comments.count }}

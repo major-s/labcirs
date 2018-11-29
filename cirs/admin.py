@@ -24,6 +24,8 @@ from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
 
+from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
+
 from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
                          LabCIRSConfig, Department, Reporter, Reviewer)
 
@@ -45,8 +47,7 @@ class HasPublishableIncidentListFilter(admin.SimpleListFilter):
             return queryset.filter(publishableincident=None)
 
 common_pi_fields = (
-    ('incident_de', 'incident_en'), ('description_de', 'description_en'),
-    ('measures_and_consequences_de', 'measures_and_consequences_en')
+    ('incident', ), ('description', 'measures_and_consequences')
     )
 
 pi_form_overrides = {
@@ -55,7 +56,7 @@ pi_form_overrides = {
     }
 
 
-class PublishableIncidentInline(admin.StackedInline):
+class PublishableIncidentInline(TranslatableTabularInline):
     model = PublishableIncident
     fields = common_pi_fields + ('publish', )
     formfield_overrides = pi_form_overrides
@@ -82,11 +83,13 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
             'fields': (('date', 'reported'), 'public', 'incident', 'reason',
                        'immediate_action', 'preventability', 'photo',
                        'photo_tag')
+            
         }),
         ('Review', {
             'fields': (('review_date', 'status'),
                        ('risk', 'frequency', 'hazard'),
-                       'responsibilty', 'action', 'category')
+                       'responsibilty', 'action', 'category'),
+            'classes': ['collapse',]
         })
     )
     inlines = [PublishableIncidentInline, CommentInline]
@@ -105,12 +108,12 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
         except Reviewer.DoesNotExist:
             return qs.none()
 
-class PublishableIncidentAdmin(admin.ModelAdmin):
+class PublishableIncidentAdmin(TranslatableAdmin):
 
     fields = (('critical_incident', 'publish'),) + common_pi_fields
     list_filter = ('publish',)
-    list_display = ('incident_de', 'incident_en', 'critical_incident')
-    list_display_links = ('incident_de', 'incident_en')
+    list_display = ('incident', 'critical_incident')
+    list_display_links = ('incident', )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "critical_incident":
