@@ -210,19 +210,31 @@ class CriticalIncidentAdminTest(TestCase):
 def generate_three_incidents(department):
     """generate three incidents with different dates in order 2,3,1 and names c, a, b"""
     
+    # override default settings in B
+    lang_code = 'de'
+    department.labcirsconfig.mandatory_languages = [lang_code]
+    department.labcirsconfig.save()
+    
     def new_incident(month):
         return mommy.make(CriticalIncident, public=True, 
                           date=date(2015, month, 31), department=department)
 
     incidents = [new_incident(month) for month in (7,8,5)]
 
-    for char, incident in zip('cab', incidents):    
-        published_incident = PublishableIncident(critical_incident=incident, publish=True)
-        for field in ('incident', 'description', 'measures_and_consequences'):
-            for lang in ('de', 'en'):  # TODO: import languages from settings
-                setattr(published_incident, (field + '_' + lang), char)
-        published_incident.clean()
-        published_incident.save()
+    from django.utils.translation import activate
+    activate(lang_code)
+
+    for char, incident in zip('cab', incidents):
+        pi = PublishableIncident.objects.create(critical_incident=incident, publish=False)
+        pi.create_translation( 
+            language_code=lang_code,
+            incident=char,
+            description=char,
+            measures_and_consequences=char
+        )
+        pi.publish = True
+        pi.clean()
+        pi.save()
 
 
 class PublishedIncidentTest(TestCase):
@@ -242,5 +254,5 @@ class PublishedIncidentTest(TestCase):
         wanted_order = ['b', 'a', 'c']
         real_order = []
         for inc in response.context_data['object_list']:
-            real_order.append(inc.incident_en)
+            real_order.append(inc.incident)
         self.assertEqual(real_order, wanted_order)

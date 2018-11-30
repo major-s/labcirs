@@ -20,8 +20,8 @@
 
 from __future__ import unicode_literals
 
-from model_mommy.recipe import Recipe, seq
-from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter
+from model_mommy.recipe import Recipe, seq, foreign_key
+from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter, PublishableIncidentTranslation
 from cirs.models import Department
 
 REPORTER_NAME = 'rep'
@@ -32,11 +32,15 @@ public_ci = Recipe(CriticalIncident,
 )
 
 published_incident = Recipe(PublishableIncident,
-    #incident = seq('Published Incident '),
     publish = True,
     critical_incident__public = True,
     critical_incident__department__label = seq('Dept_'),
     critical_incident__department__reporter__user__username = seq(REPORTER_NAME),
+)
+
+translated_pi = Recipe(PublishableIncidentTranslation, 
+    incident = seq('Published Incident '),
+    master = foreign_key(published_incident)
 )
 
 reviewer = Recipe(Reviewer,

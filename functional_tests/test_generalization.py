@@ -74,8 +74,7 @@ class EmailSettingsInBackend(FunctionalTest):
         self.dept.reviewers.add(reviewer)
          
         self.config = self.dept.labcirsconfig
-        self.config.login_info_en="English"
-        self.config.login_info_de="Deutsch"
+        self.config.create_translation('de', login_info="English")
         self.config.save()
         
         admin_url = reverse('admin:cirs_labcirsconfig_change', args=(self.config.pk,))

@@ -88,8 +88,10 @@ class FrontendWithDepartments(FrontendBaseTest):
         dept1 = mommy.make_recipe('cirs.department', reporter=rep1)
         dept2 = mommy.make_recipe('cirs.department', reporter=rep2)
         for dept in (dept1, dept2):
-            mommy.make_recipe('cirs.published_incident', critical_incident__department=dept,
+            pis = mommy.make_recipe('cirs.published_incident', critical_incident__department=dept,
                               _quantity=5)
+            for pi in pis:
+                mommy.make_recipe('cirs.translated_pi', master=pi)
 
         # user goes to the incidents list for his department
         self.browser.get(self.live_server_url + dept1.get_absolute_url())
@@ -103,9 +105,9 @@ class FrontendWithDepartments(FrontendBaseTest):
     
         # and sees table with published incident from his department, but not from another
         for pi in PublishableIncident.objects.filter(critical_incident__department=dept1):
-            self.assertIn(pi.incident_en, incidents)
+            self.assertIn(pi.incident, incidents)
         for pi in PublishableIncident.objects.exclude(critical_incident__department=dept1):
-            self.assertNotIn(pi.incident_en, incidents)
+            self.assertNotIn(pi.incident, incidents)
         
         
         # if there is only one department he is redirected to the login page
@@ -124,8 +126,10 @@ class FrontendWithDepartments(FrontendBaseTest):
         rev = create_role(Reviewer, 'rev')
         dept1, dept2 = mommy.make_recipe('cirs.department', _quantity=2)
         for dept in (dept1, dept2):
-            mommy.make_recipe('cirs.published_incident', critical_incident__department=dept,
+            pis = mommy.make_recipe('cirs.published_incident', critical_incident__department=dept,
                               _quantity=5)
+            for pi in pis:
+                mommy.make_recipe('cirs.translated_pi', master=pi)
             dept.reviewers.add(rev)
         # he logins and goes to the home page:
         self.quick_login(rev.user, reverse('labcirs_home'))
@@ -136,9 +140,9 @@ class FrontendWithDepartments(FrontendBaseTest):
         incidents = self.get_column_from_table_as_list('tableIncidents')
         
         for pi in PublishableIncident.objects.filter(critical_incident__department=dept1):
-            self.assertIn(pi.incident_en, incidents)
+            self.assertIn(pi.incident, incidents)
         for pi in PublishableIncident.objects.exclude(critical_incident__department=dept1):
-            self.assertNotIn(pi.incident_en, incidents)
+            self.assertNotIn(pi.incident, incidents)
 
     def test_reviewer_is_redirected_to_his_dept_from_detail_view_of_ci_from_another_dept(self):
         rev = create_role(Reviewer, 'rev')
@@ -164,9 +168,9 @@ class FrontendWithDepartmentsConfig(FunctionalTest):
     def test_each_department_has_own_login_info(self):
         # anonymous call of dept leads to login with own login info
         dept1, dept2 = mommy.make_recipe('cirs.department', _quantity=2)
-        dept1.labcirsconfig.login_info_en = 'Department 1'
+        dept1.labcirsconfig.login_info = 'Department 1'
         dept1.labcirsconfig.save()
-        dept2.labcirsconfig.login_info_en = 'Department 2'
+        dept2.labcirsconfig.login_info = 'Department 2'
         dept2.labcirsconfig.save()
         self.browser.get(self.live_server_url + dept1.get_absolute_url())
         info = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'alert-success')))

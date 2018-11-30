@@ -37,7 +37,7 @@ from parler.utils import get_language_title
 
 class Role(models.Model):
     user = models.OneToOneField(User, verbose_name=_('User'), on_delete=models.PROTECT,
-        help_text='User assigned to other roles and superusers are not listed here!')
+        help_text=_('User assigned to other roles and superusers are not listed here!'))
 
     def clean(self):
         if self.user.is_superuser:
@@ -249,9 +249,9 @@ class TranslationStatusMixin(object):
     def translation_info(self):
         msg = '<span style="color: {}; font-weight: bold;">{}<br>{}!</span>'
         if self.translation_status == 'complete':
-            return format_html(msg, 'green', _('Translation'), _(self.translation_status))
+            return format_html(msg, 'green', _('Translation'), _('complete'))
         else:
-            return format_html(msg,'red', _('Translation'), _(self.translation_status))
+            return format_html(msg,'red', _('Translation'), _('incomplete'))
 
 
 class PublishableIncident(TranslationStatusMixin, TranslatableModel):
@@ -281,8 +281,7 @@ class PublishableIncident(TranslationStatusMixin, TranslatableModel):
             languages =  ", ".join(
                 [unicode(get_language_title(lang)) for lang in self.mandatory_languages])
             missing_message = _(
-                "All fields in mandatory languages ({}) are necessary for publication!"
-            ).format(languages)
+                "All fields in mandatory languages (%s) are necessary for publication!") % languages
             if self.translation_status == 'incomplete':
                 raise ValidationError(missing_message)
 
@@ -296,16 +295,14 @@ class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
         'from localhost has to be set by the server administrator in the local '
         'server configuration.')
     # why _languages does not work here?
+    LANGUAGES_HELP = _("If you choose mandatory languages besides the default one, "
+            "don't forget to translate fields below. Further fields in publishable "
+            "incidents have to be translated before publishing!")
     LANGUAGE_CHOICES = tuple(
         x for x in settings.LANGUAGES if x[0] in [y['code'] for y in settings.PARLER_LANGUAGES[None]])
     mandatory_languages = MultiSelectField(
         _("Mandatory languages"), max_length=255, choices=LANGUAGE_CHOICES,
-        default=settings.DEFAULT_MANDATORY_LANGUAGES,
-        help_text=_("""If you choose mandatory languages besides the default language which is {},
-            don't forget to translate fields below. Further fields in publishable incidents 
-            have to be translated before publishing!""").format(
-                unicode(get_language_title(settings.PARLER_DEFAULT_LANGUAGE_CODE))
-        ))
+        default=settings.DEFAULT_MANDATORY_LANGUAGES, help_text=LANGUAGES_HELP)
 
     # Login data
     login_info_url = models.URLField(_('URL for login info'), blank=True)
@@ -361,7 +358,7 @@ class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
         verbose_lang = unicode(get_language_title(default_lang))
         if default_lang not in self.mandatory_languages:
             raise ValidationError(
-                _('You have to reactivate {} as it is default language.'.format(verbose_lang)))
+                _('You have to reactivate %s as it is default language.') % verbose_lang)
             
     def get_mandatory_fields(self):
         if self.login_info_url in (None, ''):
