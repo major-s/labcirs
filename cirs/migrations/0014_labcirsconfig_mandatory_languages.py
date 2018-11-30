@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='labcirsconfig',
             name='mandatory_languages',
-            field=multiselectfield.db.fields.MultiSelectField(choices=[('de', 'German')], default='de', max_length=255, verbose_name='Mandatory languages'),
+            field=multiselectfield.db.fields.MultiSelectField(choices=[('de', 'German'), ('en', 'English')], default='de,en', max_length=255, verbose_name='Mandatory languages'),
         ),
     ]
