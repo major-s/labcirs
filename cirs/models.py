@@ -311,7 +311,7 @@ class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
         login_info = models.TextField(_('Login info'),
             help_text=_('Translate if there are multiple mandatory languages')),
         login_info_link_text = models.CharField(_('Link text'), max_length=255, blank=True,
-            help_text=_('Translate if there are multiple mandatory languages'))
+            help_text=_('Translate if there are multiple mandatory languages and you store infos at given URL'))
     )
     # Notification settings
     send_notification = models.BooleanField(

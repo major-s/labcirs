@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='labcirsconfig',
             name='mandatory_languages',
-            field=multiselectfield.db.fields.MultiSelectField(choices=[('de', 'German'), ('en', 'English')], default='de,en', max_length=255, verbose_name='Mandatory languages'),
+            field=multiselectfield.db.fields.MultiSelectField(choices=[('de', 'German'), ('en', 'English')], default=['de', 'en'], help_text="If you choose mandatory languages besides the default one, don't forget to translate fields below. Further fields in publishable incidents have to be translated before publishing!", max_length=255, verbose_name='Mandatory languages'),
         ),
     ]
