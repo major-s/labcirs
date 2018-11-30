@@ -67,6 +67,8 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         super(CriticalIncidentListTest, self).setUp()
         create_role(Reporter, self.reporter)
         self.dept = mommy.make_recipe('cirs.department', reporter=self.reporter.reporter)
+        self.dept.labcirsconfig.mandatory_languages=['de']
+        self.dept.labcirsconfig.save()
     
     @override_settings(DEBUG=True)
     def test_user_can_add_incident_with_photo(self):
@@ -87,14 +89,17 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         # the reporter has to logout and the reviewer has to "publish" the incident
         self.logout()
         self.go_to_test_incident_as_reviewer()
+        # uncollapse the review panel
+        self.click_link_with_text('Show')
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
         for field in ('incident', 'description', 'measures_and_consequences'):
-            for lang in ('de', 'en'):  # TODO: import languages from settings
-                self.find_input_and_enter_text(
-                    'id_publishableincident-0-{}_{}'.format(field, lang), "a")
+            #for lang in ('de', 'en'):  # TODO: import languages from settings
+            self.find_input_and_enter_text(
+                'id_publishableincident-0-{}'.format(field), "a")
         self.browser.find_element_by_id('id_publishableincident-0-publish').click()
         self.browser.find_element_by_name('_save').click()
+        time.sleep(5)
         headers1 = self.browser.find_elements_by_tag_name('h1')
         self.assertIn("Select Critical incident to change", [header1.text for header1 in headers1])
         # logout and check as normal user if photo is visible

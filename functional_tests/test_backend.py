@@ -43,6 +43,8 @@ class CriticalIncidentBackendTest(FunctionalTest):
         ci.department.reviewers.add(create_role(Reviewer, self.reviewer))
         admin_url = reverse('admin:cirs_criticalincident_change', args=(ci.pk,))
         self.quick_login(self.reviewer, admin_url)
+        # uncollapse the review panel
+        self.click_link_with_text('Show')
         Select(self.browser.find_element_by_id(
             'id_status')).select_by_value("in process")
         self.browser.find_element_by_id('id_category')
@@ -64,14 +66,11 @@ class ConfigurationInBackend(FunctionalTest):
         self.quick_backend_login(reviewer.user)
         self.click_link_with_text('LabCIRS configuration')
         self.click_link_with_text(str(dept.labcirsconfig))
-        self.find_input_and_enter_text('id_login_info_en', self.LOGIN_INFO)
-        self.find_input_and_enter_text('id_login_info_de', self.LOGIN_INFO)
+        self.find_input_and_enter_text('id_login_info', self.LOGIN_INFO)
         self.find_input_and_enter_text('id_login_info_url', login_url)
-        self.find_input_and_enter_text('id_login_info_link_text_en', self.LINK_TEXT)
-        self.find_input_and_enter_text('id_login_info_link_text_de', self.LINK_TEXT)
+        self.find_input_and_enter_text('id_login_info_link_text', self.LINK_TEXT)
         self.browser.find_element_by_name('_save').click()
         self.logout()
-        #time.sleep(1)
         self.browser.get(self.live_server_url + dept.get_absolute_url())
         current_login_info = self.browser.find_element_by_class_name('alert-success').text
         self.assertIn(self.LOGIN_INFO, current_login_info)

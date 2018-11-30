@@ -286,8 +286,10 @@ class AccessDataWithMultipleDepts(FunctionalTest):
         self.ci = mommy.make_recipe('cirs.public_ci', department=self.dept)
         self.ci2 = mommy.make_recipe('cirs.public_ci', department=self.dept2)
         self.pi = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci)
+        mommy.make_recipe('cirs.translated_pi', master=self.pi)
         self.pi2 = mommy.make_recipe('cirs.published_incident', critical_incident=self.ci2)
-    
+        mommy.make_recipe('cirs.translated_pi', master=self.pi2)
+   
     def get_test_cases():  # @NoSelf
         return[
             ('rep', 'pi', 'pi2'),
@@ -309,8 +311,8 @@ class AccessDataWithMultipleDepts(FunctionalTest):
         
         incidents = self.get_column_from_table_as_list('tableIncidents')
         
-        self.assertIn(own_pi.incident_en, incidents)
-        self.assertNotIn(alien_pi.incident_en, incidents)
+        self.assertIn(own_pi.incident, incidents)
+        self.assertNotIn(alien_pi.incident, incidents)
 
 
     def get_test_reviewers():  # @NoSelf
@@ -332,14 +334,14 @@ class AccessDataWithMultipleDepts(FunctionalTest):
     def test_reviewer_sees_only_pis_of_his_dept_in_backend(self, user):
         role = getattr(self, user)
         own_item = PublishableIncident.objects.filter(
-            critical_incident__department__in=role.departments.all()).first().incident_de
+            critical_incident__department__in=role.departments.all()).first().incident
         foreign_item = PublishableIncident.objects.exclude(
-            critical_incident__department__in=role.departments.all()).first().incident_de
+            critical_incident__department__in=role.departments.all()).first().incident
         self.check_admin_table_for_items(role.user, PublishableIncident, own_item, foreign_item)
 
     @parameterized.expand([
         (CriticalIncident, 'incident'),
-        (PublishableIncident, 'incident_de')
+        (PublishableIncident, 'incident')
     ])
     def test_admin_sees_no_incidents(self, model_cls, field):
         for incident in model_cls.objects.all():
