@@ -31,6 +31,8 @@ from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from multiselectfield import MultiSelectField
+from parler.models import TranslatableModel, TranslatedFields, TranslationDoesNotExist
+from parler.utils import get_language_title
 
 
 class Role(models.Model):
@@ -201,7 +203,7 @@ class CriticalIncident(models.Model):
             if self.status == 'new':
                 for field in ('action', 'responsibilty', 'review_date', 'risk', 'frequency'):
                     if field != '':
-                        raise ValidationError(_('If anything was changed in the QMB block, please set status at least to "in process".'))
+                        raise ValidationError(_('If anything was changed in the Review block, please set status at least to "in process".'))
     
     def get_absolute_url(self):
         return reverse('incident_detail', kwargs={'dept': self.department.label, 'pk':self.id})
@@ -218,17 +220,54 @@ class CriticalIncident(models.Model):
                 self.comment_code = random_string
         super(CriticalIncident, self).save(*agrs, **kwargs)
 
-from parler.models import TranslatableModel, TranslatedFields, TranslationDoesNotExist
-class PublishableIncident(TranslatableModel):
+
+class TranslationStatusMixin(object):
+    
+    mandatory_fields = None
+    
+    def get_mandatory_fields(self):
+        # if no mandatory_fields are definde, return all translated fields
+        if self.mandatory_fields == None:
+            return self._get_translated_model().get_translated_fields()
+        else:
+            return self.mandatory_fields
+    
+    @property
+    def translation_status(self):
+        for code in self.mandatory_languages:
+            try:
+                translation = self.get_translation(code)
+                for field_name in self.get_mandatory_fields():
+                    field = getattr(translation, field_name)
+                    if field == "":
+                        return 'incomplete'
+            except TranslationDoesNotExist:
+                return 'incomplete'
+        return 'complete'
+    
+    @property
+    def translation_info(self):
+        msg = '<span style="color: {}; font-weight: bold;">{}<br>{}!</span>'
+        if self.translation_status == 'complete':
+            return format_html(msg, 'green', _('Translation'), _(self.translation_status))
+        else:
+            return format_html(msg,'red', _('Translation'), _(self.translation_status))
+
+
+class PublishableIncident(TranslationStatusMixin, TranslatableModel):
     critical_incident = models.OneToOneField(CriticalIncident,
                                              verbose_name=_("Critical incident"))
    
-    translstions = TranslatedFields(
+    translations = TranslatedFields(
         incident=models.CharField(_("Incident"), max_length=255),
         description=models.TextField(_("Description"), blank=True),
         measures_and_consequences=models.TextField(_("Measures and consequences"), blank=True)
-        )
+    )
     publish = models.BooleanField(_("Publish"), default=False)
+
+    @property
+    def mandatory_languages(self):
+        return self.critical_incident.department.labcirsconfig.mandatory_languages
 
     class Meta:
         verbose_name = _("Publishable incident")
@@ -239,39 +278,44 @@ class PublishableIncident(TranslatableModel):
         if self.critical_incident.public is False:
             raise ValidationError(_("The reporter did not agreed to publish this incident!"))
         if self.publish is True:
-            # TODO: make languages varialble in dept config and use this list
-            languages = [x['code'] for x in settings.PARLER_LANGUAGES[None]]
-            for code in languages:
-                try:
-                    translation = self.get_translation(code)
-                    for field_name in ('description', 'incident', 'measures_and_consequences'):
-                        field = getattr(translation, field_name)
-                        if field == "":
-                            raise ValidationError(
-                                _("All fields (in all languages) are mandatory for publication!"))
-                except TranslationDoesNotExist:
-                    raise ValidationError(
-                        _("All fields (in all languages) are mandatory for publication!"))
-                    
+            languages =  ", ".join(
+                [unicode(get_language_title(lang)) for lang in self.mandatory_languages])
+            missing_message = _(
+                "All fields in mandatory languages ({}) are necessary for publication!"
+            ).format(languages)
+            if self.translation_status == 'incomplete':
+                raise ValidationError(missing_message)
 
     def __unicode__(self):
         return self.incident
 
 
-class LabCIRSConfig(models.Model):
+class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
     EMAIL_HOST_ERROR = _(
         'If you want to send notifications, an existing email server distinct '
         'from localhost has to be set by the server administrator in the local '
         'server configuration.')
+    # why _languages does not work here?
+    LANGUAGE_CHOICES = tuple(
+        x for x in settings.LANGUAGES if x[0] in [y['code'] for y in settings.PARLER_LANGUAGES[None]])
+    mandatory_languages = MultiSelectField(
+        _("Mandatory languages"), max_length=255, choices=LANGUAGE_CHOICES,
+        default=settings.DEFAULT_MANDATORY_LANGUAGES,
+        help_text=_("""If you choose mandatory languages besides the default language which is {},
+            don't forget to translate fields below. Further fields in publishable incidents 
+            have to be translated before publishing!""").format(
+                unicode(get_language_title(settings.PARLER_DEFAULT_LANGUAGE_CODE))
+        ))
 
     # Login data
-    login_info_en = models.TextField(_('Login info (in English)'))
-    login_info_de = models.TextField(_('Login info (in German)'))
     login_info_url = models.URLField(_('URL for login info'), blank=True)
-    login_info_link_text_en = models.CharField(_('Link text (in English)'),
-                                               max_length=255, blank=True)
-    login_info_link_text_de = models.CharField(_('Link text (in German)'),
-                                               max_length=255, blank=True)
+    
+    translations = TranslatedFields(
+        login_info = models.TextField(_('Login info'),
+            help_text=_('Translate if there are multiple mandatory languages')),
+        login_info_link_text = models.CharField(_('Link text'), max_length=255, blank=True,
+            help_text=_('Translate if there are multiple mandatory languages'))
+    )
     # Notification settings
     send_notification = models.BooleanField(
         _('Send notification'), default=False,
@@ -285,7 +329,7 @@ class LabCIRSConfig(models.Model):
     notification_sender_email = models.EmailField(
         _('Notification sender email address'), blank=True,
         help_text=_('Enter a valid email address you want to use as a sender'))
-    # TODO: limit_choices_to should actually use permissions. Check if user has email!
+    # TODO: Check if user has email!
     notification_recipients = models.ManyToManyField(
         User, verbose_name=_('Notification recipients'), null=True, blank=True,
         help_text=_('Choose recipients of the notification email'))
@@ -304,7 +348,7 @@ class LabCIRSConfig(models.Model):
         verbose_name_plural = _('LabCIRS configuration')
 
     def clean(self):
-        # TODO: show all error messages if multiple validation errors occur at the same time
+        # TODO: show all error messages if multiple validation errors occur at the same time?
         if self.send_notification is True:
             if (settings.EMAIL_HOST == '' or settings.EMAIL_HOST == 'localhost'):
                 raise ValidationError(self.EMAIL_HOST_ERROR)
@@ -312,6 +356,18 @@ class LabCIRSConfig(models.Model):
                 raise ValidationError(_('You have to choose at least one notification recipient.'))
             if self.notification_sender_email == '':
                 raise ValidationError(_('You have to enter valid sender email.'))
+        # default language
+        default_lang = settings.PARLER_DEFAULT_LANGUAGE_CODE
+        verbose_lang = unicode(get_language_title(default_lang))
+        if default_lang not in self.mandatory_languages:
+            raise ValidationError(
+                _('You have to reactivate {} as it is default language.'.format(verbose_lang)))
+            
+    def get_mandatory_fields(self):
+        if self.login_info_url in (None, ''):
+            return ['login_info', ]
+        else:
+            return super(LabCIRSConfig, self).get_mandatory_fields()
             
     def __unicode__(self):
         return 'LabCIRS configuration for {}'.format(self.department.label)

@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('incident', models.CharField(max_length=255, verbose_name='Incident')),
                 ('description', models.TextField(blank=True, verbose_name='Description')),
                 ('measures_and_consequences', models.TextField(blank=True, verbose_name='Measures and consequences')),
-                ('master', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='translstions', to='cirs.PublishableIncident')),
+                ('master', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='translations', to='cirs.PublishableIncident')),
             ],
             options={
                 'managed': True,

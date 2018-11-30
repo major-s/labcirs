@@ -32,7 +32,7 @@ public_ci = Recipe(CriticalIncident,
 )
 
 published_incident = Recipe(PublishableIncident,
-    incident_de = seq('Published Incident '),
+    #incident = seq('Published Incident '),
     publish = True,
     critical_incident__public = True,
     critical_incident__department__label = seq('Dept_'),

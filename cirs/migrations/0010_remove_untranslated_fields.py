@@ -3,7 +3,8 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 class Migration(migrations.Migration):
 
@@ -20,9 +21,21 @@ class Migration(migrations.Migration):
             model_name='publishableincident',
             name='description_en',
         ),
+        migrations.AlterField(
+            model_name='publishableincident',
+            name='incident_de',
+            field=models.CharField(_("Incident (in German)"), max_length=255, default=' '),
+            preserve_default=True,
+        ),
         migrations.RemoveField(
             model_name='publishableincident',
             name='incident_de',
+        ),
+        migrations.AlterField(
+            model_name='publishableincident',
+            name='incident_en',
+            field=models.CharField(_("Incident (in English)"), max_length=255, default=' '),
+            preserve_default=True,
         ),
         migrations.RemoveField(
             model_name='publishableincident',

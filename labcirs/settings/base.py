@@ -146,10 +146,7 @@ TIME_ZONE = get_local_setting('TIME_ZONE', 'UTC')
 STATICFILES_DIRS = (join_path(BASE_DIR, 'static'),)
 
 
-LANGUAGES = (
-    ('de', _('German')),
-    ('en', _('English')),
-)
+LANGUAGES = tuple((k, _(v)) for k, v in get_local_setting('LANGUAGES').iteritems())
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60 * 60 # one hour, not logged out users will leave a ghost session in db!
@@ -168,19 +165,22 @@ EMAIL_HOST_USER = get_local_setting('EMAIL_HOST_USER')
 EMAIL_PORT = get_local_setting('EMAIL_PORT', 25)
 EMAIL_SUBJECT_PREFIX = '[LabCIRS] '
 
-
-# TODO: move to settings
 # Parler
-PARLER_DEFAULT_LANGUAGE_CODE = 'de'
+PARLER_DEFAULT_LANGUAGE_CODE = get_local_setting('PARLER_DEFAULT_LANGUAGE_CODE', 'en')
 
 PARLER_LANGUAGES = {
     None: (
-        {'code': 'de',},
-        {'code': 'en',},
+        tuple({'code': lang,} for lang in get_local_setting('PARLER_LANGUAGES'))
     ),
     'default': {
-        'fallbacks': ['de'],          # defaults to PARLER_DEFAULT_LANGUAGE_CODE
+        'fallbacks': get_local_setting('PARLER_LANGUAGES'), # use all languages
         'hide_untranslated': False,   # the default; let .active_translations() return fallbacks too.
     }
 }
 
+ALL_LANGUAGES_MANDATORY_DEFAULT = get_local_setting('ALL_LANGUAGES_MANDATORY_DEFAULT', True)
+
+if ALL_LANGUAGES_MANDATORY_DEFAULT is True:
+    DEFAULT_MANDATORY_LANGUAGES = get_local_setting('PARLER_LANGUAGES')
+else:
+    DEFAULT_MANDATORY_LANGUAGES = PARLER_DEFAULT_LANGUAGE_CODE

@@ -24,7 +24,7 @@ from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
 
-from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
+from parler.admin import TranslatableAdmin, TranslatableTabularInline
 
 from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
                          LabCIRSConfig, Department, Reporter, Reviewer)
@@ -47,7 +47,7 @@ class HasPublishableIncidentListFilter(admin.SimpleListFilter):
             return queryset.filter(publishableincident=None)
 
 common_pi_fields = (
-    ('incident', ), ('description', 'measures_and_consequences')
+    ('incident', 'description', 'measures_and_consequences')
     )
 
 pi_form_overrides = {
@@ -58,8 +58,9 @@ pi_form_overrides = {
 
 class PublishableIncidentInline(TranslatableTabularInline):
     model = PublishableIncident
-    fields = common_pi_fields + ('publish', )
+    fields = common_pi_fields + ('publish', 'translation_info')
     formfield_overrides = pi_form_overrides
+    readonly_fields = ('translation_info', )
 
 
 class CommentInline(admin.TabularInline):
@@ -110,10 +111,11 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
 
 class PublishableIncidentAdmin(TranslatableAdmin):
 
-    fields = (('critical_incident', 'publish'),) + common_pi_fields
-    list_filter = ('publish',)
-    list_display = ('incident', 'critical_incident')
+    fields = (('critical_incident', 'publish', 'translation_info'),) + common_pi_fields
+    list_filter = ('publish', )
+    list_display = ('incident', 'critical_incident', 'translation_status')
     list_display_links = ('incident', )
+    readonly_fields = ('translation_info', )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "critical_incident":
@@ -137,30 +139,33 @@ class PublishableIncidentAdmin(TranslatableAdmin):
             return qs.none()
 
 
-class AdminWithObject(admin.ModelAdmin):
+class AdminObjectMixin(object):
     
     def get_form(self, request, obj=None, **kwargs):
         self.model_instance = None
         if obj:
             self.model_instance = obj
            
-        return super(AdminWithObject, self).get_form(request, obj, **kwargs)
+        return super(AdminObjectMixin, self).get_form(request, obj, **kwargs)
 
 
-class ConfigurationAdmin(AdminWithObject):
+class ConfigurationAdmin(AdminObjectMixin, TranslatableAdmin):
+    
+    list_display = ('__unicode__', 'translation_status')
     filter_horizontal = ('notification_recipients',)
     fieldsets = (
-        (_('Login infos'), {
-            'fields': ('login_info_en', 'login_info_de', 'login_info_url',
-                       'login_info_link_text_en', 'login_info_link_text_de'
-                       )
+        (_('Languages'), {
+            'fields': ('mandatory_languages', 'translation_info')
+        }),
+        (_('Login infos - translate "login info" and "link text" if using multiple languages!'), {
+            'fields': ('login_info', 'login_info_url', 'login_info_link_text')
         }),
         (_('Notification settings'), {
             'fields': (('send_notification', 'notification_sender_email'),
                        'notification_text', 'notification_recipients')
         })
     )
-
+    readonly_fields = ('translation_info', )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # If by chance someone creates config in admin manually, the list will be empty!
@@ -178,7 +183,7 @@ class ConfigurationAdmin(AdminWithObject):
                 return qs
 
 
-class DepartmentAdmin(AdminWithObject):
+class DepartmentAdmin(AdminObjectMixin, admin.ModelAdmin):
     filter_horizontal = ('reviewers',)
        
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -188,7 +193,7 @@ class DepartmentAdmin(AdminWithObject):
         return super(DepartmentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class RoleAdmin(AdminWithObject):
+class RoleAdmin(AdminObjectMixin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":

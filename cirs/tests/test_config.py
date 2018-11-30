@@ -38,9 +38,9 @@ class LabCIRSConfigModels(TestCase):
         self.config = self.dept.labcirsconfig
 
     def test_labcirs_config_save_and_retrieve(self):
-        self.config.login_info_en = LOGIN_INFO
+        self.config.login_info = LOGIN_INFO
         self.config.login_info_url = reverse('demo_login_data_page') # TODO: remove to clean urls.py
-        self.config.login_info_link_text_en = LINK_TEXT
+        self.config.login_info_link_text = LINK_TEXT
         self.config.send_notification = False
         self.config.notification_sender_email = 'a@test.edu'
         self.config.notification_text = NOTIFICATION_TEXT
@@ -49,8 +49,8 @@ class LabCIRSConfigModels(TestCase):
 
         saved_config = LabCIRSConfig.objects.first()
 
-        for field in ('login_info_en', 'login_info_url',
-                      'login_info_link_text_en', 'send_notification',
+        for field in ('login_info', 'login_info_url',
+                      'login_info_link_text', 'send_notification',
                       'notification_sender_email', 'notification_text'):
             self.assertEqual(getattr(saved_config, field),
                              getattr(self.config, field)
