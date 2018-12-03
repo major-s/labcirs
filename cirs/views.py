@@ -24,7 +24,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
-from django.urls import resolve
+from django.urls import resolve, get_script_prefix
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
@@ -246,7 +246,9 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                }
     
     try:
-        match = resolve(redirect_url)
+        # Resolve seems not to work if django project is not run from web root.
+        prefix = get_script_prefix()
+        match = resolve(redirect_url.replace(prefix, '/'))
         context['department'] = match.kwargs['dept']
         context['labcirs_config'] = LabCIRSConfig.objects.get(
             department__label=match.kwargs['dept'])
