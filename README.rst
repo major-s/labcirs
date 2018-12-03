@@ -17,6 +17,7 @@ Requirements
 - Django 1.11 (1.9 and 1.10 work too but are not recommended)
 - Pillow 5.2.0
 - django-multiselectfield 0.1.8
+- django-parler 1.9.2
 - any Django compatible database - tested in real life with MySQL and PostreSQL.
 - any web server capable running WSGI applications - a template for Apache 2.4 configuration is provided
 
