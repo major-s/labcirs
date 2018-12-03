@@ -19,11 +19,15 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
-from django import forms
 
-from cirs.models import *
+from parler.admin import TranslatableAdmin, TranslatableTabularInline
+
+from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
+                         LabCIRSConfig, Department, Reporter, Reviewer)
 
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):
@@ -43,8 +47,7 @@ class HasPublishableIncidentListFilter(admin.SimpleListFilter):
             return queryset.filter(publishableincident=None)
 
 common_pi_fields = (
-    ('incident_de', 'incident_en'), ('description_de', 'description_en'),
-    ('measures_and_consequences_de', 'measures_and_consequences_en')
+    ('incident', 'description', 'measures_and_consequences')
     )
 
 pi_form_overrides = {
@@ -53,10 +56,11 @@ pi_form_overrides = {
     }
 
 
-class PublishableIncidentInline(admin.StackedInline):
+class PublishableIncidentInline(TranslatableTabularInline):
     model = PublishableIncident
-    fields = common_pi_fields + ('publish', )
+    fields = common_pi_fields + ('publish', 'translation_info')
     formfield_overrides = pi_form_overrides
+    readonly_fields = ('translation_info', )
 
 
 class CommentInline(admin.TabularInline):
@@ -65,13 +69,13 @@ class CommentInline(admin.TabularInline):
     readonly_fields = ('author', 'text',)
     
     def has_add_permission(self, request):
-      return False
+        return False
 
 class CriticalIncidentAdmin(admin.ModelAdmin):
     readonly_fields = ('date', 'incident', 'reason', 'immediate_action',
                        'public', 'reported', 'preventability', 'photo',
                        'photo_tag')
-    list_filter = ('status', 'date', 'reported', 'public', 'risk',
+    list_filter = ('department', 'status', 'date', 'reported', 'public', 'risk',
                    HasPublishableIncidentListFilter)
     list_display = ('incident', 'date', 'reported', 'status', 'risk')
     list_display_links = ('incident', 'status', 'risk')
@@ -80,11 +84,13 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
             'fields': (('date', 'reported'), 'public', 'incident', 'reason',
                        'immediate_action', 'preventability', 'photo',
                        'photo_tag')
+            
         }),
         ('Review', {
             'fields': (('review_date', 'status'),
                        ('risk', 'frequency', 'hazard'),
-                       'responsibilty', 'action', 'category')
+                       'responsibilty', 'action', 'category'),
+            'classes': ['collapse',]
         })
     )
     inlines = [PublishableIncidentInline, CommentInline]
@@ -95,14 +101,21 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
             if isinstance(inline, PublishableIncidentInline) and obj.public is False:
                 continue
             yield inline.get_formset(request, obj)
+            
+    def get_queryset(self, request):
+        qs = super(CriticalIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
+class PublishableIncidentAdmin(TranslatableAdmin):
 
-class PublishableIncidentAdmin(admin.ModelAdmin):
-
-    fields = (('critical_incident', 'publish'),) + common_pi_fields
-    list_filter = ('publish',)
-    list_display = ('incident_de', 'incident_en', 'critical_incident')
-    list_display_links = ('incident_de', 'incident_en')
+    fields = (('critical_incident', 'publish', 'translation_info'),) + common_pi_fields
+    list_filter = ('publish', )
+    list_display = ('incident', 'critical_incident', 'translation_status')
+    list_display_links = ('incident', )
+    readonly_fields = ('translation_info', )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "critical_incident":
@@ -116,22 +129,87 @@ class PublishableIncidentAdmin(admin.ModelAdmin):
         return readonly_fields
 
     formfield_overrides = pi_form_overrides
+    
+    def get_queryset(self, request):
+        qs = super(PublishableIncidentAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                critical_incident__department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            return qs.none()
 
 
-class ConfigurationAdmin(admin.ModelAdmin):
+class AdminObjectMixin(object):
+    
+    def get_form(self, request, obj=None, **kwargs):
+        self.model_instance = None
+        if obj:
+            self.model_instance = obj
+           
+        return super(AdminObjectMixin, self).get_form(request, obj, **kwargs)
+
+
+class ConfigurationAdmin(AdminObjectMixin, TranslatableAdmin):
+    
+    list_display = ('__unicode__', 'translation_status')
     filter_horizontal = ('notification_recipients',)
     fieldsets = (
-        (_('Login infos'), {
-            'fields': ('login_info_en', 'login_info_de', 'login_info_url',
-                       'login_info_link_text_en', 'login_info_link_text_de'
-                       )
+        (_('Languages'), {
+            'fields': ('mandatory_languages', 'translation_info')
+        }),
+        (_('Login infos - translate "login info" and "link text" if using multiple languages!'), {
+            'fields': ('login_info', 'login_info_url', 'login_info_link_text')
         }),
         (_('Notification settings'), {
             'fields': (('send_notification', 'notification_sender_email'),
                        'notification_text', 'notification_recipients')
         })
     )
+    readonly_fields = ('translation_info', )
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # If by chance someone creates config in admin manually, the list will be empty!
+        if db_field.name == "notification_recipients":
+            kwargs["queryset"] = User.objects.filter(reviewer__in=self.model_instance.department.reviewers.all())
+        return super(ConfigurationAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super(ConfigurationAdmin, self).get_queryset(request)
+        try:
+            return qs.filter(
+                department__in=request.user.reviewer.departments.all())
+        except Reviewer.DoesNotExist:
+            if request.user.is_superuser is True:
+                return qs
+
+
+class DepartmentAdmin(AdminObjectMixin, admin.ModelAdmin):
+    filter_horizontal = ('reviewers',)
+       
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "reporter":
+            kwargs["queryset"] = (Reporter.objects.filter(department=None) 
+                                  | Reporter.objects.filter(department=self.model_instance))
+        return super(DepartmentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class RoleAdmin(AdminObjectMixin, admin.ModelAdmin):
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            queryset = User.objects.filter(is_superuser=False, reporter=None, reviewer=None)
+            assigned_user = User.objects.none()
+            # add assigned user if existing object is provided
+            if self.model_instance:
+                assigned_user =  User.objects.filter(**{self.model._meta.model_name: self.model_instance})
+            kwargs["queryset"] = queryset | assigned_user
+            
+        return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 admin.site.register(CriticalIncident, CriticalIncidentAdmin)
 admin.site.register(PublishableIncident, PublishableIncidentAdmin)
 admin.site.register(LabCIRSConfig, ConfigurationAdmin)
-admin.site.register(Comment)
+admin.site.register(Department, DepartmentAdmin)
+admin.site.register(Reporter, RoleAdmin)
+admin.site.register(Reviewer, RoleAdmin)

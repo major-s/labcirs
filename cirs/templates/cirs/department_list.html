@@ -1,0 +1,57 @@
+{% extends "cirs/base.html" %}
+
+{% block head %}
+	{{ block.super }}
+	{% load i18n %}
+	<link rel="stylesheet" type="text/css" href={{ STATIC_URL }}css/datatables.min.css>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    {% load i18n %}
+    <div class="container">
+	    <h2>{% trans "Choose your department" %}</h2>
+		<div class="table-responsive">
+		    <table class="table table-striped table-bordered" id="table_departments">
+				<thead>
+					<tr>
+					    <th>{% trans "Label" %}</th>
+					    <th>{% trans "Name" %}</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for department in object_list %}
+				    <tr>
+						<td>
+							<a href={{ department.get_absolute_url }}>
+								{{ department.label }}
+							</a>
+						</td>
+						<td>{{ department.name }}</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+	<script type="text/javascript" charset="utf8" src="{{ STATIC_URL }}js/datatables.min.js"></script>
+	
+	{% get_current_language as LANGUAGE_CODE %}
+	
+	<script type="text/javascript">
+		$(document).ready( function () {
+		    $('#table_departments').DataTable( {
+				"ordering": false,
+				{% if not LANGUAGE_CODE == "en" %}
+					"language": {
+						url: "{{ STATIC_URL }}i18n/dataTables.{{ LANGUAGE_CODE }}.json"
+					}
+				{% endif %}
+			});
+		} );
+	</script>
+{% endblock %}

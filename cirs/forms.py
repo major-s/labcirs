@@ -29,8 +29,8 @@ from django.utils.translation import ugettext_lazy as _
 from .models import CriticalIncident, Comment, LabCIRSConfig
 
 
-def notify_on_creation(form, subject='', excluded_user_id=None):
-    config = LabCIRSConfig.objects.first()
+def notify_on_creation(form, department, subject='', excluded_user_id=None):
+    config = department.labcirsconfig
     if config.send_notification:
         # send only if incident was saved
         if form.instance.pk is not None:
@@ -72,7 +72,8 @@ class IncidentCreateForm(ModelForm):
 
     def save(self):
         result = super(IncidentCreateForm, self).save()
-        notify_on_creation(self, 'New critical incident')
+        department = self.instance.department
+        notify_on_creation(self, department, 'New critical incident')
         return result
 
 
@@ -99,6 +100,7 @@ class CommentForm(ModelForm):
 
     def save(self):
         result = super(CommentForm, self).save()
-        notify_on_creation(self, 'New LabCIRS comment', self.instance.author.id)
+        department = self.instance.critical_incident.department
+        notify_on_creation(self, department, 'New LabCIRS comment', self.instance.author.id)
         return result
 

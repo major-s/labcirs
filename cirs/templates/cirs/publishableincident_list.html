@@ -10,7 +10,12 @@
     {{ block.super }}
     {% load i18n %}
     <div class="container">
-	    <h2>{% trans "Critical incidents" %}</h2>
+    	{% if messages %}
+    		{% for message in messages %}
+	    		<p class="alert alert-warning">{{ message }}</p>
+	    	{% endfor %}
+	    {% endif %}
+	    <h2>{% trans "Critical incidents for" %} {{ department }}</h2>
 		<div class="table-responsive">
 		    <table class="table table-striped table-bordered" id="tableIncidents">
 				<thead>
@@ -18,21 +23,19 @@
 					    <th>{% trans "Incident" %}</th>
 					    <th>{% trans "Description" %}</th>
 					    <th>{% trans "Measures and consequences" %}</th>
-						<th>{% trans "Photo" %}</th>    
+						<th>{% trans "Photo" %}</th>
+						<th>{% trans "Date" %}</th>
+						{% if user.reviewer %}
+							<th>{% trans "No. of comments" %}</th>
+						{% endif %}
 					</tr>
 				</thead>
 				<tbody>
 				{% for incident in object_list %}
 				    <tr>
-					{% if LANGUAGE_CODE == "de" %}
-						<td>{{ incident.incident_de }}</td>
-						<td>{{ incident.description_de }}</td>
-						<td>{{ incident.measures_and_consequences_de }}</td>
-					{% else %}
-					    <td>{{ incident.incident_en }}</td>
-					    <td>{{ incident.description_en }}</td>
-					    <td>{{ incident.measures_and_consequences_en }}</td>
-					{% endif %}
+				    	<td>{{ incident.incident }}</td>
+				    	<td>{{ incident.description }}</td>
+						<td>{{ incident.measures_and_consequences }}</td>
 						<td>
 						{% if incident.critical_incident.photo %}
 							<a href="#" data-toggle="modal" data-target="#id_{{ incident.critical_incident.photo|slugify }}">
@@ -40,6 +43,13 @@
 							</a>
 						{% endif %}
 						</td>
+						<td>{{ incident.critical_incident.date|date:"F Y" }}</td>
+						{# show whole column only to reviewer #}
+						{% if user.reviewer %}
+							<td><a href={{ incident.critical_incident.get_absolute_url }}>
+								{{ incident.critical_incident.comments.count }}
+							</a></td>
+						{% endif %}
 					</tr>
 				{% endfor %}
 				</tbody>
@@ -67,7 +77,9 @@
 				</div>
 			{% endif %}
 		{% endfor %}
-		<a href="{% url 'create_incident'%}" class="btn btn-info btn-lg" role="button">{% trans "Add new incident" %}</a>
+		{% if user.reporter %}
+			<a href="{% url 'create_incident' dept=department %}" class="btn btn-info btn-lg" role="button">{% trans "Add new incident" %}</a>
+		{% endif %}
     </div>
 
 {% endblock %}

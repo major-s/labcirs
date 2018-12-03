@@ -20,11 +20,7 @@
 			<button class="btn btn-lg btn-danger btn-block" type="submit">{% trans "Log in" %}</button>
 			<br>
 			<div class="alert alert-success">
-				{% if LANGUAGE_CODE == "de" %}
-					{{ labcirs_config.login_info_de }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text_de }}</a>
-				{% else %}
-					{{ labcirs_config.login_info_en }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text_en }}</a>
-				{% endif %}
+				{{ labcirs_config.login_info }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text }}</a>
 			</div>
 		</form>	
 	</div>

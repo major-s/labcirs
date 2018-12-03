@@ -20,16 +20,14 @@
 
 import time
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support import expected_conditions as EC
-
 from django.core.urlresolvers import reverse
 from django.test import override_settings
+from model_mommy import mommy
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
-from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig
+from cirs.models import LabCIRSConfig
 
 from .base import FunctionalTest
 
@@ -64,54 +62,29 @@ class OrganizationNameTest(FunctionalTest):
         self.assertEqual(organization, self.ORGANIZATION)
 
 
-class ConfigurationInBackend(FunctionalTest):
-    """Reviewer can specify information about login data for the reporter."""
-
-    LOGIN_INFO = "You can find the login data for this demo installation at "
-    LINK_TEXT = "the demo login data page"
-
-    def test_reviewer_can_set_the_message_text(self):
-        login_url = self.live_server_url + reverse('demo_login_data_page')
-
-        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "LabCIRS configuration"))).click()
-        #self.browser.find_element_by_link_text("LabCIRS configuration").click()
-        try:
-            self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add LabCIRS configuration"))).click()
-        except:
-            self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Add LabCIRS configuration".upper()))).click()
-        self.browser.find_element_by_id('id_login_info_en').send_keys(self.LOGIN_INFO)
-        self.browser.find_element_by_id('id_login_info_de').send_keys(self.LOGIN_INFO)
-        self.browser.find_element_by_id('id_login_info_url').send_keys(login_url)
-        self.browser.find_element_by_id('id_login_info_link_text_en').send_keys(self.LINK_TEXT)
-        self.browser.find_element_by_id('id_login_info_link_text_de').send_keys(self.LINK_TEXT)
-        self.browser.find_element_by_name('_save').click()
-        self.logout()
-        time.sleep(2)
-        self.browser.get(self.live_server_url)
-        current_login_info = self.browser.find_element_by_class_name('alert-success').text
-        self.assertIn(self.LOGIN_INFO, current_login_info)
-        self.browser.find_element_by_link_text(self.LINK_TEXT)
-
-
 class EmailSettingsInBackend(FunctionalTest):
     """Settings for sending notifications."""
-
+    
     def setUp(self):
         super(EmailSettingsInBackend, self).setUp()
-
+ 
         # make simple config in advance and go to the config page
-        self.config = LabCIRSConfig.objects.create(
-            login_info_en="English", login_info_de="Deutsch",
-            send_notification=False)
-        self.login_user(username=self.REVIEWER, password=self.REVIEWER_PASSWORD)
-        self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "LabCIRS configuration")))
-        self.browser.find_element_by_link_text("LabCIRS configuration").click()
-        self.browser.find_element_by_link_text("LabCIRSConfig object").click()
+        self.dept = mommy.make_recipe('cirs.department')
+        reviewer = mommy.make_recipe('cirs.reviewer')
+        self.dept.reviewers.add(reviewer)
+         
+        self.config = self.dept.labcirsconfig
+        self.config.create_translation('de', login_info="English")
+        self.config.save()
+        
+        admin_url = reverse('admin:cirs_labcirsconfig_change', args=(self.config.pk,))
+        self.quick_backend_login(reviewer.user, admin_url)
+
 
     @override_settings(EMAIL_HOST='localhost')
     def test_reviewer_can_switch_email_notifications(self):
-        """Email notifications can be (de)activatet if email settings are set.
+        """
+        Email notifications can be (de)activatet if email settings are set.
 
         Notifications are only send if a valid(?) SMTP server is defined
         and differs from localhost.
@@ -119,22 +92,25 @@ class EmailSettingsInBackend(FunctionalTest):
 
         self.browser.find_element_by_id('id_send_notification').click()
         self.browser.find_element_by_name('_save').click()
-        time.sleep(2)
-        error_msg = self.browser.find_element_by_class_name('errorlist')
+        error_msg = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         # could also import the errormessage and check for equality
         self.assertIn('distinct from localhost', error_msg.text)
 
     def test_only_reviewers_in_the_recipient_list(self):
         recipient_select = Select(
             self.browser.find_element_by_id('id_notification_recipients_from'))
-        self.assertEqual(recipient_select._el.text, 'reviewer')
-
+        options = [opt.text for opt in recipient_select.options]
+        expected = [rev.user.username for rev in self.dept.reviewers.all()]
+        self.assertItemsEqual(options, expected,
+            'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
+        
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_no_notifications_if_no_recipient(self):
         self.browser.find_element_by_id('id_send_notification').click()
         self.browser.find_element_by_name('_save').click()
-        time.sleep(2)
-        error_msg = self.browser.find_element_by_class_name('errorlist')
+        error_msg = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         self.assertIn('at least one notification recipient', error_msg.text)
 
     @override_settings(EMAIL_HOST='smtp.example.com')
@@ -143,20 +119,19 @@ class EmailSettingsInBackend(FunctionalTest):
         self.config.save()
         self.browser.find_element_by_id('id_send_notification').click()
         self.browser.find_element_by_name('_save').click()
-        time.sleep(2)
-        error_msg = self.browser.find_element_by_class_name('errorlist')
+        error_msg = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         self.assertIn('sender email', error_msg.text)
 
     def test_enter_sender_email(self):
-        self.browser.find_element_by_id('id_notification_sender_email').send_keys('a@test.edu')
+        self.find_input_and_enter_text('id_notification_sender_email', 'a@test.edu')
         self.browser.find_element_by_name('_save').click()
         time.sleep(2)
         config = LabCIRSConfig.objects.first()
         self.assertEqual(config.notification_sender_email, "a@test.edu")
 
     def test_reviewer_can_enter_notification_text(self):
-        self.browser.find_element_by_id('id_notification_text').send_keys(
-            "New incident")
+        self.find_input_and_enter_text('id_notification_text', "New incident")
         self.browser.find_element_by_name('_save').click()
         time.sleep(2)
         config = LabCIRSConfig.objects.first()

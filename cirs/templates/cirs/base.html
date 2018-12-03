@@ -20,7 +20,15 @@
 
 <body>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-    	<span class="navbar-brand">{{ ORGANIZATION|default:"LabCIRS" }}</span>
+		{% url 'labcirs_home' as home %}
+		{% url 'departments_list' as dept_list %}
+    	<a class="navbar-brand" href={{ dept_list }} >{{ ORGANIZATION|default:"LabCIRS" }}
+    		{% if department %}
+    			/ {{ department }}
+    		{% elif view.kwargs.dept %}
+    			/ {{ view.kwargs.dept }}
+    		{% endif %}
+    	</a>
  
     	{% if user.is_authenticated == True %}
     	<div> 
@@ -29,28 +37,32 @@
   			</button>
 	  		<div class="collapse navbar-collapse" id="navbarMenu">
         		<ul class="navbar-nav nav-pills">
-	                {% url 'incidents_list' as url %}
-	                <li class="nav-item">
-	                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
-	                		{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
-	                </li>
-	                {% url 'create_incident' as url %}
-	                <li class="nav-item">
-	                	<a class="nav-link{% if request.path == url %} active text-light bg-dark
-	                		{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
-	                </li>
-	                {% url 'incident_search' as url %}
-	                <li class="nav-item">
-	                	<a class="nav-link
-	                		{% comment %}
-	                			Works on all pages only because not existing variables are ignored in templates
-	                		{% endcomment %}
-	                		{% if request.path == url or request.path == incident.get_absolute_url %}
-	                			active text-light bg-dark
-	                		{% endif %}" 
-	                	href="{{ url }}">{% trans "Comments" %}</a>
-	                </li>
-	            	{% if user.is_superuser %}
+        			{% if request.path != dept_list and request.path != home %}
+	                	{% url 'incidents_for_department' dept=department|default:view.kwargs.dept as url %}
+	                	<li class="nav-item">
+	                		<a class="nav-link{% if request.path == url %} active text-light bg-dark
+	                			{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
+	                	</li>
+	                	{% if user.reporter %}
+	                		{% url 'create_incident' dept=user.reporter.department.label as url %}
+	                		<li class="nav-item">
+	                			<a class="nav-link{% if request.path == url %} active text-light bg-dark
+	                			{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
+	                		</li>
+	                	{% endif %}
+	                	{% url 'incident_search' dept=department|default:view.kwargs.dept as url %}
+	                	<li class="nav-item">
+	                		<a class="nav-link
+	                			{% comment %}
+	                				Works on all pages only because not existing variables are ignored in templates
+	                			{% endcomment %}
+	                			{% if request.path == url or request.path == incident.get_absolute_url %}
+	                				active text-light bg-dark
+	                			{% endif %}" 
+	                		href="{{ url }}">{% trans "Comments" %}</a>
+	                	</li>
+	                {% endif %}
+	            	{% if user.is_superuser or user.is_staff %}
 		                <li class="nav-item">
 		                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
 		                </li>
@@ -66,7 +78,7 @@
         </h5>
 
         {% if user.is_authenticated == True %}
-            <span class="navbar-text mr-sm-2 d-none d-md-block">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }}</em></span>
+            <span class="navbar-text mr-sm-2 d-none d-md-block">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }} ({{ user.username }})</em></span>
         {% endif %}
 
         <form name="select_language" class="form-inline" action="{% url 'set_language' %}" method="post">
@@ -84,11 +96,16 @@
             </div>
         </form>
 
-        {% if user.is_authenticated == True %}
-            <ul class="navbar-nav nav-pills">    
-                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">{% trans "Log out" %}</a></li>
-            </ul>
-        {% endif %}
+        
+        <ul class="navbar-nav nav-pills">    
+            <li class="nav-item">
+            {% if user.is_authenticated == True %}
+            	<a class="nav-link" href="{% url 'logout' %}">{% trans "Log out" %}</a>
+            {% else %}
+            	<a class="nav-link" href="{% url 'login' %}">{% trans "Log in" %}</a>
+            {% endif %}
+            </li>
+        </ul>
     </nav>
  
     {% block content %}
