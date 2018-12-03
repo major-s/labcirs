@@ -3,11 +3,9 @@ from django.conf.urls import include, url
 from django.views.generic import TemplateView
 from django.contrib import admin
 from django.views.static import serve
-from django.views.generic.base import RedirectView
 
 from cirs.views import login_user, logout_user, DepartmentList
 
-cirs_url = settings.ROOT_URL + '/incidents/'
 
 urlpatterns = [
     url(r'^$', DepartmentList.as_view(), name='labcirs_home'),
