@@ -18,8 +18,9 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
@@ -28,6 +29,16 @@ from parler.admin import TranslatableAdmin, TranslatableTabularInline
 
 from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
                          LabCIRSConfig, Department, Reporter, Reviewer)
+
+
+class LabCIRSAdminSite(admin.AdminSite):
+    site_header = _('LabCIRS for %s') % settings.ORGANIZATION
+    # Translators: This message appears in the page title
+    site_title = 'LabCIRS'
+    index_title = _('LabCIRS administration')
+    
+    
+admin_site = LabCIRSAdminSite()
 
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):
@@ -80,13 +91,13 @@ class CriticalIncidentAdmin(admin.ModelAdmin):
     list_display = ('incident', 'date', 'reported', 'status', 'risk')
     list_display_links = ('incident', 'status', 'risk')
     fieldsets = (
-        ('Reported incident', {
+        (_('Reported incident'), {
             'fields': (('date', 'reported'), 'public', 'incident', 'reason',
                        'immediate_action', 'preventability', 'photo',
                        'photo_tag')
             
         }),
-        ('Review', {
+        (_('Review'), {
             'fields': (('review_date', 'status'),
                        ('risk', 'frequency', 'hazard'),
                        'responsibilty', 'action', 'category'),
@@ -207,9 +218,11 @@ class RoleAdmin(AdminObjectMixin, admin.ModelAdmin):
         return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-admin.site.register(CriticalIncident, CriticalIncidentAdmin)
-admin.site.register(PublishableIncident, PublishableIncidentAdmin)
-admin.site.register(LabCIRSConfig, ConfigurationAdmin)
-admin.site.register(Department, DepartmentAdmin)
-admin.site.register(Reporter, RoleAdmin)
-admin.site.register(Reviewer, RoleAdmin)
+for model in (User, Group):
+    admin_site.register(model)
+admin_site.register(CriticalIncident, CriticalIncidentAdmin)
+admin_site.register(PublishableIncident, PublishableIncidentAdmin)
+admin_site.register(LabCIRSConfig, ConfigurationAdmin)
+admin_site.register(Department, DepartmentAdmin)
+admin_site.register(Reporter, RoleAdmin)
+admin_site.register(Reviewer, RoleAdmin)

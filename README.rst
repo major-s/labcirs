@@ -53,10 +53,10 @@ Assuming usage of Apache, PostgreSQL and virtualenv on a Linux machine the insta
      a) enter the values for the database access, usually ``DB_ENGINE``, ``DB_NAME``, ``DB_USER`` and ``DB_PASSWORD``.
      b) If you intend to serve LabCIRS from a subdirectory and not from the root of your web server then you have also to enter this subdirectory as ``ROOT_URL``.
      c) Add the domain of your web server to ``ALLOWED_HOSTS``
-16. Initialise the database (**IMPORTANT:** ``manage.py`` uses development settings as default, therefore production settings have to be specified explicitly!):
-     ``python manage.py migrate --settings=labcirs.settings.production`` 
+16. Initialise the database :
+     ``python manage.py migrate`` 
 17. Create superuser:
-     ``python manage.py createsuperuser --settings=labcirs.settings.production``
+     ``python manage.py createsuperuser``
 18. Copy and edit ``labcirs/labcirs.conf.template`` and make a symlink to your final ``labcirs.conf`` in ``/etc/apache2/conf-available``
 19. Enable your config, e.g.
      ``sudo a2enconf labcirs``

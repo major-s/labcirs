@@ -232,8 +232,7 @@ class TranslationStatusMixin(object):
         else:
             return self.mandatory_fields
     
-    @property
-    def translation_status(self):
+    def _translation_status(self):
         for code in self.mandatory_languages:
             try:
                 translation = self.get_translation(code)
@@ -244,15 +243,19 @@ class TranslationStatusMixin(object):
             except TranslationDoesNotExist:
                 return 'incomplete'
         return 'complete'
+    _translation_status.short_description = _('Translation status')
     
-    @property
-    def translation_info(self):
+    translation_status = property(_translation_status)
+    
+    def _translation_info(self):
         msg = '<span style="color: {}; font-weight: bold;">{}<br>{}!</span>'
         if self.translation_status == 'complete':
             return format_html(msg, 'green', _('Translation'), _('complete'))
         else:
             return format_html(msg,'red', _('Translation'), _('incomplete'))
+    _translation_info.short_description = _('Translation info')
 
+    translation_info = property(_translation_info)
 
 class PublishableIncident(TranslationStatusMixin, TranslatableModel):
     critical_incident = models.OneToOneField(CriticalIncident,
@@ -265,9 +268,12 @@ class PublishableIncident(TranslationStatusMixin, TranslatableModel):
     )
     publish = models.BooleanField(_("Publish"), default=False)
 
-    @property
-    def mandatory_languages(self):
+    def _mandatory_languages(self):
         return self.critical_incident.department.labcirsconfig.mandatory_languages
+    
+    _mandatory_languages.short_description = _('Mandatory languages')
+
+    mandatory_languages = property(_mandatory_languages)
 
     class Meta:
         verbose_name = _("Publishable incident")
