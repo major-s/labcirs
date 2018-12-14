@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-30 20:29+0100\n"
+"POT-Creation-Date: 2018-12-12 15:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,23 +18,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\admin.py:34
+#: .\admin.py:35
+#, python-format
+msgid "LabCIRS for %s"
+msgstr "LabCIRS für %s"
+
+#: .\admin.py:38
+msgid "LabCIRS administration"
+msgstr "LabCIRS-Administration"
+
+#: .\admin.py:45
 msgid "has publishable incident"
 msgstr "mit publizierbaren Ereignissen"
 
-#: .\admin.py:39
+#: .\admin.py:50
 msgid "Yes"
 msgstr "Ja"
 
-#: .\admin.py:40
+#: .\admin.py:51
 msgid "No"
 msgstr "Nein"
 
-#: .\admin.py:157
+#: .\admin.py:94
+msgid "Reported incident"
+msgstr "Gemeldete Ereignisse"
+
+#: .\admin.py:100
+msgid "Review"
+msgstr "Review"
+
+#: .\admin.py:168
 msgid "Languages"
 msgstr "Sprachen"
 
-#: .\admin.py:160
+#: .\admin.py:171
 msgid ""
 "Login infos - translate \"login info\" and \"link text\" if using multiple "
 "languages!"
@@ -42,7 +59,7 @@ msgstr ""
 "Anmeldeinformationen - \"Anmeldeinformationen\" und \"Linktekst\" müssen "
 "übersetzt werden, wenn mehrere Sprachen aktiviert sind!"
 
-#: .\admin.py:163
+#: .\admin.py:174
 msgid "Notification settings"
 msgstr "Benachrichtigungseinstellungen"
 
@@ -124,7 +141,7 @@ msgstr ""
 msgid "Name"
 msgstr "Name"
 
-#: .\models.py:98 .\models.py:160 .\models.py:340
+#: .\models.py:98 .\models.py:160 .\models.py:346
 msgid "Department"
 msgstr "Abteilung"
 
@@ -208,7 +225,7 @@ msgstr "mittel"
 msgid "new"
 msgstr "neu"
 
-#: .\models.py:122 .\models.py:378
+#: .\models.py:122 .\models.py:384
 msgid "in process"
 msgstr "in Bearbeitung"
 
@@ -299,7 +316,7 @@ msgstr "Verantwortung"
 msgid "Review date"
 msgstr "Termin"
 
-#: .\models.py:168 .\models.py:391
+#: .\models.py:168 .\models.py:397
 msgid "Status"
 msgstr "Status"
 
@@ -323,7 +340,7 @@ msgstr "Für Mitarbeiter oder Forschungsprozess"
 msgid "Category"
 msgstr "Kategorie"
 
-#: .\models.py:180 .\models.py:259 .\models.py:383
+#: .\models.py:180 .\models.py:262 .\models.py:389
 msgid "Critical incident"
 msgstr "Kritisches Ereignis"
 
@@ -351,54 +368,66 @@ msgstr ""
 "Nach jeglicher Änderung im Review-Block muss der Status zumindest auf \"in "
 "Bearbeitung\" gesetzt werden."
 
-#: .\models.py:252 .\models.py:254
+#: .\models.py:246
+msgid "Translation status"
+msgstr "Übersetzungsstatus"
+
+#: .\models.py:253 .\models.py:255
 msgid "Translation"
 msgstr "Übersetzung"
 
-#: .\models.py:252
+#: .\models.py:253
 msgid "complete"
 msgstr "vollständig"
 
-#: .\models.py:254
+#: .\models.py:255
 msgid "incomplete"
 msgstr "unvollständig"
 
-#: .\models.py:262 .\templates\cirs\criticalincident_detail.html:6
+#: .\models.py:256
+msgid "Translation info"
+msgstr "Übersetzungsinformation"
+
+#: .\models.py:265 .\templates\cirs\criticalincident_detail.html:6
 #: .\templates\cirs\criticalincident_detail.html:19
 #: .\templates\cirs\publishableincident_list.html:23
 msgid "Incident"
 msgstr "Ereignis"
 
-#: .\models.py:263 .\templates\cirs\publishableincident_list.html:24
+#: .\models.py:266 .\templates\cirs\publishableincident_list.html:24
 msgid "Description"
 msgstr "Beschreibung"
 
-#: .\models.py:264 .\templates\cirs\publishableincident_list.html:25
+#: .\models.py:267 .\templates\cirs\publishableincident_list.html:25
 msgid "Measures and consequences"
 msgstr "Maßnahmen und Konsequenzen"
 
-#: .\models.py:266
+#: .\models.py:269
 msgid "Publish"
 msgstr "Veröffentlichen"
 
-#: .\models.py:273
+#: .\models.py:274 .\models.py:310
+msgid "Mandatory languages"
+msgstr "Verpflichtende Sprachen"
+
+#: .\models.py:279
 msgid "Publishable incident"
 msgstr "Publizierbares Ereignis"
 
-#: .\models.py:274
+#: .\models.py:280
 msgid "Publishable incidents"
 msgstr "Publizierbare Ereignisse"
 
-#: .\models.py:279
+#: .\models.py:285
 msgid "The reporter did not agreed to publish this incident!"
 msgstr "Der Eintragende hat einer Veröffentlichung nicht zugestimmt!"
 
-#: .\models.py:284
+#: .\models.py:290
 #, python-format
 msgid "All fields in mandatory languages (%s) are necessary for publication!"
 msgstr "Alle Felder in verpflichtenden Sprachen (%s) müssen ausgefüllt werden!"
 
-#: .\models.py:294
+#: .\models.py:300
 msgid ""
 "If you want to send notifications, an existing email server distinct from "
 "localhost has to be set by the server administrator in the local server "
@@ -408,42 +437,46 @@ msgstr ""
 "einen existierenden Emailserver (unterschiedlich vom localhost) in der "
 "lokalen Konfigurationsdatei eingetragen hat."
 
-#: .\models.py:298
+#: .\models.py:304
 msgid ""
 "If you choose mandatory languages besides the default one, don't forget to "
 "translate fields below. Further fields in publishable incidents have to be "
 "translated before publishing!"
 msgstr ""
-"Wenn Sie eine zusätzliche Sprache aktivieren, vergessen Sie nicht, "
-"die unten stehenden Felder zu übersetzen. Außerdem müssen auch Felder der "
+"Wenn Sie eine zusätzliche Sprache aktivieren, vergessen Sie nicht, die unten "
+"stehenden Felder zu übersetzen. Außerdem müssen auch Felder der "
 "publizierbaren Ereignisse übersetzt werden bevor sie veröffentlicht werden "
 "können!"
 
-#: .\models.py:304
-msgid "Mandatory languages"
-msgstr "Verpflichtende Sprachen"
-
-#: .\models.py:308
+#: .\models.py:314
 msgid "URL for login info"
 msgstr "URL für die Anmeldedaten"
 
-#: .\models.py:311
+#: .\models.py:317
 msgid "Login info"
 msgstr "Anmeldeinformationen"
 
-#: .\models.py:312 .\models.py:314
+#: .\models.py:318
 msgid "Translate if there are multiple mandatory languages"
 msgstr "Bitte übersetzen wenn mehrere Sprachen ausgewählt wurden"
 
-#: .\models.py:313
+#: .\models.py:319
 msgid "Link text"
 msgstr "Linktext"
 
-#: .\models.py:318
+#: .\models.py:320
+msgid ""
+"Translate if there are multiple mandatory languages and you store infos at "
+"given URL"
+msgstr ""
+"Bitte übersetzen wenn mehrere Sprachen ausgewählt wurden und eine URL "
+"eingegeben worden ist."
+
+#: .\models.py:324
 msgid "Send notification"
 msgstr "Benachrichtigungen senden"
 
-#: .\models.py:320
+#: .\models.py:326
 msgid ""
 "Check if you wish to be informed about new incidents per email.<br>\n"
 "            IMPORTANT: Sender email has to exist and at least one recipient "
@@ -462,93 +495,93 @@ msgstr ""
 "            Erst danach kann das Senden von Benachrichtigungen aktiviert "
 "werden."
 
-#: .\models.py:327
+#: .\models.py:333
 msgid "Notification sender email address"
 msgstr "Absenderadresse für Benachrichtigungen"
 
-#: .\models.py:328
+#: .\models.py:334
 msgid "Enter a valid email address you want to use as a sender"
 msgstr "Bitte eine existierende Emailadresse als Absender eintragen"
 
-#: .\models.py:331
+#: .\models.py:337
 msgid "Notification recipients"
 msgstr "Benachrichtigungsempfänger"
 
-#: .\models.py:332
+#: .\models.py:338
 msgid "Choose recipients of the notification email"
 msgstr "Bitte einen Benachrichtigugnsempfänger wählen"
 
-#: .\models.py:334
+#: .\models.py:340
 msgid "Notification text"
 msgstr "Benachrichtigungstext"
 
-#: .\models.py:344 .\models.py:345
+#: .\models.py:350 .\models.py:351
 msgid "LabCIRS configuration"
 msgstr "LabCIRS-Einstellungen"
 
-#: .\models.py:353
+#: .\models.py:359
 msgid "You have to choose at least one notification recipient."
 msgstr "Sie müssen mindenstens einen Benachrichtigungsempfänger auswählen"
 
-#: .\models.py:355
+#: .\models.py:361
 msgid "You have to enter valid sender email."
 msgstr "Sie müssen eine existierende Absenderrmailadresse eingeben"
 
-#: .\models.py:361
+#: .\models.py:367
 #, python-format
 msgid "You have to reactivate %s as it is default language."
 msgstr "Sie müssen %s reaktivieren, weil es die voreingestellte Sprache ist."
 
-#: .\models.py:378
+#: .\models.py:384
 msgid "open"
 msgstr "offen"
 
-#: .\models.py:379
+#: .\models.py:385
 msgid "closed"
 msgstr "abgeschlossen"
 
-#: .\models.py:386
+#: .\models.py:392
 msgid "Author"
 msgstr "Autor"
 
-#: .\models.py:388
+#: .\models.py:394
 msgid "Created at"
 msgstr "Erstellt am"
 
-#: .\models.py:389
+#: .\models.py:395
 msgid "Text"
 msgstr "Text"
 
-#: .\models.py:391
+#: .\models.py:397
 msgid "Status of the comment"
 msgstr "Status des Kommentars"
 
-#: .\templates\cirs\base.html:11
+#: .\templates\cirs\base.html:10
 msgid "for"
 msgstr "für"
 
-#: .\templates\cirs\base.html:46 .\templates\cirs\success.html:17
+#: .\templates\cirs\base.html:44 .\templates\cirs\success.html:17
 msgid "View incidents"
 msgstr "Ereignisliste"
 
-#: .\templates\cirs\base.html:52
+#: .\templates\cirs\base.html:50
 msgid "Add incident"
 msgstr "Neues Ereignis"
 
-#: .\templates\cirs\base.html:65
+#: .\templates\cirs\base.html:63
 #: .\templates\cirs\criticalincident_detail.html:47
 msgid "Comments"
 msgstr "Kommentare"
 
-#: .\templates\cirs\base.html:84
+#: .\templates\cirs\base.html:82
 msgid "Welcome,"
 msgstr "Wilkommen"
 
-#: .\templates\cirs\base.html:106 .\templates\cirs\success.html:15
+#: .\templates\cirs\base.html:104 .\templates\cirs\success.html:15
 msgid "Log out"
 msgstr "Abmelden"
 
-#: .\templates\cirs\base.html:108 .\templates\cirs\login.html:20
+#: .\templates\cirs\base.html:106 .\templates\cirs\login.html:20
 msgid "Log in"
 msgstr "Anmelden"
 

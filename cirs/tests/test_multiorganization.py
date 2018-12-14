@@ -30,7 +30,7 @@ from model_mommy import mommy
 from parameterized import parameterized
 
 from cirs.models import Department, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
-from cirs.admin import (DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin,
+from cirs.admin import (admin_site, DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin,
                         PublishableIncidentAdmin, ConfigurationAdmin)
 from cirs.views import PublishableIncidentList, IncidentCreate
 
@@ -41,7 +41,7 @@ class AdminRegistration(TestCase):
     
     @parameterized.expand([(Department,), (Reporter,), (Reviewer,)])
     def test_registration(self, model):
-        self.assertTrue(admin.site.is_registered(model), "{} not registered".format(model))
+        self.assertTrue(admin_site.is_registered(model), "{} not registered".format(model))
 
 
 class DepartmentBase(TestCase):
