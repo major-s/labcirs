@@ -215,7 +215,7 @@ class SecurityFrontendTest(FunctionalTest):
         self.dept.reporter = reporter
         self.dept.save()
         self.login_to_department(reporter.user)
-        time.sleep(1)
+        time.sleep(10)
         redirect_url = '{}{}'.format(self.live_server_url, self.dept.get_absolute_url())
         self.assertEqual(self.browser.current_url, redirect_url)
         
@@ -223,7 +223,7 @@ class SecurityFrontendTest(FunctionalTest):
         reviewer = create_role(Reviewer, 'rev')
         self.dept.reviewers.add(reviewer)
         self.login_to_department(reviewer.user)
-        time.sleep(1)
+        time.sleep(10)
         redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
         self.assertEqual(self.browser.current_url, redirect_url)
 

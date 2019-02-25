@@ -20,6 +20,7 @@
 
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.forms import TextInput, Textarea
@@ -218,8 +219,8 @@ class RoleAdmin(AdminObjectMixin, admin.ModelAdmin):
         return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-for model in (User, Group):
-    admin_site.register(model)
+admin_site.register(User, UserAdmin)
+#admin.site.register(Group, GroupAdmin)
 admin_site.register(CriticalIncident, CriticalIncidentAdmin)
 admin_site.register(PublishableIncident, PublishableIncidentAdmin)
 admin_site.register(LabCIRSConfig, ConfigurationAdmin)

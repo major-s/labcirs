@@ -71,4 +71,4 @@ class Labcirs4All(TestCase):
     def test_organization_in_context_data(self):
         response = self.client.get(reverse('login'))
         organization = get_local_setting('ORGANIZATION', 'LabCIRS')
-        self.assertIn(organization, str(response))
+        self.assertIn(organization, response.content.decode('utf-8'))
