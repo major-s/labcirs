@@ -1,16 +1,13 @@
 # Configuration for labcirs for apache 2.4, Django 1.11
 
 Define LABCIRS_PATH /opt/labcirs
-# If labcirs is mounted at the root of the web server "/"
-# use the "labcirs.cond.root_template"
-Define LABCIRS_ROOT /labcirs
 
-Alias ${LABCIRS_ROOT}/media ${LABCIRS_PATH}/media
+Alias /media ${LABCIRS_PATH}/media
 <Directory ${LABCIRS_PATH}/media>
     Require all granted
 </Directory>
 
-Alias ${LABCIRS_ROOT}/static ${LABCIRS_PATH}/static
+Alias /static ${LABCIRS_PATH}/static
 <Directory ${LABCIRS_PATH}/static>
     Require all granted
 </Directory>
@@ -22,7 +19,7 @@ WSGIProcessGroup labcirs
 
 # the alias has to match the ROOT_URL without leading /
 # if mounted on root of the web server change to /
-WSGIScriptAlias ${LABCIRS_ROOT} ${LABCIRS_PATH}/labcirs/labcirs/wsgi.py
+WSGIScriptAlias / ${LABCIRS_PATH}/labcirs/labcirs/wsgi.py
 <Directory ${LABCIRS_PATH}/labcirs/labcirs>
     <Files wsgi.py>
         Require all granted
