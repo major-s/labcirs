@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2016-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
