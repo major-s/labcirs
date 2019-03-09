@@ -1,14 +1,14 @@
-=================
 LabCIRS changelog
 =================
 
-5.0rc1 (2018-12-03)
+5.0 (2019-03-09)
 ----------------
 
-* Added support of multiple departments in one instalation
+* Added support of multiple departments in one instalation. Script for joinig single department instances included.
 * Added support for setting translation language, or deactivate translations (by setting supported
-  languages to one). This functionality uses :mod:`django-parler`.
+  languages to one). This functionality uses `django-parler`.
 * Dropped support for Django < 1.11
+* ``manage.py`` shows default behaviour again
 
 4.1.1 (2018-08-07)
 ------------------
