@@ -66,7 +66,8 @@ class Reporter(Role):
 
 class Reviewer(Role):
     REVIEWER_PERM_CODES = ('change_criticalincident', 'add_publishableincident', 
-                           'change_publishableincident', 'change_labcirsconfig')
+                           'change_publishableincident', 'change_labcirsconfig',
+                           'change_user')
     
     def clean(self):
         super(Reviewer, self).clean()

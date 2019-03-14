@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -162,7 +162,7 @@ class FunctionalTest(StaticLiveServerTestCase):
                 EC.presence_of_element_located((By.CLASS_NAME, 'alert-info')))
             
     def check_admin_table_for_items(self, user, cls_name, present=None, absent=None):
-        admin_url = reverse('admin:cirs_{}_changelist'.format(cls_name._meta.model_name))
+        admin_url = reverse('admin:{}_{}_changelist'.format(cls_name._meta.app_label, cls_name._meta.model_name))
         self.quick_backend_login(user, admin_url)
         self.wait.until(EC.url_contains(admin_url))
         if present:
