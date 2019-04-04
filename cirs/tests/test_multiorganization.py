@@ -57,6 +57,7 @@ class DepartmentBase(TestCase):
             'label': 'EN',
             'name': 'Experimenting Nerds',
             'reporter': self.reporter,
+            'active': True,
         }
         
 
@@ -73,6 +74,7 @@ class DepartmentTest(DepartmentBase):
             'label': 'FE',
             'name': 'Experimenting Noobs',
             'reporter': create_role(Reporter, 'reporter_fe'),
+            'active': True,
         }
         # create first department
         Department.objects.create(**self.en_dict)

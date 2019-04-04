@@ -53,5 +53,6 @@ reporter = Recipe(Reporter,
 
 department = Recipe(Department,
     label = seq('Dept_'),
-    reporter__user__username = seq(REPORTER_NAME)
+    reporter__user__username = seq(REPORTER_NAME),
+    active = True
 )

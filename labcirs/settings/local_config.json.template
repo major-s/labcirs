@@ -20,6 +20,9 @@
     },
     "PARLER_DEFAULT_LANGUAGE_CODE": "en",
     "PARLER_LANGUAGES": ["en"],
-    "ALL_LANGUAGES_MANDATORY_DEFAULT": true
- }
+    "ALL_LANGUAGES_MANDATORY_DEFAULT": true,
+    "ACCOUNT_ACTIVATION_DAYS": 1,
+    "DEFAULT_FROM_EMAIL": "",
+    "_admins_comment": "enter 'email': 'name' of the admin. More than one admin are possible",
+    "ADMINS": {}
  

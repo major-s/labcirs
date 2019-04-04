@@ -19,14 +19,20 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 
-#from django import forms
+from django import forms
+from django.contrib.auth.models import User
 from django.core import mail
-from django.forms import (Form, ModelForm, Textarea, TextInput, RadioSelect, 
-                          CharField, Select, ClearableFileInput, DateInput, ValidationError)
-from django.forms.utils import ErrorList
+from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
+                          ClearableFileInput, DateInput, ValidationError)
+#from django.forms.utils import ErrorList
 from django.utils.translation import ugettext_lazy as _
 
-from .models import CriticalIncident, Comment, LabCIRSConfig
+from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
+                                RegistrationFormUniqueEmail)
+
+from .models import CriticalIncident, Comment, Department
+
+
 
 
 def notify_on_creation(form, department, subject='', excluded_user_id=None):
@@ -104,3 +110,32 @@ class CommentForm(ModelForm):
         notify_on_creation(self, department, 'New LabCIRS comment', self.instance.author.id)
         return result
 
+
+
+
+class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUsernameLowercase):#,
+                 #RegistrationFormUniqueEmail):
+    """
+    Generates for to create department together with reviewer and reporter users
+    """
+    department_label = forms.SlugField()
+    department_name = forms.CharField()
+    reporter_name = forms.CharField()
+
+    def clean_department_label(self):
+        department_label = self.cleaned_data['department_label']
+        if Department.objects.filter(label=department_label).exists():
+            raise forms.ValidationError(_('Department with this label already exists!'))
+        return department_label
+    
+    def clean_department_name(self):
+        department_name = self.cleaned_data['department_name']
+        if Department.objects.filter(name=department_name).exists():
+            raise forms.ValidationError(_('Department with this name already exists!'))
+        return department_name
+    
+    def clean_reporter_name(self):
+        reporter_name = self.cleaned_data['reporter_name']
+        if User.objects.filter(username=reporter_name).exists():
+            raise forms.ValidationError(_('This user already exists!'))
+        return reporter_name

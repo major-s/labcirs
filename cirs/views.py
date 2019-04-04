@@ -21,6 +21,7 @@
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
@@ -28,9 +29,11 @@ from django.urls import resolve, get_script_prefix
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
+from registration.backends.admin_approval.views import RegistrationView
 
-from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
-from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department
+from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm, LabCIRSRegistrationForm
+from .models import (CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department,
+                     Reporter, Reviewer)
 
 
 class RedirectMixin(object):
@@ -73,9 +76,10 @@ class DepartmentList(RedirectMixin, ListView):
         
     def get_queryset(self):
         if hasattr(self.request.user, 'reviewer'):
-            return self.request.user.reviewer.departments.all()
+            return self.request.user.reviewer.departments.filter(active=True)#all()
         else:
-            return super(DepartmentList, self).get_queryset()
+            return Department.objects.filter(active=True)
+            #return super(DepartmentList, self).get_queryset()
 
 
 class IncidentCreate(ContextAndRedirectMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -193,6 +197,32 @@ class PublishableIncidentList(ContextAndRedirectMixin, LoginRequiredMixin, ListV
         else:
             return PublishableIncident.objects.none()
         
+
+class RegistrationViewWithDepartment(RegistrationView):
+    """
+    Registers new user and new department and adds the new user as Reviewer for this new department 
+    """
+    form_class = LabCIRSRegistrationForm
+
+    def register(self, form_class):
+        department = Department()
+        department.label = form_class.cleaned_data['department_label']
+        department.name = form_class.cleaned_data['department_name']
+        reporter_name = form_class.cleaned_data['reporter_name']
+        reporter_user = User.objects.create_user(reporter_name, password=reporter_name)
+        #reporter = Reporter.objects.create(user=reporter_user)
+        department.reporter = Reporter.objects.create(user=reporter_user) # reporter
+        department.active = False
+        department.save()
+        if department.pk is not None:
+            new_user = super(RegistrationViewWithDepartment, self).register(form_class)
+            reviewer = Reviewer.objects.create(user=new_user)
+            department.reviewers.add(reviewer)
+            return new_user
+        else:
+            # TODO: redirect to error message if department could not be saved
+            return False
+  
         
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
@@ -215,7 +245,7 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if user.is_active:
                 login(request, user)
                 if user.is_superuser:
-                    return redirect('admin:index')
+                    return redirect(redirect_url)#'admin:index')
                 elif hasattr(user, 'reviewer'):
                     if user.reviewer.departments.count() > 0:
                         return redirect('admin:index')

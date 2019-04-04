@@ -59,7 +59,8 @@ ALLOWED_HOSTS = get_local_setting('ALLOWED_HOSTS')  # ['*',] #local
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'registration',
+    'django.contrib.admin.apps.SimpleAdminConfig',
     'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -184,3 +185,10 @@ if ALL_LANGUAGES_MANDATORY_DEFAULT is True:
     DEFAULT_MANDATORY_LANGUAGES = get_local_setting('PARLER_LANGUAGES')
 else:
     DEFAULT_MANDATORY_LANGUAGES = PARLER_DEFAULT_LANGUAGE_CODE
+
+# Registration
+ACCOUNT_ACTIVATION_DAYS = get_local_setting('ACCOUNT_ACTIVATION_DAYS', 1)
+DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
+REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
+# reverse order, email is better key than the name
+ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS').iteritems())
