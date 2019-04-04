@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -21,7 +21,7 @@
 import itertools
 
 from django.contrib import admin, auth
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
@@ -31,7 +31,7 @@ from parameterized import parameterized
 
 from cirs.models import Department, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
 from cirs.admin import (admin_site, DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin,
-                        PublishableIncidentAdmin, ConfigurationAdmin)
+                        PublishableIncidentAdmin, ConfigurationAdmin, LabCIRSUserAdmin)
 from cirs.views import PublishableIncidentList, IncidentCreate
 
 from .helpers import create_user, create_role
@@ -203,6 +203,41 @@ class ReviewerReporterModel(DepartmentBase):
         )
 
 
+class ReporterUserChangeRights(DepartmentBase):
+    
+    def setUp(self):
+        super(ReporterUserChangeRights, self).setUp()
+        factory = RequestFactory()
+        self.request = factory.get(
+            reverse('admin:auth_user_change', args=(self.reporter.user.pk,)))
+        
+    WANTED_FIELDS = ['username', 'password', 'first_name', 'last_name']
+    PROHIBITED_FIELDS = ['email', 'is_active', 'is_staff', 'is_superuser', 'groups',
+                         'user_permissions', 'last_login', 'date_joined']
+    
+    @parameterized.expand(WANTED_FIELDS)
+    def test_reviewer_can_change_only_some_reporter_user_fields(self, field):
+        self.request.user = self.reviewer.user
+        user_admin = LabCIRSUserAdmin(User, admin.AdminSite()).get_form(
+            self.request, obj=self.reporter.user)
+        self.assertIn(field, user_admin._meta.fields)
+        
+    @parameterized.expand(PROHIBITED_FIELDS)
+    def test_reviewer_cannot_see_prohibited_reporter_user_fields(self, field):
+        self.request.user = self.reviewer.user
+        user_admin = LabCIRSUserAdmin(User, admin.AdminSite()).get_form(
+            self.request, obj=self.reporter.user)
+        self.assertNotIn(field, user_admin._meta.fields)
+        
+    @parameterized.expand(WANTED_FIELDS+PROHIBITED_FIELDS)
+    def test_admin_can_change_all_reporter_user_fields(self, field):
+        '''Admin can access all fields of any user'''
+        self.request.user = self.admin
+        user_admin = LabCIRSUserAdmin(User, admin.AdminSite()).get_form(
+            self.request, obj=self.reporter.user)
+        self.assertIn(field, user_admin._meta.fields)
+
+
 class SecurityTest(TestCase):
     
     def gen_test_role_classes():  # @NoSelf
@@ -293,15 +328,16 @@ class SecurityTest(TestCase):
     # to the user upon assignig a role, but revoked upon removal
     
     @parameterized.expand([
-        ('change_criticalincident',),
-        ('add_publishableincident',),
-        ('change_publishableincident',),
-        ('change_labcirsconfig', ),
+        ('cirs.change_criticalincident',),
+        ('cirs.add_publishableincident',),
+        ('cirs.change_publishableincident',),
+        ('cirs.change_labcirsconfig', ),
+        ('auth.change_user', ),
     ])
     def test_users_has_permission_after_assignement_of_reviewer_role(self, perm_code):
         user = create_user('cirs_user')
         Reviewer.objects.create(user=user)
-        self.assertTrue(user.has_perm('cirs.'+perm_code))
+        self.assertTrue(user.has_perm(perm_code))
 
     def test_users_is_staff_after_assignement_of_reviewer_role(self):
         user = create_user('cirs_user')
@@ -358,6 +394,24 @@ class BackendViewAccess(TestCase):
         request.user = create_user('superman', superuser=True)
         qs = model_admin.get_queryset(request)
         self.assertEqual(qs.count(), 0)
+        
+    def test_only_own_reporters_in_qs_for_reviewer(self):
+        rev, rev2 = mommy.make_recipe('cirs.reviewer', _quantity=2)
+        depts = mommy.make_recipe('cirs.department', _quantity=3)
+        depts[0].reviewers.add(rev)
+        depts[1].reviewers.add(rev)
+        
+        factory = RequestFactory()
+        request = factory.get(reverse('admin:auth_user_changelist'))
+        request.user = rev.user
+        model_admin = LabCIRSUserAdmin(User, admin.AdminSite())
+        qs = model_admin.get_queryset(request)
+        self.assertIn(depts[0].reporter.user, qs)
+        self.assertIn(depts[1].reporter.user, qs)
+        self.assertNotIn(depts[2].reporter.user, qs)
+        self.assertNotIn(rev.user, qs)
+        self.assertNotIn(rev2.user, qs)
+        
         
 # next schema migration has to check if there are cis or departments
 # if there are cis and no dept, raise

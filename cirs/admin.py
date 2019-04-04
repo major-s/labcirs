@@ -20,8 +20,8 @@
 
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin, GroupAdmin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 from django.db import models
 from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
@@ -41,6 +41,27 @@ class LabCIRSAdminSite(admin.AdminSite):
     
 admin_site = LabCIRSAdminSite()
 
+
+class LabCIRSUserAdmin(UserAdmin):
+    '''Local UserAdmin class to allow reviewers changing of reporter user data'''
+    
+    def get_queryset(self, request):
+        qs = super(LabCIRSUserAdmin, self).get_queryset(request)
+        try: 
+            return qs.filter(
+                reporter__in=Reporter.objects.filter(
+                    department__in=request.user.reviewer.departments.all()))
+        except Reviewer.DoesNotExist:
+            if request.user.is_superuser is True:
+                return qs
+
+    def get_fieldsets(self, request, obj=None):
+        # Reviewer can modify only names and change the password
+        if hasattr(request.user, 'reviewer'):
+            return ((None, {'fields': ('username', 'password')}),
+                    (u'_(Personal info)', {'fields': ('first_name', 'last_name')}))
+        else:
+            return super(LabCIRSUserAdmin, self).get_fieldsets(request, obj=obj)
 
 class HasPublishableIncidentListFilter(admin.SimpleListFilter):
     title = _('has publishable incident')
@@ -219,8 +240,7 @@ class RoleAdmin(AdminObjectMixin, admin.ModelAdmin):
         return super(RoleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-admin_site.register(User, UserAdmin)
-#admin.site.register(Group, GroupAdmin)
+admin_site.register(User, LabCIRSUserAdmin)
 admin_site.register(CriticalIncident, CriticalIncidentAdmin)
 admin_site.register(PublishableIncident, PublishableIncidentAdmin)
 admin_site.register(LabCIRSConfig, ConfigurationAdmin)

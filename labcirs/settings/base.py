@@ -151,7 +151,8 @@ LANGUAGES = tuple((k, _(v)) for k, v in get_local_setting('LANGUAGES').iteritems
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60 * 60 # one hour, not logged out users will leave a ghost session in db!
 SESSION_SAVE_EVERY_REQUEST = True
-# SESSION_COOKIE_SECURE = True # will not work if the server has no https!!!
+# set to false in local_config.json if your server has no https!!!
+SESSION_COOKIE_SECURE = get_local_setting('SESSION_COOKIE_SECURE', True) 
 
 MEDIA_ROOT = join_path(dirname(BASE_DIR), 'media')
 MEDIA_URL = ROOT_URL + '/media/'

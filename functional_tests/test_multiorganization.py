@@ -164,7 +164,8 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
             message=('could not find {}'.format(self.en_dict['label']))
         )
 
-   
+
+@override_settings(PARLER_DEFAULT_LANGUAGE_CODE=u'en')   
 class SecurityFrontendTest(FunctionalTest):
     """
     User without role sees error message

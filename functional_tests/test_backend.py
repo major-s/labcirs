@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -20,17 +20,17 @@
 
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
+from django.urls.base import reverse
 from model_mommy import mommy
+from parameterized import parameterized
 from selenium.webdriver.support.select import Select
 
 from cirs.models import Reviewer
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-from django.urls.base import reverse
-
-
-
+from .test_multiorganization import get_admin_url
 
 
 class CriticalIncidentBackendTest(FunctionalTest):
@@ -75,4 +75,54 @@ class ConfigurationInBackend(FunctionalTest):
         current_login_info = self.browser.find_element_by_class_name('alert-success').text
         self.assertIn(self.LOGIN_INFO, current_login_info)
         self.browser.find_element_by_link_text(self.LINK_TEXT)
+
+
+class AccessRestriction(FunctionalTest):
+    
+    def setUp(self):
+        super(AccessRestriction, self).setUp()
+        self.rev, self.rev2 = mommy.make_recipe('cirs.reviewer', _quantity=2)
+        self.dept, self.dept2 = mommy.make_recipe('cirs.department', _quantity=2)
+        self.dept.reviewers.add(self.rev)
+        self.dept2.reviewers.add(self.rev2)
+    
+    @parameterized.expand(['rep2', 'rev1', 'rev2'])
+    def test_reviewer_can_see_only_users_which_are_reporters_in_his_departments(self, username):
+        # check if the username really exist. Now we relay on model mommy
+        if User.objects.get(username=username):
+            self.check_admin_table_for_items(self.rev.user, User, self.dept.reporter.user.username, username)
+        else:
+            self.fail('user {} does not exist'.format(username))
+
+    WANTED_INPUTS = ['csrfmiddlewaretoken', 'username', 'first_name', 'last_name', '_save', '_continue']
+    PROHIBITED_INPUTS = ['email', 'is_active', 'is_staff', 'is_superuser', 'last_login_0',
+                         'last_login_1', 'date_joined_0', 'date_joined_1', 'initial-date_joined_0',
+                         'initial-date_joined_1']
+
+    @parameterized.expand(WANTED_INPUTS)
+    def test_reviewer_can_change_only_username_and_password_of_reporter_user(self, input_name):
+        target = get_admin_url(self.dept.reporter.user)
+        self.quick_login(self.rev.user, target)
+        inputs = self.browser.find_elements_by_tag_name('input')
+        input_names  = [inpt.get_attribute('name') for inpt in inputs]
+        self.assertIn(input_name, input_names)
+
+    @parameterized.expand(PROHIBITED_INPUTS)
+    def test_reviewer_cannot_see_important_fields_of_reporter_user(self, input_name):
+        target = get_admin_url(self.dept.reporter.user)
+        self.quick_login(self.rev.user, target)
+        inputs = self.browser.find_elements_by_tag_name('input')
+        input_names  = [inpt.get_attribute('name') for inpt in inputs]
+        self.assertNotIn(input_name, input_names)
         
+    def test_reviewer_cannot_see_select_boxes_in_reporter_user_change_page(self):
+        target = get_admin_url(self.dept.reporter.user)
+        self.quick_login(self.rev.user, target)
+        selects = self.browser.find_elements_by_tag_name('select')
+        self.assertEqual(len(selects), 0)
+        
+    def test_reviewer_cannot_access_unlisted_users_by_direct_link(self):
+        target = get_admin_url(self.dept2.reporter.user)
+        self.quick_login(self.rev.user, target)
+        redirect_url = '{}{}'.format(self.live_server_url, reverse('admin:index'))
+        self.assertEqual(self.browser.current_url, redirect_url)
