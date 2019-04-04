@@ -1,7 +1,7 @@
 LabCIRS changelog
 =================
 
-5.1a1 (2019-03-14)
+5.1 (2019-04-04)
 ------------------
 
 * Reviewer can now change the name and password of users who are reporters for his departments.
