@@ -119,21 +119,21 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     Generates for to create department together with reviewer and reporter users
     """
     department_label = forms.SlugField(
-        widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}),
+        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
                                help_text=_('Only letters, numbers and -/_'))
-    department_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}))
-    reporter_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}))
+    department_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}))
+    reporter_name = forms.SlugField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
+                                    help_text=_('Only letters, numbers and -/_'))
     
     field_order = ['username', 'email', 'password1', 'password2', 'department_label',
                    'department_name', 'reporter_name', 'tos']
     
-    class Meta(RegistrationFormTermsOfService.Meta):
-        widgets = {'username': forms.TextInput(attrs={'class': "form-control"}),
-                   'email': forms.EmailInput(attrs={'class': "form-control col-sm-5"}),
-                   'password1': forms.TextInput(attrs={'class': "form-control col-sm-5"}),
-                   'password2': forms.PasswordInput(attrs={'class': "form-control col-sm-5"}),
-                    'tos': forms.CheckboxInput(attrs={'class': "form-control"})
-                   }
+    def __init__(self, *args, **kwargs):
+        super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)
+        for field in ('username', 'email', 'password1', 'password2'):
+            self.fields[field].widget.attrs.update({'class': "form-control col-sm-6"})
+        self.fields['tos'].widget.attrs.update({'class': "form-check-input col-sm-1"})
+
 
     def clean_department_label(self):
         department_label = self.cleaned_data['department_label']
