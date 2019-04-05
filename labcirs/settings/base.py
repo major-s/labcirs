@@ -32,6 +32,9 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                 else:
                     return setting_value
             except KeyError:
+                if default is not None:
+                    return default
+                else:
                 error_msg = "Set the {0} environment variable in {1}".format(
                     setting_item, local_config_file)
                 raise ImproperlyConfigured(error_msg)
