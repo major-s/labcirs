@@ -192,4 +192,4 @@ ACCOUNT_ACTIVATION_DAYS = get_local_setting('ACCOUNT_ACTIVATION_DAYS', 1)
 DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
 REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
 # reverse order, email is better key than the name
-ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS').iteritems())
+ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).iteritems())

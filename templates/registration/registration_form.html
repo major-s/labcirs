@@ -4,26 +4,41 @@
 {% block title %}{% trans "Register for an account" %}{% endblock %}
 
 {% block content %}
-<div class="container">
-<form method="post" action="">
-    {% csrf_token %}
-	<table class="table">
-		{{ form.as_table }}
-	</table>
-    <input class="btn btn-danger" type="submit" value="{% trans 'Submit' %}" />
-</form>
+{% load i18n %}
+	<div class="container">
+		<h2>{% trans "Register new reviewer and new department" %}</h2>
+		<div>
+		<form method="post" action="">
+    		{% csrf_token %}
+			<table class="table">
+				{{ form.as_table }}
+			</table>
+    		<input class="btn btn-danger" type="submit" value="{% trans 'Submit' %}" />
+    		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tosModal">
+  				{% trans "Terms of service"%}
+			</button>
+		</form>
+		</div>
+	</div>
+	<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="tosModal" tabindex="-1" role="dialog" aria-labelledby="tosModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tosModalTitle">{%trans "Terms of service" %}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
-
-
-{% comment %}
-**registration/registration_form.html**
-Used to show the form users will fill out to register. By default, has
-the following context:
-
-``form``
-    The registration form. This will be an instance of some subclass
-    of ``django.forms.Form``; consult `Django's forms documentation
-    <http://docs.djangoproject.com/en/dev/topics/forms/>`_ for
-    information on how to display this in a template.
-{% endcomment %}

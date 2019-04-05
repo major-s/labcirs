@@ -118,9 +118,22 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     """
     Generates for to create department together with reviewer and reporter users
     """
-    department_label = forms.SlugField()
-    department_name = forms.CharField()
-    reporter_name = forms.CharField()
+    department_label = forms.SlugField(
+        widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}),
+                               help_text=_('Only letters, numbers and -/_'))
+    department_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}))
+    reporter_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-5"}))
+    
+    field_order = ['username', 'email', 'password1', 'password2', 'department_label',
+                   'department_name', 'reporter_name', 'tos']
+    
+    class Meta(RegistrationFormTermsOfService.Meta):
+        widgets = {'username': forms.TextInput(attrs={'class': "form-control"}),
+                   'email': forms.EmailInput(attrs={'class': "form-control col-sm-5"}),
+                   'password1': forms.TextInput(attrs={'class': "form-control col-sm-5"}),
+                   'password2': forms.PasswordInput(attrs={'class': "form-control col-sm-5"}),
+                    'tos': forms.CheckboxInput(attrs={'class': "form-control"})
+                   }
 
     def clean_department_label(self):
         department_label = self.cleaned_data['department_label']
