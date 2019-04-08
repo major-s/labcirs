@@ -118,15 +118,18 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     """
     Generates for to create department together with reviewer and reporter users
     """
+    # additional fields for department and reporter
     department_label = forms.SlugField(
         widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
-                               help_text=_('Only letters, numbers and -/_'))
+                               help_text=_('Only letters, numbers, - and _. No whitespace!'))
     department_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}))
     reporter_name = forms.SlugField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
-                                    help_text=_('Only letters, numbers and -/_'))
+                                    help_text=_('Only letters, numbers, - and _. No whitespace!'))
     
     field_order = ['username', 'email', 'password1', 'password2', 'department_label',
                    'department_name', 'reporter_name', 'tos']
+    
+    error_css_class = "error alert alert-danger"
     
     def __init__(self, *args, **kwargs):
         super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)

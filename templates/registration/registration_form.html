@@ -10,9 +10,7 @@
 	<div>
 		<form method="post" action="">
     		{% csrf_token %}
-			<!--table class="table"-->
-				{{ form.as_p }}
-			<!--/table-->
+			{{ form.as_p }}
     		<input class="btn btn-danger" type="submit" value="{% trans 'Submit' %}" />
     		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tosModal">
   				{% trans "Terms of service"%}
@@ -41,4 +39,11 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block javascript %}
+				<script>
+            		jQuery('.errorlist').each( function( index ){
+                		jQuery( this ).addClass( "alert alert-danger" );
+            		});
+        		</script>
 {% endblock %}

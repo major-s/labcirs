@@ -210,8 +210,7 @@ class RegistrationViewWithDepartment(RegistrationView):
         department.name = form_class.cleaned_data['department_name']
         reporter_name = form_class.cleaned_data['reporter_name']
         reporter_user = User.objects.create_user(reporter_name, password=reporter_name)
-        #reporter = Reporter.objects.create(user=reporter_user)
-        department.reporter = Reporter.objects.create(user=reporter_user) # reporter
+        department.reporter = Reporter.objects.create(user=reporter_user)
         department.active = False
         department.save()
         if department.pk is not None:
