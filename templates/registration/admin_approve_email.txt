@@ -1,0 +1,15 @@
+{% load i18n %}
+{% blocktrans with dept_label=user.reviewer.departments.get.label dept_name=user.reviewer.departments.first.name %}
+The new user ({{ user }}) has asked to register an LabCIRS account for 
+{{ dept_name }} ({{ dept_label }}).
+{% endblocktrans %}
+{% blocktrans %}
+To approve this, please click the following link.
+{% endblocktrans %}
+
+http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}
+
+{% blocktrans %}
+Sincerely,
+{{ ORGANIZATION }} - LabCIRS Management
+{% endblocktrans %}

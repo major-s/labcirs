@@ -20,19 +20,18 @@
 
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
                           ClearableFileInput, DateInput, ValidationError)
 #from django.forms.utils import ErrorList
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ungettext, ugettext_lazy as _
 
 from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
                                 RegistrationFormUniqueEmail)
 
 from .models import CriticalIncident, Comment, Department
-
-
 
 
 def notify_on_creation(form, department, subject='', excluded_user_id=None):
@@ -111,8 +110,6 @@ class CommentForm(ModelForm):
         return result
 
 
-
-
 class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUsernameLowercase):#,
                  #RegistrationFormUniqueEmail):
     """
@@ -120,16 +117,21 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     """
     # additional fields for department and reporter
     department_label = forms.SlugField(
+        label=_('Department label'),
         widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
                                help_text=_('Only letters, numbers, - and _. No whitespace!'))
-    department_name = forms.CharField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}))
-    reporter_name = forms.SlugField(widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
-                                    help_text=_('Only letters, numbers, - and _. No whitespace!'))
+    department_name = forms.CharField(
+        label=_('Department name'),
+        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}))
+    reporter_name = forms.SlugField(
+        label=_('Reporter name'),
+        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
+                               help_text=_('Only letters, numbers, - and _. No whitespace!'))
     
     field_order = ['username', 'email', 'password1', 'password2', 'department_label',
                    'department_name', 'reporter_name', 'tos']
     
-    error_css_class = "error alert alert-danger"
+    error_css_class = "error alert alert-danger col-sm-7"
     
     def __init__(self, *args, **kwargs):
         super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)
@@ -137,6 +139,20 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
             self.fields[field].widget.attrs.update({'class': "form-control col-sm-6"})
         self.fields['tos'].widget.attrs.update({'class': "form-check-input col-sm-1"})
 
+    def clean_email(self):
+        #super(LabCIRSRegistrationForm, self).clean_email()
+        if settings.REGISTRATION_RESTRICT_USER_EMAIL is True:
+            allowed_domains = settings.REGISTRATION_EMAIL_DOMAINS
+            allowed_list = ungettext('Only @%s is allowed!', 'Allowed domains are @%s',
+                                      len(allowed_domains)) % ', @'.join(allowed_domains)
+            error_message = ' '.join((ugettext('You cannot register with this email domain!'),
+                                      allowed_list))
+            
+            email_domain = self.cleaned_data['email'].split('@')[-1]
+            if email_domain not in allowed_domains:
+                raise forms.ValidationError(error_message, code='invalid_email')
+
+        return self.cleaned_data['email']
 
     def clean_department_label(self):
         department_label = self.cleaned_data['department_label']

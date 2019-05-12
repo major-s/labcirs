@@ -1,7 +1,7 @@
 {% extends "registration/registration_base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Register for an account" %}{% endblock %}
+{% block title %}{% trans "Register for an LabCIRS account" %}{% endblock %}
 
 {% block content %}
 {% load i18n %}
@@ -43,7 +43,7 @@
 {% block javascript %}
 				<script>
             		jQuery('.errorlist').each( function( index ){
-                		jQuery( this ).addClass( "alert alert-danger" );
+                		jQuery( this ).children('li').addClass( "text-danger col-sm-7" );
             		});
         		</script>
 {% endblock %}

@@ -25,6 +25,9 @@
     "ACCOUNT_ACTIVATION_DAYS": 1,
     "DEFAULT_FROM_EMAIL": "",
     "_admins_comment": "enter 'email': 'name' of the admin. More than one admin are possible",
-    "ADMINS": {}
+    "ADMINS": {},
+    "_registration_comment": "if user emails are restricted, at least one domain has to be specified",
+    "REGISTRATION_RESTRICT_USER_EMAIL": false,
+    "REGISTRATION_EMAIL_DOMAINS": []
  }
  

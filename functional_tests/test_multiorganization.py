@@ -73,6 +73,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
             'label': 'EN',
             'name': 'Experimenting Nerds',
             'reporter': self.reporter,
+            'active': True,
         }
         
         # quick login for the  admin

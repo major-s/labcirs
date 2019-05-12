@@ -92,7 +92,7 @@ ROOT_URLCONF = 'labcirs.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [join_path(BASE_DIR, 'templates'), ],  # local
+        'DIRS': [join_path(BASE_DIR, 'templates'), join_path(BASE_DIR, 'labcirs', 'settings')],  # local
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -196,3 +196,13 @@ DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
 REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
 # reverse order, email is better key than the name
 ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).iteritems())
+
+# Don't want to use sites app, so custom user email check is implemented.
+REGISTRATION_RESTRICT_USER_EMAIL = get_local_setting('REGISTRATION_RESTRICT_USER_EMAIL', False)
+REGISTRATION_EMAIL_DOMAINS = get_local_setting('REGISTRATION_EMAIL_DOMAINS', [])
+
+if REGISTRATION_RESTRICT_USER_EMAIL is True:
+    if len(REGISTRATION_EMAIL_DOMAINS) < 1:
+        raise ImproperlyConfigured('If you want to restrict email domains for registration, '
+                                   'specify at least one domain!')
+

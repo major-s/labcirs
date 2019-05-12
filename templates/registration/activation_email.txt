@@ -1,36 +1,17 @@
 {% load i18n %}
-<!doctype html>
-<html lang="en">
-
-<head>
-    <title>{{ ORGANIZATION }} - LabCIRS {% trans "registration" %}</title>
-</head>
-
-<body>
-<p>
 {% blocktrans %}
 You (or someone pretending to be you) have asked to register an LabCIRS account at 
 {{ ORGANIZATION }} and applied for a new department.
 If this wasn't you, please ignore this email and your address will be removed from our records.
 {% endblocktrans %}
-</p>
-<p>
+
 {% blocktrans %}
 To activate this account, please click the following link within the next {{ expiration_days }} days:
 {% endblocktrans %}
-</p>
 
-<p>
-    <a href="http://{{site.domain}}{% url 'registration_activate' activation_key %}">
-        {{site.domain}}{% url 'registration_activate' activation_key %}
-    </a>
-</p>
-<p>
+http://{{site.domain}}{% url 'registration_activate' activation_key %}
+
 {% blocktrans %}
 Sincerely,
 {{ ORGANIZATION }} - LabCIRS Management
 {% endblocktrans %}
-</p>
-</body>
-
-</html>

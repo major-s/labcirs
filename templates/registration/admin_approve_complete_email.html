@@ -1,0 +1,18 @@
+{% load i18n %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>{{ ORGANIZATION }} - LabCIRS {% trans "admin approval" %}</title>
+</head>
+
+<body>
+<p>
+    {% blocktrans %}
+    Your account is now approved. You can 
+    {% endblocktrans %}
+    <a href="http://{{site.domain}}{% url 'labcirs_home' %}">{% trans "log in." %}</a>
+</p>
+</body>
+
+</html>
