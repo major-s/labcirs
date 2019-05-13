@@ -20,7 +20,21 @@
 			<button class="btn btn-lg btn-danger btn-block" type="submit">{% trans "Log in" %}</button>
 			<br>
 			<div class="alert alert-success">
-				{{ labcirs_config.login_info }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text }}</a>
+				{% if labcirs_config.login_info %}
+					{{ labcirs_config.login_info }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text }}</a>
+				{% else %}
+					{% blocktrans %}
+						If you want report an incident and don't know your login credentials, please go to the
+					{% endblocktrans %}
+					<a href="{% url 'labcirs_home' %}">{% trans "main page" %}</a>
+					{% trans "and choose your department!" %}
+					<br>
+					{% blocktrans %}
+						If you are an reviewer and forgot your password, please klick
+					{% endblocktrans %}
+					<a href="{% url 'auth_password_reset' %}">{% trans "here" %}</a>
+					{% trans "to reset your password" %}
+				{% endif %}
 			</div>
 		</form>	
 	</div>
