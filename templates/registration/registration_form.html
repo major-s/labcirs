@@ -4,8 +4,6 @@
 {% block title %}{% trans "Register for an LabCIRS account" %}{% endblock %}
 
 {% block content %}
-{% load i18n %}
-
 	<h2>{% trans "Register new reviewer and new department" %}</h2>
 	<div>
 		<form method="post" action="">
@@ -13,7 +11,7 @@
 			{{ form.as_p }}
     		<input class="btn btn-danger" type="submit" value="{% trans 'Submit' %}" />
     		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tosModal">
-  				{% trans "Terms of service"%}
+  				{% trans "Terms of service" %}
 			</button>
 		</form>
 	</div>
@@ -34,7 +32,7 @@
       <div class="modal-body">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Close" %}</button>
       </div>
     </div>
   </div>

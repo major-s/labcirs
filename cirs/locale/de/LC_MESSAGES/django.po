@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-12 23:47+0200\n"
+"POT-Creation-Date: 2019-05-13 19:59+0200\n"
 "PO-Revision-Date: 2019-05-12 23:50+0200\n"
 "Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
 "Language-Team: \n"
@@ -64,50 +64,50 @@ msgstr ""
 msgid "Notification settings"
 msgstr "Benachrichtigungseinstellungen"
 
-#: .\cirs\forms.py:91
+#: .\cirs\forms.py:86
 msgid "Incident code"
 msgstr "Ereignis-Kode"
 
-#: .\cirs\forms.py:101
+#: .\cirs\forms.py:96
 msgid "No matching critical incident found!"
 msgstr "Kein passendes kritisches Ereignis gefunden!"
 
-#: .\cirs\forms.py:125
+#: .\cirs\forms.py:120
 msgid "Department label"
 msgstr "Abteilungskürzel"
 
-#: .\cirs\forms.py:127 .\cirs\forms.py:134
+#: .\cirs\forms.py:122 .\cirs\forms.py:129
 msgid "Only letters, numbers, - and _. No whitespace!"
 msgstr "Nur Buchstaben, Zahlen, - und _. Keine Leerzeichen!"
 
-#: .\cirs\forms.py:129
+#: .\cirs\forms.py:124
 msgid "Department name"
 msgstr "Abteilung"
 
-#: .\cirs\forms.py:132
+#: .\cirs\forms.py:127
 msgid "Reporter name"
 msgstr "Reportername"
 
-#: .\cirs\forms.py:151
+#: .\cirs\forms.py:146
 #, python-format
 msgid "Only @%s is allowed!"
 msgid_plural "Allowed domains are @%s"
 msgstr[0] "Nur @%s ist erlaubt!"
 msgstr[1] "Erlaubte Emaildomänen sind @%s"
 
-#: .\cirs\forms.py:153
+#: .\cirs\forms.py:148
 msgid "You cannot register with this email domain!"
 msgstr "Mit dieser Emaildomäne können Sie sich nicht anmelden!"
 
-#: .\cirs\forms.py:165
+#: .\cirs\forms.py:160
 msgid "Department with this label already exists!"
 msgstr "Eine Abteilung mit dieser Kurzbezeichnung existiert schon!"
 
-#: .\cirs\forms.py:171
+#: .\cirs\forms.py:166
 msgid "Department with this name already exists!"
 msgstr "Eine Abteilung mit diesem Namen existiert schon!"
 
-#: .\cirs\forms.py:177
+#: .\cirs\forms.py:172
 msgid "This user already exists!"
 msgstr "Dieser Benutzer existiert schon!"
 

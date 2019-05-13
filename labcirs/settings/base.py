@@ -191,6 +191,7 @@ else:
     DEFAULT_MANDATORY_LANGUAGES = PARLER_DEFAULT_LANGUAGE_CODE
 
 # Registration
+LOCALE_PATHS = [join_path(BASE_DIR, 'locale')]
 ACCOUNT_ACTIVATION_DAYS = get_local_setting('ACCOUNT_ACTIVATION_DAYS', 1)
 DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
 REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'

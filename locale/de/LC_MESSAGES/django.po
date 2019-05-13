@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-12 23:47+0200\n"
-"PO-Revision-Date: 2019-05-10 18:46+0200\n"
+"POT-Creation-Date: 2019-05-13 19:59+0200\n"
+"PO-Revision-Date: 2019-05-13 20:01+0200\n"
 "Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -51,13 +51,14 @@ msgid ""
 "\n"
 "You (or someone pretending to be you) have asked to register an LabCIRS "
 "account at \n"
-"%(ORGANIZATION)s and applied for a new department.\n"
+"%(ORGANIZATION)s with username %(user)s and applied for a new department.\n"
 "If this wasn't you, please ignore this email and your address will be "
 "removed from our records.\n"
 msgstr ""
 "\n"
 "Sie (oder jemand der vorgibt Sie zu sein) möchte einen LabCIRS-Account in \n"
-"%(ORGANIZATION)s registrieren und eine neue Einrichtung aktivieren.\n"
+"%(ORGANIZATION)s mit dem Benutzernamen %(user)s registrieren und eine neue "
+"Einrichtung aktivieren.\n"
 "Falls Sie es nicht waren, ignorieren Sie diese E-Mail und Ihre Adresse wird "
 "aus unserem System gelöscht.\n"
 
@@ -164,15 +165,19 @@ msgstr "Accountgenehmigung für"
 msgid "Register for an LabCIRS account"
 msgstr "Registrierung eines LabCIRS-Accounts"
 
-#: .\templates\registration\registration_form.html:9
+#: .\templates\registration\registration_form.html:7
 msgid "Register new reviewer and new department"
 msgstr "Registrierung eines neues Benutzers und einer neuen Einrichtung"
 
-#: .\templates\registration\registration_form.html:14
+#: .\templates\registration\registration_form.html:12
 msgid "Submit"
 msgstr "Abschicken"
 
-#: .\templates\registration\registration_form.html:16
-#: .\templates\registration\registration_form.html:29
+#: .\templates\registration\registration_form.html:14
+#: .\templates\registration\registration_form.html:27
 msgid "Terms of service"
 msgstr "AGB"
+
+#: .\templates\registration\registration_form.html:36
+msgid "Close"
+msgstr "Schließen"
