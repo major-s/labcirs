@@ -3,3 +3,7 @@
 Your account is now approved. You can log in using the following link
 {% endblocktrans %}
 http://{{site.domain}}{% url 'labcirs_home' %}
+
+{% blocktrans %}
+IMPORTANT: The initial password for the reporter user is equal to his user name but you can change it after login!
+{% endblocktrans %}

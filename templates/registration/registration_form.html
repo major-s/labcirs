@@ -4,7 +4,20 @@
 {% block title %}{% trans "Register for an LabCIRS account" %}{% endblock %}
 
 {% block content %}
+	<div class="container col-sm-7">
 	<h2>{% trans "Register new reviewer and new department" %}</h2>
+	<div class="alert alert-info">
+	<p>
+	{% blocktrans %}
+		Here you can register a new department together  with new reviewer account.
+		<br>
+		Together with the new depaertment a reporter user will be created. The password of the reporter
+		will be the same as his username but you can change it after your account is activated.
+		<br>
+		Please note that all user names have to be lowercase and will be converted if you enter capital letters!
+	{% endblocktrans %}
+	</p>
+	</div>
 	<div>
 		<form method="post" action="">
     		{% csrf_token %}
@@ -15,7 +28,7 @@
 			</button>
 		</form>
 	</div>
-
+	</div>
 	<!-- Button trigger modal -->
 
 
@@ -40,8 +53,11 @@
 {% endblock %}
 {% block javascript %}
 				<script>
-            		jQuery('.errorlist').each( function( index ){
-                		jQuery( this ).children('li').addClass( "text-danger col-sm-7" );
+					jQuery('.error').each( function( index ){
+                		jQuery( this ).children('input').addClass( "is-invalid" );
+            		});
+            		jQuery('.helptext').each( function( index ){
+            			jQuery( this ).replaceWith($('<small class="helptext form-text text-muted">' + this.innerHTML + '</small>'));
             		});
         		</script>
 {% endblock %}

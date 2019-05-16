@@ -110,6 +110,17 @@ class CommentForm(ModelForm):
         return result
 
 
+class DivErrorList(forms.utils.ErrorList):
+    
+    def __unicode__(self):
+        return self.as_divs()
+    
+    def as_divs(self):
+        if not self: return u''
+        # CSS classes from bootstrap
+        return u'<div class="errorlist">%s</div>' % ''.join([u'<small class="text-danger form-text">%s</small>' % e for e in self])
+
+
 class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUsernameLowercase):#,
                  #RegistrationFormUniqueEmail):
     """
@@ -118,26 +129,28 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     # additional fields for department and reporter
     department_label = forms.SlugField(
         label=_('Department label'),
-        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
-                               help_text=_('Only letters, numbers, - and _. No whitespace!'))
+        widget=forms.TextInput(attrs={'class': "form-control"}),
+                               help_text=_('Only letters, digits, - and _. No whitespace!'))
     department_name = forms.CharField(
         label=_('Department name'),
-        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}))
+        widget=forms.TextInput(attrs={'class': "form-control"}))
     reporter_name = forms.SlugField(
-        label=_('Reporter name'),
-        widget=forms.TextInput(attrs={'class': "form-control col-sm-6"}),
-                               help_text=_('Only letters, numbers, - and _. No whitespace!'))
+        label=_('User name for the reporter'),
+        widget=forms.TextInput(attrs={'class': "form-control"}),
+                               help_text=_('Only letters, digits, - and _. No whitespace! Lowercase only!'))
     
     field_order = ['username', 'email', 'password1', 'password2', 'department_label',
                    'department_name', 'reporter_name', 'tos']
     
-    error_css_class = "error alert alert-danger col-sm-7"
+    error_css_class = "error"
     
     def __init__(self, *args, **kwargs):
         super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)
         for field in ('username', 'email', 'password1', 'password2'):
-            self.fields[field].widget.attrs.update({'class': "form-control col-sm-6"})
-        self.fields['tos'].widget.attrs.update({'class': "form-check-input col-sm-1"})
+            self.fields[field].widget.attrs.update({'class': "form-control"})
+        self.fields['tos'].widget.attrs.update({'class': "form-check-input", 
+                                                'style': "margin-left:0.5rem"})
+        self.error_class = DivErrorList
 
     def clean_email(self):
         #super(LabCIRSRegistrationForm, self).clean_email()

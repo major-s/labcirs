@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-13 19:59+0200\n"
-"PO-Revision-Date: 2019-05-12 23:50+0200\n"
+"POT-Creation-Date: 2019-05-16 23:02+0200\n"
+"PO-Revision-Date: 2019-05-16 22:55+0200\n"
 "Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -72,42 +72,47 @@ msgstr "Ereignis-Kode"
 msgid "No matching critical incident found!"
 msgstr "Kein passendes kritisches Ereignis gefunden!"
 
-#: .\cirs\forms.py:120
+#: .\cirs\forms.py:131
 msgid "Department label"
 msgstr "Abteilungskürzel"
 
-#: .\cirs\forms.py:122 .\cirs\forms.py:129
-msgid "Only letters, numbers, - and _. No whitespace!"
-msgstr "Nur Buchstaben, Zahlen, - und _. Keine Leerzeichen!"
+#: .\cirs\forms.py:133
+msgid "Only letters, digits, - and _. No whitespace!"
+msgstr "Nur Buchstaben, Ziffern, - und _. Keine Leerzeichen!"
 
-#: .\cirs\forms.py:124
+#: .\cirs\forms.py:135
 msgid "Department name"
 msgstr "Abteilung"
 
-#: .\cirs\forms.py:127
-msgid "Reporter name"
-msgstr "Reportername"
+#: .\cirs\forms.py:138
+msgid "User name for the reporter"
+msgstr "Benutzername für den Reporter"
 
-#: .\cirs\forms.py:146
+#: .\cirs\forms.py:140
+msgid "Only letters, digits, - and _. No whitespace! Lowercase only!"
+msgstr ""
+"Nur Buchstaben, Ziffern, - und _. Keine Leerzeichen! Nur Kleinbuchstaben!"
+
+#: .\cirs\forms.py:159
 #, python-format
 msgid "Only @%s is allowed!"
 msgid_plural "Allowed domains are @%s"
 msgstr[0] "Nur @%s ist erlaubt!"
 msgstr[1] "Erlaubte Emaildomänen sind @%s"
 
-#: .\cirs\forms.py:148
+#: .\cirs\forms.py:161
 msgid "You cannot register with this email domain!"
 msgstr "Mit dieser Emaildomäne können Sie sich nicht anmelden!"
 
-#: .\cirs\forms.py:160
+#: .\cirs\forms.py:173
 msgid "Department with this label already exists!"
 msgstr "Eine Abteilung mit dieser Kurzbezeichnung existiert schon!"
 
-#: .\cirs\forms.py:166
+#: .\cirs\forms.py:179
 msgid "Department with this name already exists!"
 msgstr "Eine Abteilung mit diesem Namen existiert schon!"
 
-#: .\cirs\forms.py:172
+#: .\cirs\forms.py:185
 msgid "This user already exists!"
 msgstr "Dieser Benutzer existiert schon!"
 
@@ -678,6 +683,45 @@ msgstr "Passwort"
 msgid "Log in"
 msgstr "Anmelden"
 
+#: .\cirs\templates\cirs\login.html:26
+msgid ""
+"\n"
+"\t\t\t\t\t\tIf you want report an incident and don't know your login "
+"credentials, please go to the\n"
+"\t\t\t\t\t"
+msgstr ""
+"\n"
+"\t\t\t\t\t\tWenn Sie über eine Ereignis berichten möchten aber die "
+"Zugangsdaten Ihrer Abteilung nicht kennen, dann gehen Sie bitte zu der\n"
+"\t\t\t\t\t"
+
+#: .\cirs\templates\cirs\login.html:29
+msgid "main page"
+msgstr "Hauptseite"
+
+#: .\cirs\templates\cirs\login.html:30
+msgid "and choose your department!"
+msgstr "und wählen den Link zur eigenen Abteilung!"
+
+#: .\cirs\templates\cirs\login.html:32
+msgid ""
+"\n"
+"\t\t\t\t\t\tIf you are an reviewer and forgot your password, please klick\n"
+"\t\t\t\t\t"
+msgstr ""
+"\n"
+"\t\t\t\t\t\tWenn Sie Reviewer sind und Ihr Passwort vergessen haben, dann "
+"können Sie\n"
+"\t\t\t\t\t"
+
+#: .\cirs\templates\cirs\login.html:35
+msgid "here"
+msgstr "hier"
+
+#: .\cirs\templates\cirs\login.html:36
+msgid "to reset your password"
+msgstr "Ihr Passwort zurücksetzen"
+
 #: .\cirs\templates\cirs\publishableincident_list.html:18
 msgid "Critical incidents for"
 msgstr "Kritische Ereignise für"
@@ -747,3 +791,6 @@ msgid ""
 msgstr ""
 "Der Benutzername und/oder Passwort waren inkorrekt. Bitte die Informationen "
 "darunter lesen!"
+
+#~ msgid "Reporter name"
+#~ msgstr "Reportername"

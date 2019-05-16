@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-13 19:59+0200\n"
-"PO-Revision-Date: 2019-05-13 20:01+0200\n"
+"POT-Creation-Date: 2019-05-16 23:02+0200\n"
+"PO-Revision-Date: 2019-05-16 23:01+0200\n"
 "Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -110,6 +110,17 @@ msgstr ""
 msgid "log in."
 msgstr "anmelden."
 
+#: .\templates\registration\admin_approve_complete_email.html:17
+#: .\templates\registration\admin_approve_complete_email.txt:7
+msgid ""
+"\n"
+"IMPORTANT: The initial password for the reporter user is equal to his user "
+"name but you can change it after login!\n"
+msgstr ""
+"\n"
+"WICHTIG: Das erste Passwort des Reporterbenutzers ist gleich wie sein "
+"Benutzername, Sie können es aber nach dem Login ändern.\n"
+
 #: .\templates\registration\admin_approve_complete_email.txt:2
 msgid ""
 "\n"
@@ -165,19 +176,47 @@ msgstr "Accountgenehmigung für"
 msgid "Register for an LabCIRS account"
 msgstr "Registrierung eines LabCIRS-Accounts"
 
-#: .\templates\registration\registration_form.html:7
+#: .\templates\registration\registration_form.html:8
 msgid "Register new reviewer and new department"
 msgstr "Registrierung eines neues Benutzers und einer neuen Einrichtung"
 
-#: .\templates\registration\registration_form.html:12
+#: .\templates\registration\registration_form.html:11
+msgid ""
+"\n"
+"\t\tHere you can register a new department together  with new reviewer "
+"account.\n"
+"\t\t<br>\n"
+"\t\tTogether with the new depaertment a reporter user will be created. The "
+"password of the reporter\n"
+"\t\twill be the same as his username but you can change it after your "
+"account is activated.\n"
+"\t\t<br>\n"
+"\t\tPlease note that all user names have to be lowercase and will be "
+"converted if you enter capital letters!\n"
+"\t"
+msgstr ""
+"\n"
+"\t\tHier können Sie eine neue Abteilung und einen neuen Reviewer-Account "
+"registrieren.\n"
+"\t\t<br>\n"
+"\t\tFür die Abteilung wird auch ein Reporter-Benutzer erzeugt. Das Passwort "
+"wird gleich wie sein Benutzername lauten, aber Sie können es ändern, sobald "
+"Ihr Account aktiviert ist. \n"
+"\t\t<br>\n"
+"\t\tBitte beachten Sie, dass in Benutzernamen nur kleine Buchstaben benutzt "
+"werden dürfen. Großbuchstaben werden beim Anlegen der Benutzer entsprechend "
+"konvertiert.\n"
+"\t"
+
+#: .\templates\registration\registration_form.html:25
 msgid "Submit"
 msgstr "Abschicken"
 
-#: .\templates\registration\registration_form.html:14
 #: .\templates\registration\registration_form.html:27
+#: .\templates\registration\registration_form.html:40
 msgid "Terms of service"
 msgstr "AGB"
 
-#: .\templates\registration\registration_form.html:36
+#: .\templates\registration\registration_form.html:49
 msgid "Close"
 msgstr "Schließen"

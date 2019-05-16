@@ -11,7 +11,12 @@
     {% blocktrans %}
     Your account is now approved. You can 
     {% endblocktrans %}
-    <a href="http://{{site.domain}}{% url 'labcirs_home' %}">{% trans "log in." %}</a>
+    <a href="http://{{site.domain}}{% url 'labcirs_home' %}">{% trans "log in." %}</a>    
+</p>
+<p>
+{% blocktrans %}
+IMPORTANT: The initial password for the reporter user is equal to his user name but you can change it after login!
+{% endblocktrans %}
 </p>
 </body>
 
