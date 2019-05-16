@@ -26,7 +26,7 @@ from django.core.urlresolvers import reverse
 from parameterized import parameterized
 from registration.models import SupervisedRegistrationProfile
 
-from cirs.models import  Department
+from cirs.models import  Department, Reporter
 
       
 @override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False) 
@@ -137,3 +137,11 @@ class SelfRegistrationTest(TestCase):
                 reverse('registration_register'), self.test_registration, follow=True)
 
             self.assertEqual(User.objects.last().email, self.test_registration['email'])
+
+    def test_reporter_user_is_converted_to_lowercase(self):
+        upper_case_rep = 'Reporter'
+        test_registration = self.test_registration.copy()
+        test_registration['reporter_name'] = upper_case_rep
+        self.client.post(
+            reverse('registration_register'), test_registration, follow=True)
+        self.assertEqual(Reporter.objects.last().user.username, upper_case_rep.lower())

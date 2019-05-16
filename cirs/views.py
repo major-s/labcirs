@@ -208,7 +208,7 @@ class RegistrationViewWithDepartment(RegistrationView):
         department = Department()
         department.label = form_class.cleaned_data['department_label']
         department.name = form_class.cleaned_data['department_name']
-        reporter_name = form_class.cleaned_data['reporter_name']
+        reporter_name = form_class.cleaned_data['reporter_name'].lower()
         reporter_user = User.objects.create_user(reporter_name, password=reporter_name)
         department.reporter = Reporter.objects.create(user=reporter_user)
         department.active = False
