@@ -28,7 +28,7 @@ from django_migration_testcase.base import idempotent_transaction
 from model_mommy import mommy
 from parameterized import parameterized
 
-from cirs.models import Department, Reporter, Reviewer
+from cirs.models import Reporter, Reviewer
 
 from .helpers import create_user_with_perm
 
@@ -114,6 +114,7 @@ class DataMigrationForDepartment(MigrationTest):
         
         self.run_migration()
         
+        Department = self.get_model_after('Department')
         self.assertEqual(Department.objects.count(), 0)
     
     @parameterized.expand([
@@ -127,6 +128,7 @@ class DataMigrationForDepartment(MigrationTest):
         
         self.run_migration()
 
+        Department = self.get_model_after('Department')
         self.assertEqual(Department.objects.count(), 0)
 
     def test_create_department(self):
@@ -137,10 +139,12 @@ class DataMigrationForDepartment(MigrationTest):
 
         self.run_migration()
         # there should be department with label equal to organization in settings
+        Department = self.get_model_after('Department')
         dept = Department.objects.get(label=settings.ORGANIZATION)
 
-        self.assertEqual(reporter, dept.reporter.user)
-        self.assertIn(reviewer.reviewer, dept.reviewers.all())
+        # fortunatelly user names are unique...
+        self.assertEqual(str(reporter), dept.reporter.user.username)
+        self.assertIn(reviewer.username, [rev.user.username for rev in dept.reviewers.all()])
 
 
 class TestBeforeAddingOrganizationToIncidents(MigrationTest):
