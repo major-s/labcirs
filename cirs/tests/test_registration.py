@@ -20,13 +20,16 @@
 
 from __future__ import unicode_literals
 
+import time
+
 from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
+from django.core import mail
 from django.core.urlresolvers import reverse
 from parameterized import parameterized
 from registration.models import SupervisedRegistrationProfile
 
-from cirs.models import  Department, Reporter
+from cirs.models import  Department, Reporter, Reviewer
 
       
 @override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False) 
@@ -36,6 +39,8 @@ class SelfRegistrationTest(TestCase):
         super(SelfRegistrationTest, self).setUp()
         self.test_registration = {
             'username': 'rev',
+            'first_name': 'Mighty',
+            'last_name': 'Reviewer',
             'email': 'rev@localhost',
             'password1': 'rev',
             'password2': 'rev',
@@ -88,7 +93,12 @@ class SelfRegistrationTest(TestCase):
         dept = Department.objects.get()
         self.assertEqual(dept.active, False)
         
-    def test_department_is_activated_together_with_user(self):
+    
+    @parameterized.expand([
+        ('department',),
+        ('reporter',),
+    ])
+    def test_user_activation_activates_also(self, obj):
         # new reviewer registers new department
         self.client.post(
             reverse('registration_register'), self.test_registration, follow=True)
@@ -107,8 +117,10 @@ class SelfRegistrationTest(TestCase):
         self.client.get(
             reverse('registration_admin_approve', args=[activation_id]), follow=True)
         dept = Department.objects.get()
-        
-        self.assertEqual(dept.active, True)
+        if obj == 'department':
+            self.assertEqual(dept.active, True)
+        elif obj == 'reporter':
+            self.assertEqual(dept.reporter.user.is_active, True)
         
     def test_disallow_foreign_email_domains(self):
         allowed_domains = ['example.org']
@@ -145,3 +157,19 @@ class SelfRegistrationTest(TestCase):
         self.client.post(
             reverse('registration_register'), test_registration, follow=True)
         self.assertEqual(Reporter.objects.last().user.username, upper_case_rep.lower())
+
+    def test_reporter_user_is_inactive_upon_registration(self):
+        self.client.post(
+            reverse('registration_register'), self.test_registration, follow=True)
+        rep = Reporter.objects.get()
+        self.assertEqual(rep.user.is_active, False)
+
+    @parameterized.expand([
+        ('first_name',),
+        ('last_name',),
+    ])
+    def test_reviewer_has(self, name):
+        self.client.post(
+            reverse('registration_register'), self.test_registration, follow=True)
+        rev_user = Reviewer.objects.last().user
+        self.assertEqual(getattr(rev_user, name), self.test_registration[name])

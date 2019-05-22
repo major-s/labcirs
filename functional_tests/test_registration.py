@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 from django.core import mail
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.urls.base import reverse
 from model_mommy import mommy
 from parameterized import parameterized
@@ -31,8 +32,10 @@ from .test_multiorganization import get_admin_url
 
 import time
 from registration.models import SupervisedRegistrationProfile
+from cirs.models import Reporter
 
 
+@override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False) 
 class SelfRegistrationTest(FrontendBaseTest):
     """
     Tests for self registration of reviewer and department
@@ -55,6 +58,8 @@ class SelfRegistrationTest(FrontendBaseTest):
         self.click_link_with_text('Register')
         # and finds the registration form where he enters the data
         self.find_input_and_enter_text('id_username', 'rev')
+        self.find_input_and_enter_text('id_first_name', 'Mighty')
+        self.find_input_and_enter_text('id_last_name', 'Reviewer')
         self.find_input_and_enter_text('id_email', 'rev@localhost')
         self.find_input_and_enter_text('id_password1', 'rev')
         self.find_input_and_enter_text('id_password2', 'rev')
@@ -83,8 +88,34 @@ class SelfRegistrationTest(FrontendBaseTest):
         # now the new department label is in the list
         labels = self.get_column_from_table_as_list('table_departments')
         self.assertIn('dept', labels)
-        time.sleep(5)
+        #time.sleep(5)
         # we do not need to test everything, but
         
     # TODO: Add tests for double entries which should be unique
     # Add tests for proper email domain
+    
+    
+    @parameterized.expand([
+        ('reporter', 'reporter_name', 'reporter_name'),
+        ('reviewer', 'username', 'password1'),
+    ])
+    def test_user_is_not_active_before_activation_of_the_reviewer(self, name, user, password):
+        self.test_registration = {
+            'username': 'rev',
+            'first_name': 'Mighty',
+            'last_name': 'Reviewer',
+            'email': 'rev@localhost',
+            'password1': 'rev',
+            'password2': 'rev',
+            'department_label': 'dept',
+            'department_name': 'Dept',
+            'reporter_name': 'rep',
+            'tos': True
+        } 
+        self.client.post(
+            reverse('registration_register'), self.test_registration, follow=True)
+        self.browser.get(self.live_server_url)
+        self.click_link_with_text('Log in')
+        self.login_user(self.test_registration[user], self.test_registration[password])
+        self.assertCurrentUrlIs(reverse('login'))
+        #time.sleep(5)
