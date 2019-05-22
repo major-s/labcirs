@@ -7,24 +7,18 @@
 </head>
 
 <body>
-<p>
-{% blocktrans with dept_label=user.reviewer.departments.get.label dept_name=user.reviewer.departments.first.name %}
-The new user ({{ user }}) has asked to register an LabCIRS account for 
-{{ dept_name }} ({{ dept_label }}).
-{% endblocktrans %}
-</p>
-<p>
-    {% blocktrans %}
-    To approve this, please
-    {% endblocktrans %}
-    <a href="http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}"> {% trans "click here" %}</a>.
-</p>
-<p>
-{% blocktrans %}
-Sincerely,
-{{ ORGANIZATION }} - LabCIRS Management
-{% endblocktrans %}
-</p>
+	<p>
+		{% trans "A new user has asked to register an LabCIRS account" %}:
+	</p>
+	<p>
+		{% trans "User" %}: <strong>{{ user }}</strong> (<strong>{{ user.first_name }} {{ user.last_name }}</strong>)
+	<br>
+		{% trans "Department" %}: <strong>{{ user.reviewer.departments.get.label }}</strong> (<strong>{{ user.reviewer.departments.get.name }}</strong>)
+	</p>
+	<p>
+    	{% trans "To approve this, please" %}
+    	<a href="http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}"> {% trans "click here" %}</a>.
+	</p>
 </body>
 
 </html>

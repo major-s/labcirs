@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -26,7 +26,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
 from django.urls import resolve, get_script_prefix
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 from registration.backends.admin_approval.views import RegistrationView
@@ -209,12 +209,17 @@ class RegistrationViewWithDepartment(RegistrationView):
         department.label = form_class.cleaned_data['department_label']
         department.name = form_class.cleaned_data['department_name']
         reporter_name = form_class.cleaned_data['reporter_name'].lower()
-        reporter_user = User.objects.create_user(reporter_name, password=reporter_name)
+        reporter_user = User.objects.create_user(reporter_name, password=reporter_name, is_active=False)
         department.reporter = Reporter.objects.create(user=reporter_user)
         department.active = False
         department.save()
         if department.pk is not None:
             new_user = super(RegistrationViewWithDepartment, self).register(form_class)
+            new_user.first_name = form_class.cleaned_data['first_name']
+            new_user.last_name = form_class.cleaned_data['last_name']
+            # in theory not necessary, because generation of reviewer saves the user, 
+            # but in case of eventual changes...
+            new_user.save()
             reviewer = Reviewer.objects.create(user=new_user)
             department.reviewers.add(reviewer)
             return new_user
@@ -227,9 +232,20 @@ MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
 
 MISSING_DEPARTMENT_MSG =_('Your account has no associated department! '
-                            'Please contact the administrator!')
+                          'Please contact the administrator!')
+
+# I would prefere to use join on <br> after translation, but lazy translation is not working this way
+# and translating in advance with ugettext does not show up in the browser.
+# NOT_AUTHENTICATED_MSG = '<br>'.join(
+#     (ugettext('Your username and/or password were incorrect.'), 
+#      ugettext('If you want to report a new incident, please check the information below!'),
+#      ugettext('If you are reviewer or administrator and forgot your password, please klick')))
 
 def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
+    # Translators: Please preserve the <br> tags for proper HTML line breaks!
+    NOT_AUTHENTICATED_MSG = _('Your username and/or password were incorrect.<br>' 
+        'If you want to report a new incident, please check the information below!<br>'
+        'If you are reviewer or administrator and forgot your password, please klick')
     username = password = message = ''
     message_class = 'danger'
     redirect_url = request.GET.get(redirect_field_name, '')
@@ -265,8 +281,8 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 message = _('Your account is not active, please contact the admin.')
                 message_class = 'warning'
         else:
-            message = _("""Your username and/or password were incorrect.
-                        Please check the information below!""")
+            reset_link = '<a href="{}">{}.</a>'.format(reverse_lazy('auth_password_reset'), _('here'))
+            message = NOT_AUTHENTICATED_MSG + " " + reset_link
 
     context = {'message': message,
                'message_class': message_class,

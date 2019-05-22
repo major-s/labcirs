@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-16 23:02+0200\n"
-"PO-Revision-Date: 2019-05-16 23:01+0200\n"
+"POT-Creation-Date: 2019-05-22 15:01+0200\n"
+"PO-Revision-Date: 2019-05-22 15:00+0200\n"
 "Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.3\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: .\templates\base.html:10
@@ -46,38 +46,35 @@ msgstr "Registrierung"
 
 #: .\templates\registration\activation_email.html:11
 #: .\templates\registration\activation_email.txt:2
-#, python-format
-msgid ""
-"\n"
-"You (or someone pretending to be you) have asked to register an LabCIRS "
-"account at \n"
-"%(ORGANIZATION)s with username %(user)s and applied for a new department.\n"
-"If this wasn't you, please ignore this email and your address will be "
-"removed from our records.\n"
-msgstr ""
-"\n"
-"Sie (oder jemand der vorgibt Sie zu sein) möchte einen LabCIRS-Account in \n"
-"%(ORGANIZATION)s mit dem Benutzernamen %(user)s registrieren und eine neue "
-"Einrichtung aktivieren.\n"
-"Falls Sie es nicht waren, ignorieren Sie diese E-Mail und Ihre Adresse wird "
-"aus unserem System gelöscht.\n"
+msgid "You have asked to register a new LabCIRS account"
+msgstr "Sie möchten einen neuen LabCIRS-Account registrieren"
 
-#: .\templates\registration\activation_email.html:18
-#: .\templates\registration\activation_email.txt:8
+#: .\templates\registration\activation_email.html:14
+#: .\templates\registration\activation_email.txt:4
+msgid "Username"
+msgstr "Benutzername"
+
+#: .\templates\registration\activation_email.html:17
+#: .\templates\registration\activation_email.txt:6
 #, python-format
 msgid ""
-"\n"
 "To activate this account, please click the following link within the next "
-"%(expiration_days)s days:\n"
+"%(expiration_days)s days:"
 msgstr ""
-"\n"
 "Um diesen Account zu aktivieren klicken Sie bitte auf den folgenden Link "
-"innerhalb der nächsten %(expiration_days)s Tage:\n"
+"innerhalb der nächsten %(expiration_days)s Tage:"
 
-#: .\templates\registration\activation_email.html:29
-#: .\templates\registration\activation_email.txt:14
-#: .\templates\registration\admin_approve_email.html:23
-#: .\templates\registration\admin_approve_email.txt:12
+#: .\templates\registration\activation_email.html:25
+#: .\templates\registration\activation_email.txt:10
+msgid ""
+"If this wasn't you, please ignore this email and your address will be "
+"removed from our records."
+msgstr ""
+"Falls Sie es nicht waren, ignorieren Sie diese E-Mail und Ihre Adresse wird "
+"aus unserem System gelöscht."
+
+#: .\templates\registration\activation_email.html:28
+#: .\templates\registration\activation_email.txt:12
 #, python-format
 msgid ""
 "\n"
@@ -97,38 +94,42 @@ msgid "admin approval"
 msgstr "Admin Genehmigung"
 
 #: .\templates\registration\admin_approve_complete_email.html:11
-msgid ""
-"\n"
-"    Your account is now approved. You can \n"
-"    "
-msgstr ""
-"\n"
-"    Ihr Account ist nun aktiviert. Sie können sich \n"
-"    "
+msgid "Your account is now approved. You can"
+msgstr "Ihr Account ist jetzt aktiviert. Sie können sich"
 
-#: .\templates\registration\admin_approve_complete_email.html:14
+#: .\templates\registration\admin_approve_complete_email.html:12
 msgid "log in."
 msgstr "anmelden."
 
+#: .\templates\registration\admin_approve_complete_email.html:15
+#: .\templates\registration\admin_approve_complete_email.txt:6
+msgid "Username for Reviewer"
+msgstr "Benutzername des Reviewers"
+
 #: .\templates\registration\admin_approve_complete_email.html:17
 #: .\templates\registration\admin_approve_complete_email.txt:7
+msgid "Username for Reporter"
+msgstr "Benutzername des Reporters"
+
+#: .\templates\registration\admin_approve_complete_email.html:20
+#: .\templates\registration\admin_approve_complete_email.txt:9
 msgid ""
-"\n"
-"IMPORTANT: The initial password for the reporter user is equal to his user "
-"name but you can change it after login!\n"
+"IMPORTANT: The initial password for the reporter is equal to his user name "
+"but you can change it after login!"
 msgstr ""
-"\n"
-"WICHTIG: Das erste Passwort des Reporterbenutzers ist gleich wie sein "
-"Benutzername, Sie können es aber nach dem Login ändern.\n"
+"WICHTIG: Das erste Passwort des Reporters gleicht seinem Benutzernamen, Sie "
+"können es aber nach dem Login ändern!"
+
+#: .\templates\registration\admin_approve_complete_email.html:23
+#: .\templates\registration\admin_approve_complete_email.txt:11
+msgid "Sincerely, LabCIRS Management"
+msgstr "Mit freundlichen Grüßen, LabCIRS Verwaltung"
 
 #: .\templates\registration\admin_approve_complete_email.txt:2
-msgid ""
-"\n"
-"Your account is now approved. You can log in using the following link\n"
+msgid "Your account is now approved. You can log in using the following link"
 msgstr ""
-"\n"
-"Ihr Account ist nun aktiviert. Sie können sich anmelden in dem sie den "
-"folgenden Link nutzen\n"
+"Ihr Account ist jetzt aktiviert. Sie können sich anmelden in dem sie den "
+"folgenden Link nutzen"
 
 #: .\templates\registration\admin_approve_complete_email_subject.txt:1
 msgid "Account activation in"
@@ -136,37 +137,30 @@ msgstr "Accountaktivierung"
 
 #: .\templates\registration\admin_approve_email.html:11
 #: .\templates\registration\admin_approve_email.txt:2
-#, python-format
-msgid ""
-"\n"
-"The new user (%(user)s) has asked to register an LabCIRS account for \n"
-"%(dept_name)s (%(dept_label)s).\n"
-msgstr ""
-"\n"
-"Ein neuer Benutzer (%(user)s) möchte einen neuen LabCIRS-Account für \n"
-"%(dept_name)s (%(dept_label)s) registrieren.\n"
+msgid "A new user has asked to register an LabCIRS account"
+msgstr "Ein neuer Benutzer möchte einen neuen LabCIRS-Account registrieren"
 
-#: .\templates\registration\admin_approve_email.html:17
-msgid ""
-"\n"
-"    To approve this, please\n"
-"    "
-msgstr ""
-"\n"
-"    Um dies zu bestätigen, bitte\n"
-"    "
+#: .\templates\registration\admin_approve_email.html:14
+#: .\templates\registration\admin_approve_email.txt:4
+msgid "User"
+msgstr "Benutzer"
+
+#: .\templates\registration\admin_approve_email.html:16
+#: .\templates\registration\admin_approve_email.txt:5
+msgid "Department"
+msgstr "Abteilung"
+
+#: .\templates\registration\admin_approve_email.html:19
+msgid "To approve this, please"
+msgstr "Um dies zu bestätigen, bitte"
 
 #: .\templates\registration\admin_approve_email.html:20
 msgid "click here"
 msgstr "hier klicken"
 
 #: .\templates\registration\admin_approve_email.txt:6
-msgid ""
-"\n"
-"To approve this, please click the following link.\n"
-msgstr ""
-"\n"
-"Zur Bestätigung bitte auf den folgenden Link klicken.\n"
+msgid "To approve this, please click the following link"
+msgstr "Zur Bestätigung bitte auf den folgenden Link klicken"
 
 #: .\templates\registration\admin_approve_email_subject.txt:1
 msgid "Account approval for"
@@ -220,3 +214,10 @@ msgstr "AGB"
 #: .\templates\registration\registration_form.html:49
 msgid "Close"
 msgstr "Schließen"
+
+#~ msgid ""
+#~ "IMPORTANT: The initial password for the reporter user is equal to his "
+#~ "user name but you can change it after login!"
+#~ msgstr ""
+#~ "WICHTIG: Das erste Passwort des Reporters ist gleich wie sein "
+#~ "Benutzername, Sie können es aber nach dem Login ändern!"

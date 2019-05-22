@@ -116,11 +116,13 @@ def activate_department(sender, user, request, **kwargs):
         # proceed only if user has one dept
         if user.reviewer.departments.count() == 1:
             dept = user.reviewer.departments.get()
-            print dept
             if dept.active is False:
                 dept.active = True
-                print str(dept) + ' activated'
                 dept.save()
+            # activate inactive reporter
+            if dept.reporter.user.is_active is False:
+                dept.reporter.user.is_active = True
+                dept.reporter.user.save()
 
 
 FREQUENCY_CHOICES = (('singular case', _('singular case (for the first time)')),

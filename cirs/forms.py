@@ -126,6 +126,13 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
     """
     Generates for to create department together with reviewer and reporter users
     """
+    # reviewer is not anonymous, so first and last name should be provided
+    first_name = forms.CharField(
+        label=_('First name'), widget=forms.TextInput(attrs={'class': "form-control"}),
+        help_text=_('Please enter your first name'))
+    last_name = forms.CharField(
+        label=_('Last name'), widget=forms.TextInput(attrs={'class': "form-control"}),
+        help_text=_('Please enter your last name'))
     # additional fields for department and reporter
     department_label = forms.SlugField(
         label=_('Department label'),
@@ -139,8 +146,8 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
         widget=forms.TextInput(attrs={'class': "form-control"}),
                                help_text=_('Only letters, digits, - and _. No whitespace! Lowercase only!'))
     
-    field_order = ['username', 'email', 'password1', 'password2', 'department_label',
-                   'department_name', 'reporter_name', 'tos']
+    field_order = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 
+                   'department_label', 'department_name', 'reporter_name', 'tos']
     
     error_css_class = "error"
     
