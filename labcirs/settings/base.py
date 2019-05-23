@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import json
+import warnings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -33,6 +34,8 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                     return setting_value
             except KeyError:
                 if default is not None:
+                    warnings.warn('The whole entry for {0} is missing in {1}'.format(
+                        setting_item, local_config_file), UserWarning)
                     return default
                 else:
                     error_msg = "Set the {0} environment variable in {1}".format(
@@ -92,7 +95,7 @@ ROOT_URLCONF = 'labcirs.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [join_path(BASE_DIR, 'templates'), join_path(BASE_DIR, 'labcirs', 'settings')],  # local
+        'DIRS': [join_path(BASE_DIR, 'templates'), join_path(BASE_DIR, 'labcirs', 'tos')],  # local
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -191,10 +194,15 @@ else:
     DEFAULT_MANDATORY_LANGUAGES = PARLER_DEFAULT_LANGUAGE_CODE
 
 # Registration
+REGISTRATION_OPEN = get_local_setting('REGISTRATION_OPEN', False)
 LOCALE_PATHS = [join_path(BASE_DIR, 'locale')]
 ACCOUNT_ACTIVATION_DAYS = get_local_setting('ACCOUNT_ACTIVATION_DAYS', 1)
 DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
-REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
+REGISTRATION_USE_TOS = get_local_setting('REGISTRATION_USE_TOS', False)
+if REGISTRATION_USE_TOS is True:
+    REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationFormWithTOS'
+else:
+    REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
 # reverse order, email is better key than the name
 ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).iteritems())
 

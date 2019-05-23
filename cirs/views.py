@@ -18,6 +18,9 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+import os
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -26,12 +29,12 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
 from django.urls import resolve, get_script_prefix
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import get_language, ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 from registration.backends.admin_approval.views import RegistrationView
 
-from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm, LabCIRSRegistrationForm
+from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm
 from .models import (CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department,
                      Reporter, Reviewer)
 
@@ -202,7 +205,6 @@ class RegistrationViewWithDepartment(RegistrationView):
     """
     Registers new user and new department and adds the new user as Reviewer for this new department 
     """
-    form_class = LabCIRSRegistrationForm
 
     def register(self, form_class):
         department = Department()
@@ -226,7 +228,25 @@ class RegistrationViewWithDepartment(RegistrationView):
         else:
             # TODO: redirect to error message if department could not be saved
             return False
-  
+
+    def get_context_data(self, **kwargs):
+        context = super(RegistrationViewWithDepartment, self).get_context_data(**kwargs)
+        context['REGISTRATION_USE_TOS'] = settings.REGISTRATION_USE_TOS
+        # check if language tos file exist.
+        # but maybe providing default tos file might be enough?
+        if settings.REGISTRATION_USE_TOS is True:
+            # TODO: move to settings?
+            tos_dir = os.path.join(settings.BASE_DIR, 'labcirs', 'tos')
+            tos_file = 'tos_%s.html' % get_language()
+            if os.path.isfile(os.path.join(tos_dir, tos_file)):
+                context['tos_file'] = tos_file
+            else:
+                context['message'] = _('You are supposed to accept TOS but there is none provided '
+                                       'in the chosen language! Try another or contact the site '
+                                       'administrator!')
+                context['message_class'] = 'danger'
+                context['disallow_registration'] = True
+        return context
         
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')

@@ -121,8 +121,7 @@ class DivErrorList(forms.utils.ErrorList):
         return u'<div class="errorlist">%s</div>' % ''.join([u'<small class="text-danger form-text">%s</small>' % e for e in self])
 
 
-class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUsernameLowercase):#,
-                 #RegistrationFormUniqueEmail):
+class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase):#, RegistrationFormUniqueEmail):
     """
     Generates for to create department together with reviewer and reporter users
     """
@@ -147,7 +146,7 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
                                help_text=_('Only letters, digits, - and _. No whitespace! Lowercase only!'))
     
     field_order = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 
-                   'department_label', 'department_name', 'reporter_name', 'tos']
+                   'department_label', 'department_name', 'reporter_name']
     
     error_css_class = "error"
     
@@ -155,8 +154,6 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
         super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)
         for field in ('username', 'email', 'password1', 'password2'):
             self.fields[field].widget.attrs.update({'class': "form-control"})
-        self.fields['tos'].widget.attrs.update({'class': "form-check-input", 
-                                                'style': "margin-left:0.5rem"})
         self.error_class = DivErrorList
 
     def clean_email(self):
@@ -191,3 +188,11 @@ class LabCIRSRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUs
         if User.objects.filter(username=reporter_name).exists():
             raise forms.ValidationError(_('This user already exists!'))
         return reporter_name
+
+class LabCIRSRegistrationFormWithTOS(RegistrationFormTermsOfService, LabCIRSRegistrationForm):
+
+    def __init__(self, *args, **kwargs):
+        super(LabCIRSRegistrationFormWithTOS, self).__init__(*args, **kwargs)
+
+        self.fields['tos'].widget.attrs.update({'class': "form-check-input", 
+                                                'style': "margin-left:0.5rem"})
