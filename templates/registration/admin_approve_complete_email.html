@@ -1,0 +1,27 @@
+{% load i18n %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>{{ ORGANIZATION }} - LabCIRS {% trans "admin approval" %}</title>
+</head>
+
+<body>
+<p>
+    {% trans "Your account is now approved. You can" %}
+    <a href="http://{{site.domain}}{{ user.reviewer.departments.get.get_absolute_url }}">{% trans "log in." %}</a>    
+</p>
+<p>
+	{% trans "Username for Reviewer" %}: <strong>{{ user }}</strong>
+	<br>
+	{% trans "Username for Reporter" %}: <strong>{{ user.reviewer.departments.get.reporter }}</strong>
+</p>
+<p>
+{% trans "IMPORTANT: The initial password for the reporter is equal to his user name but you can change it after login!" %}
+</p>
+<p>
+{% trans "Sincerely, LabCIRS Management" %}
+</p>
+</body>
+
+</html>

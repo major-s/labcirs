@@ -1,126 +1,46 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
 
-{% load i18n %}
 
-<html lang="{{ LANGUAGE_CODE }}">
+{% block cirs_nav %}
+	{% load i18n %}
+  	<div> 
+  		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu">
+  			<span class="navbar-toggler-icon"></span>
+			</button>
+  		<div class="collapse navbar-collapse" id="navbarMenu">
+      		<ul class="navbar-nav nav-pills">
+      			{% if request.path != dept_list and request.path != home %}
+                	{% url 'incidents_for_department' dept=department|default:view.kwargs.dept as url %}
+                	<li class="nav-item">
+                		<a class="nav-link{% if request.path == url %} active text-light bg-dark
+                			{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
+                	</li>
+                	{% if user.reporter %}
+                		{% url 'create_incident' dept=user.reporter.department.label as url %}
+                		<li class="nav-item">
+                			<a class="nav-link{% if request.path == url %} active text-light bg-dark
+                			{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
+                		</li>
+                	{% endif %}
+                	{% url 'incident_search' dept=department|default:view.kwargs.dept as url %}
+                	<li class="nav-item">
+                		<a class="nav-link
+                			{% comment %}
+                				Works on all pages only because not existing variables are ignored in templates
+                			{% endcomment %}
+                			{% if request.path == url or request.path == incident.get_absolute_url %}
+                				active text-light bg-dark
+                			{% endif %}" 
+                		href="{{ url }}">{% trans "Comments" %}</a>
+                	</li>
+                {% endif %}
+            	{% if user.is_superuser or user.is_staff %}
+	                <li class="nav-item">
+	                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+	                </li>
+          		{% endif %}
+      		</ul>
+      	</div>
+	</div>
+{% endblock %}
 
-<head>
-    {% block head %}
-        <meta charset="utf-8">
-        <title>{% block head_title %}LabCIRS {% trans "for" %} {{ ORGANIZATION|default:"LabCIRS" }}{% endblock %}</title>
-        <meta name="description" content="">
-        <meta name="author" content="Sebastian Major">
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- Bootstrap -->
-        <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}css/sticky-footer-navbar.css" rel="stylesheet">
-    {% endblock %}
-</head>
-
-<body>
-	<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-		{% url 'labcirs_home' as home %}
-		{% url 'departments_list' as dept_list %}
-    	<a class="navbar-brand" href={{ dept_list }} >{{ ORGANIZATION|default:"LabCIRS" }}
-    		{% if department %}
-    			/ {{ department }}
-    		{% elif view.kwargs.dept %}
-    			/ {{ view.kwargs.dept }}
-    		{% endif %}
-    	</a>
- 
-    	{% if user.is_authenticated == True %}
-    	<div> 
-    		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu">
-    			<span class="navbar-toggler-icon"></span>
-  			</button>
-	  		<div class="collapse navbar-collapse" id="navbarMenu">
-        		<ul class="navbar-nav nav-pills">
-        			{% if request.path != dept_list and request.path != home %}
-	                	{% url 'incidents_for_department' dept=department|default:view.kwargs.dept as url %}
-	                	<li class="nav-item">
-	                		<a class="nav-link{% if request.path == url %} active text-light bg-dark
-	                			{% endif %}" href="{{ url }}">{% trans "View incidents" %}</a>
-	                	</li>
-	                	{% if user.reporter %}
-	                		{% url 'create_incident' dept=user.reporter.department.label as url %}
-	                		<li class="nav-item">
-	                			<a class="nav-link{% if request.path == url %} active text-light bg-dark
-	                			{% endif %}" href="{{ url }}">{% trans "Add incident" %}</a>
-	                		</li>
-	                	{% endif %}
-	                	{% url 'incident_search' dept=department|default:view.kwargs.dept as url %}
-	                	<li class="nav-item">
-	                		<a class="nav-link
-	                			{% comment %}
-	                				Works on all pages only because not existing variables are ignored in templates
-	                			{% endcomment %}
-	                			{% if request.path == url or request.path == incident.get_absolute_url %}
-	                				active text-light bg-dark
-	                			{% endif %}" 
-	                		href="{{ url }}">{% trans "Comments" %}</a>
-	                	</li>
-	                {% endif %}
-	            	{% if user.is_superuser or user.is_staff %}
-		                <li class="nav-item">
-		                	<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-		                </li>
-            		{% endif %}
-        		</ul>
-        	</div>
-        </div>
-		{% endif %}
-
-        <h5 class="mx-auto">
-        	<span class="nav-item badge badge-danger d-none d-lg-block">Anonymous Lab Critical Incident Reporting System</span>
-        	<span class="nav-item badge badge-danger d-block d-lg-none">Anonymous LabCIRS</span>
-        </h5>
-
-        {% if user.is_authenticated == True %}
-            <span class="navbar-text mr-sm-2 d-none d-md-block">{% trans "Welcome," %}<em>{{ user.first_name }} {{ user.last_name }} ({{ user.username }})</em></span>
-        {% endif %}
-
-        <form name="select_language" class="form-inline" action="{% url 'set_language' %}" method="post">
-            {% csrf_token %}
-            <input name="next" type="hidden" value="{{ redirect_to }}" />
-            <div class="form-group">
-                <select name="language" class="form-control" onchange="this.form.submit();">
-                    {% get_language_info_list for LANGUAGES as languages %}
-                    {% for language in languages %}
-                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
-                            {{ language.name_local }} ({{ language.code }})
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
-
-        
-        <ul class="navbar-nav nav-pills">    
-            <li class="nav-item">
-            {% if user.is_authenticated == True %}
-            	<a class="nav-link" href="{% url 'logout' %}">{% trans "Log out" %}</a>
-            {% else %}
-            	<a class="nav-link" href="{% url 'login' %}">{% trans "Log in" %}</a>
-            {% endif %}
-            </li>
-        </ul>
-    </nav>
- 
-    {% block content %}
-    {% endblock %}
-
-    <footer class="footer">
-        <div class="container">
-            <p class="text-muted">
-                LabCIRS v{{ APP_VERSION }} by <a target="_blank" rel="noopener noreferrer" href="https://github.com/major-s">{{ AUTHOR }}</a>
-            </p>
-        </div>
-    </footer>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-3.3.1.min.js"></script>
-    {% block javascript %}
-    {% endblock %}
-    <script src="{{ STATIC_URL }}js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

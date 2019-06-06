@@ -1,0 +1,8 @@
+{% load i18n %}
+{% trans "A new user has asked to register an LabCIRS account" %}: 
+
+{% trans "User" %}: {{ user }} ({{ user.first_name }} {{ user.last_name }}
+{% trans "Department" %}: {{ user.reviewer.departments.get.label }} ({{ user.reviewer.departments.get.name }})
+{% trans "To approve this, please click the following link" %}:
+
+http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}

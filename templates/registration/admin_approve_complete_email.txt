@@ -1,0 +1,11 @@
+{% load i18n %}
+{% trans "Your account is now approved. You can log in using the following link" %}:
+
+http://{{site.domain}}{% url 'labcirs_home' %}
+
+{% trans "Username for Reviewer" %}: {{ user }}
+{% trans "Username for Reporter" %}: {{ user.reviewer.departments.get.reporter }}
+
+{% trans "IMPORTANT: The initial password for the reporter is equal to his user name but you can change it after login!" %}
+
+{% trans "Sincerely, LabCIRS Management" %}

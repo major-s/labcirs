@@ -1,57 +1,58 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the LabCIRS package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Sebastian Major <sebastian.major@charite.de>, 2016.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: LabCIRS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-25 14:02+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2019-05-22 15:01+0200\n"
+"PO-Revision-Date: 2019-05-22 14:53+0200\n"
+"Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
+"Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.2.3\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 
-#: .\admin.py:36
+#: .\cirs\admin.py:37
 #, python-format
 msgid "LabCIRS for %s"
 msgstr "LabCIRS für %s"
 
-#: .\admin.py:39
+#: .\cirs\admin.py:40
 msgid "LabCIRS administration"
 msgstr "LabCIRS-Administration"
 
-#: .\admin.py:46
+#: .\cirs\admin.py:68
 msgid "has publishable incident"
 msgstr "mit publizierbaren Ereignissen"
 
-#: .\admin.py:51
+#: .\cirs\admin.py:73
 msgid "Yes"
 msgstr "Ja"
 
-#: .\admin.py:52
+#: .\cirs\admin.py:74
 msgid "No"
 msgstr "Nein"
 
-#: .\admin.py:103
+#: .\cirs\admin.py:125
 msgid "Reported incident"
 msgstr "Gemeldete Ereignisse"
 
-#: .\admin.py:109
+#: .\cirs\admin.py:131
 msgid "Review"
 msgstr "Review"
 
-#: .\admin.py:177
+#: .\cirs\admin.py:199
 msgid "Languages"
 msgstr "Sprachen"
 
-#: .\admin.py:180
+#: .\cirs\admin.py:202
 msgid ""
 "Login infos - translate \"login info\" and \"link text\" if using multiple "
 "languages!"
@@ -59,149 +60,213 @@ msgstr ""
 "Anmeldeinformationen - \"Anmeldeinformationen\" und \"Linktekst\" müssen "
 "übersetzt werden, wenn mehrere Sprachen aktiviert sind!"
 
-#: .\admin.py:183
+#: .\cirs\admin.py:205
 msgid "Notification settings"
 msgstr "Benachrichtigungseinstellungen"
 
-#: .\forms.py:81
+#: .\cirs\forms.py:86
 msgid "Incident code"
 msgstr "Ereignis-Kode"
 
-#: .\forms.py:91
+#: .\cirs\forms.py:96
 msgid "No matching critical incident found!"
 msgstr "Kein passendes kritisches Ereignis gefunden!"
 
-#: .\migrations\0010_remove_untranslated_fields.py:27
+#: .\cirs\forms.py:131
+msgid "First name"
+msgstr "Vorname"
+
+#: .\cirs\forms.py:132
+msgid "Please enter your first name"
+msgstr "Bitte Ihren Vornamen eintragen"
+
+#: .\cirs\forms.py:134
+msgid "Last name"
+msgstr "Nachname"
+
+#: .\cirs\forms.py:135
+msgid "Please enter your last name"
+msgstr "Bitte Ihren Nachnamen eintragen"
+
+#: .\cirs\forms.py:138
+msgid "Department label"
+msgstr "Abteilungskürzel"
+
+#: .\cirs\forms.py:140
+msgid "Only letters, digits, - and _. No whitespace!"
+msgstr "Nur Buchstaben, Ziffern, - und _. Keine Leerzeichen!"
+
+#: .\cirs\forms.py:142
+msgid "Department name"
+msgstr "Abteilung"
+
+#: .\cirs\forms.py:145
+msgid "User name for the reporter"
+msgstr "Benutzername für den Reporter"
+
+#: .\cirs\forms.py:147
+msgid "Only letters, digits, - and _. No whitespace! Lowercase only!"
+msgstr ""
+"Nur Buchstaben, Ziffern, - und _. Keine Leerzeichen! Nur Kleinbuchstaben!"
+
+#: .\cirs\forms.py:166
+#, python-format
+msgid "Only @%s is allowed!"
+msgid_plural "Allowed domains are @%s"
+msgstr[0] "Nur @%s ist erlaubt!"
+msgstr[1] "Erlaubte Emaildomänen sind @%s"
+
+#: .\cirs\forms.py:168
+msgid "You cannot register with this email domain!"
+msgstr "Mit dieser Emaildomäne können Sie sich nicht anmelden!"
+
+#: .\cirs\forms.py:180
+msgid "Department with this label already exists!"
+msgstr "Eine Abteilung mit dieser Kurzbezeichnung existiert schon!"
+
+#: .\cirs\forms.py:186
+msgid "Department with this name already exists!"
+msgstr "Eine Abteilung mit diesem Namen existiert schon!"
+
+#: .\cirs\forms.py:192
+msgid "This user already exists!"
+msgstr "Dieser Benutzer existiert schon!"
+
+#: .\cirs\migrations\0010_remove_untranslated_fields.py:27
 msgid "Incident (in German)"
 msgstr "Ereignis (auf Deutsch)"
 
-#: .\migrations\0010_remove_untranslated_fields.py:37
+#: .\cirs\migrations\0010_remove_untranslated_fields.py:37
 msgid "Incident (in English)"
 msgstr "Ereignis (auf Englisch)"
 
-#: .\migrations\0013_remove_untranslated_config_fields.py:20
+#: .\cirs\migrations\0013_remove_untranslated_config_fields.py:20
 msgid "Login info (in German)"
 msgstr "Anmeldeinformation (auf Deutsch)"
 
-#: .\migrations\0013_remove_untranslated_config_fields.py:30
+#: .\cirs\migrations\0013_remove_untranslated_config_fields.py:30
 msgid "Login info (in English)"
 msgstr "Anmeldeinformation (auf Englisch)"
 
-#: .\models.py:39
+#: .\cirs\models.py:39
 msgid "User"
 msgstr "Benutzer"
 
-#: .\models.py:40
+#: .\cirs\models.py:40
 msgid "User assigned to other roles and superusers are not listed here!"
 msgstr ""
 "Administratoren und Benutzer mit zugewiesenen Rollen sind hier nicht "
-"aufgelistet"
+"aufgelistet!"
 
-#: .\models.py:45
+#: .\cirs\models.py:45
 msgid "Superuser cannot become {}"
 msgstr "Superuser kann nicht {} werden"
 
-#: .\models.py:60
+#: .\cirs\models.py:60
 msgid "This user is already a reviewer and thus cannot become a reporter"
 msgstr ""
 "Dieser Benutzer ist bereits Reviewer und kann daher kein Reporter werden"
 
-#: .\models.py:63 .\models.py:93
+#: .\cirs\models.py:63 .\cirs\models.py:94
 msgid "Reporter"
 msgstr "Reporter"
 
-#: .\models.py:64
+#: .\cirs\models.py:64
 msgid "Reporters"
 msgstr "Reporter"
 
-#: .\models.py:75
+#: .\cirs\models.py:76
 msgid "This user is already a reporter and thus cannot become a reviewer"
 msgstr ""
 "Dieser Benutzer ist bereits Reporter und kann daher kein Reviewer werden"
 
-#: .\models.py:85
+#: .\cirs\models.py:86
 msgid "Reviewer"
 msgstr "Reviewer"
 
-#: .\models.py:86 .\models.py:95
+#: .\cirs\models.py:87 .\cirs\models.py:96
 msgid "Reviewers"
 msgstr "Reviewer"
 
-#: .\models.py:90 .\templates\cirs\department_list.html:18
+#: .\cirs\models.py:91 .\cirs\templates\cirs\department_list.html:18
 msgid "Label"
 msgstr "Kurzbezeichnung"
 
-#: .\models.py:91
+#: .\cirs\models.py:92
 msgid "Label can only consist of letters, numbers, underscores and hyphens."
 msgstr ""
 "Kurzbezeichnung kann nur aus Buchstaben, Zahlen, Unter- und Gedankenstrichen "
 "bestehen."
 
-#: .\models.py:92 .\templates\cirs\department_list.html:19
+#: .\cirs\models.py:93 .\cirs\templates\cirs\department_list.html:19
 msgid "Name"
 msgstr "Name"
 
-#: .\models.py:98 .\models.py:163 .\models.py:349
+#: .\cirs\models.py:97
+msgid "Active"
+msgstr "Aktiv"
+
+#: .\cirs\models.py:101 .\cirs\models.py:183 .\cirs\models.py:369
 msgid "Department"
 msgstr "Abteilung"
 
-#: .\models.py:99
+#: .\cirs\models.py:102
 msgid "Departments"
 msgstr "Abteilungen"
 
-#: .\models.py:108
+#: .\cirs\models.py:128
 msgid "singular case (for the first time)"
 msgstr "einzellfall (erstmalig)"
 
-#: .\models.py:109
+#: .\cirs\models.py:129
 msgid "seldom (once per year)"
 msgstr "selten (1 pro Jahr)"
 
-#: .\models.py:110
+#: .\cirs\models.py:130
 msgid "occasional (once per month)"
 msgstr "gelegentlich (1 pro Monat)"
 
-#: .\models.py:111
+#: .\cirs\models.py:131
 msgid "frequent (once per Week)"
 msgstr "häufig (1 pro Woche)"
 
-#: .\models.py:112
+#: .\cirs\models.py:132
 msgid "regular (daily)"
 msgstr "ständig (täglich)"
 
-#: .\models.py:113
+#: .\cirs\models.py:133
 msgid "very low"
 msgstr "sehr niedrig"
 
-#: .\models.py:113 .\models.py:121
+#: .\cirs\models.py:133 .\cirs\models.py:141
 msgid "low"
 msgstr "niedrig"
 
-#: .\models.py:114
+#: .\cirs\models.py:134
 msgid "moderate"
 msgstr "moderat"
 
-#: .\models.py:114 .\models.py:121
+#: .\cirs\models.py:134 .\cirs\models.py:141
 msgid "high"
 msgstr "hoch"
 
-#: .\models.py:115
+#: .\cirs\models.py:135
 msgid "very high"
 msgstr "sehr hoch"
 
-#: .\models.py:116
+#: .\cirs\models.py:136
 msgid "appraisal not possible"
 msgstr "Beurteilung nicht möglich"
 
-#: .\models.py:117
+#: .\cirs\models.py:137
 msgid "The incident was avoidable"
 msgstr "Das Ereignis war vermeidbar"
 
-#: .\models.py:118
+#: .\cirs\models.py:138
 msgid "The incident was not avoidable"
 msgstr "Das Ereignis war nicht vermeidbar"
 
-#: .\models.py:119
+#: .\cirs\models.py:139
 msgid ""
 "I agree that this report will be made public to people outside the quality "
 "management team after copyedit."
@@ -209,7 +274,7 @@ msgstr ""
 "Ich bin mit einer Veröffentlichung dieses Ereignisses, sichtbar für alle "
 "Mitarbeiter,  einverstanden."
 
-#: .\models.py:120
+#: .\cirs\models.py:140
 msgid ""
 "I DO NOT agree that this report will be made public to people outside the "
 "quality management team even after copyedit."
@@ -217,150 +282,150 @@ msgstr ""
 "Ich bin mit einer Veröffentlichung dieses Ereignisses, sichtbar für alle "
 "Mitarbeiter,  NICHT einverstanden."
 
-#: .\models.py:121
+#: .\cirs\models.py:141
 msgid "middle"
 msgstr "mittel"
 
-#: .\models.py:122
+#: .\cirs\models.py:142
 msgid "new"
 msgstr "neu"
 
-#: .\models.py:122 .\models.py:387
+#: .\cirs\models.py:142 .\cirs\models.py:407
 msgid "in process"
 msgstr "in Bearbeitung"
 
-#: .\models.py:123
+#: .\cirs\models.py:143
 msgid "under supervision"
 msgstr "unter Beobachtung"
 
-#: .\models.py:124
+#: .\cirs\models.py:144
 msgid "completed"
 msgstr "erledigt"
 
-#: .\models.py:125
+#: .\cirs\models.py:145
 msgid "organisation/communication"
 msgstr "Organisation/Kommunikation"
 
-#: .\models.py:126
+#: .\cirs\models.py:146
 msgid "technique/methods"
 msgstr "Technik/Methoden"
 
-#: .\models.py:127
+#: .\cirs\models.py:147
 msgid "knowledge/training"
 msgstr "Wissen/Training"
 
-#: .\models.py:129
+#: .\cirs\models.py:149
 msgid "concentration/attention (mistake/slip)"
 msgstr "Konzentration/Aufmerksamkeit (Versehen/Ausrutscher)"
 
-#: .\models.py:130
+#: .\cirs\models.py:150
 msgid "infrastructure"
 msgstr "Infrastruktur"
 
-#: .\models.py:131
+#: .\cirs\models.py:151
 msgid "other"
 msgstr "Sonstige"
 
-#: .\models.py:143
+#: .\cirs\models.py:163
 msgid "Date of incident"
 msgstr "Datum des Ereignises"
 
-#: .\models.py:144
+#: .\cirs\models.py:164
 msgid "Mistake / problem / critical incident"
 msgstr "Fehler / Problem / kritisches Ereignis"
 
-#: .\models.py:145
+#: .\cirs\models.py:165
 msgid "Cause of failure"
 msgstr "Fehlerursache / Verursacherbereich"
 
-#: .\models.py:147 .\templates\cirs\criticalincident_detail.html:31
+#: .\cirs\models.py:167 .\cirs\templates\cirs\criticalincident_detail.html:31
 msgid "Immediate action / suggestion"
 msgstr "Sofortmaßnahmen / Vorschläge"
 
-#: .\models.py:148
+#: .\cirs\models.py:168
 msgid "Immediate action or suggestion regarding prevention / troubleshooting"
 msgstr "Sofortmaßnahme ggf. Vorschlag zur Vermeidung / Behebung"
 
-#: .\models.py:152 .\templates\cirs\criticalincident_detail.html:36
+#: .\cirs\models.py:172 .\cirs\templates\cirs\criticalincident_detail.html:36
 msgid "Preventability"
 msgstr "Vermeidbarkeit"
 
-#: .\models.py:153
+#: .\cirs\models.py:173
 msgid "In your opinion, was the incident avoidable or not?"
 msgstr ""
 "War das Ereignis Deiner Meinung nach vermeidbar oder nicht vermeidbar "
 "gewesen ?"
 
-#: .\models.py:155 .\models.py:194
-#: .\templates\cirs\publishableincident_list.html:26
+#: .\cirs\models.py:175 .\cirs\models.py:214
+#: .\cirs\templates\cirs\publishableincident_list.html:26
 msgid "Photo"
 msgstr "Foto"
 
-#: .\models.py:157
+#: .\cirs\models.py:177
 msgid "Publication"
 msgstr "Veröffentlichung"
 
-#: .\models.py:162
+#: .\cirs\models.py:182
 msgid "Date of report"
 msgstr "Datum der Meldung"
 
-#: .\models.py:166
+#: .\cirs\models.py:186
 msgid "Action"
 msgstr "Maßnahme"
 
-#: .\models.py:168
+#: .\cirs\models.py:188
 msgid "Responsibility"
 msgstr "Verantwortung"
 
-#: .\models.py:169
+#: .\cirs\models.py:189
 msgid "Review date"
 msgstr "Termin"
 
-#: .\models.py:171 .\models.py:400
+#: .\cirs\models.py:191 .\cirs\models.py:420
 msgid "Status"
 msgstr "Status"
 
-#: .\models.py:173
+#: .\cirs\models.py:193
 msgid "Risk classification"
 msgstr "Risikoklasse"
 
-#: .\models.py:175
+#: .\cirs\models.py:195
 msgid "Frequency"
 msgstr "Häufigkeit"
 
-#: .\models.py:177
+#: .\cirs\models.py:197
 msgid "Hazard"
 msgstr "Gefährdung"
 
-#: .\models.py:177
+#: .\cirs\models.py:197
 msgid "For emploees or science"
 msgstr "Für Mitarbeiter oder Forschungsprozess"
 
-#: .\models.py:180
+#: .\cirs\models.py:200
 msgid "Category"
 msgstr "Kategorie"
 
-#: .\models.py:183 .\models.py:265 .\models.py:392
+#: .\cirs\models.py:203 .\cirs\models.py:285 .\cirs\models.py:412
 msgid "Critical incident"
 msgstr "Kritisches Ereignis"
 
-#: .\models.py:184
+#: .\cirs\models.py:204
 msgid "Critical incidents"
 msgstr "Kritische Ereignise"
 
-#: .\models.py:192 .\models.py:195
+#: .\cirs\models.py:212 .\cirs\models.py:215
 msgid "Click to see full size in new window/tab"
 msgstr "Für volle Größe bitte klicken. Das Bild erscheint in neuem Fenster/Tab"
 
-#: .\models.py:201
+#: .\cirs\models.py:221
 msgid "Please report only incidents which already happened."
-msgstr "Bitte nur vergangene Ereignise melden"
+msgstr "Bitte nur vergangene Ereignisse melden."
 
-#: .\models.py:204
+#: .\cirs\models.py:224
 msgid "Please decide if this report may be published in the lab."
 msgstr "Darf die Meldung nach Redaktion im Labor veröffentlicht werden?"
 
-#: .\models.py:209
+#: .\cirs\models.py:229
 msgid ""
 "If anything was changed in the Review block, please set status at least to "
 "\"in process\"."
@@ -368,70 +433,70 @@ msgstr ""
 "Nach jeglicher Änderung im Review-Block muss der Status zumindest auf \"in "
 "Bearbeitung\" gesetzt werden."
 
-#: .\models.py:249
+#: .\cirs\models.py:269
 msgid "Translation status"
 msgstr "Übersetzungsstatus"
 
-#: .\models.py:256 .\models.py:258
+#: .\cirs\models.py:276 .\cirs\models.py:278
 msgid "Translation"
 msgstr "Übersetzung"
 
-#: .\models.py:256
+#: .\cirs\models.py:276
 msgid "complete"
 msgstr "vollständig"
 
-#: .\models.py:258
+#: .\cirs\models.py:278
 msgid "incomplete"
 msgstr "unvollständig"
 
-#: .\models.py:259
+#: .\cirs\models.py:279
 msgid "Translation info"
 msgstr "Übersetzungsinformation"
 
-#: .\models.py:268 .\templates\cirs\criticalincident_detail.html:6
-#: .\templates\cirs\criticalincident_detail.html:19
-#: .\templates\cirs\publishableincident_list.html:23
+#: .\cirs\models.py:288 .\cirs\templates\cirs\criticalincident_detail.html:6
+#: .\cirs\templates\cirs\criticalincident_detail.html:19
+#: .\cirs\templates\cirs\publishableincident_list.html:23
 msgid "Incident"
 msgstr "Ereignis"
 
-#: .\models.py:269 .\templates\cirs\publishableincident_list.html:24
+#: .\cirs\models.py:289 .\cirs\templates\cirs\publishableincident_list.html:24
 msgid "Description"
 msgstr "Beschreibung"
 
-#: .\models.py:270 .\templates\cirs\publishableincident_list.html:25
+#: .\cirs\models.py:290 .\cirs\templates\cirs\publishableincident_list.html:25
 msgid "Measures and consequences"
 msgstr "Maßnahmen und Konsequenzen"
 
-#: .\models.py:272
+#: .\cirs\models.py:292
 msgid "Publish"
 msgstr "Veröffentlichen"
 
-#: .\models.py:277 .\models.py:313
+#: .\cirs\models.py:297 .\cirs\models.py:333
 msgid "Mandatory languages"
 msgstr "Verpflichtende Sprachen"
 
-#: .\models.py:282
+#: .\cirs\models.py:302
 msgid "Publishable incident"
 msgstr "Publizierbares Ereignis"
 
-#: .\models.py:283
+#: .\cirs\models.py:303
 msgid "Publishable incidents"
 msgstr "Publizierbare Ereignisse"
 
-#: .\models.py:288
+#: .\cirs\models.py:308
 msgid "The reporter did not agreed to publish this incident!"
 msgstr "Der Eintragende hat einer Veröffentlichung nicht zugestimmt!"
 
-#: .\models.py:293
+#: .\cirs\models.py:313
 #, python-format
 msgid ""
 "All text fields in mandatory languages (%s) has to be filled before "
 "'publish' can be checked!"
 msgstr ""
-"Alle Textfelder in den verpflichtenden Sprachen (%s) müssen ausgefüllt werden bevor "
-"'publizieren' aktiviert werden darf!"
+"Alle Textfelder in den verpflichtenden Sprachen (%s) müssen ausgefüllt "
+"werden bevor 'publizieren' aktiviert werden darf!"
 
-#: .\models.py:303
+#: .\cirs\models.py:323
 msgid ""
 "If you want to send notifications, an existing email server distinct from "
 "localhost has to be set by the server administrator in the local server "
@@ -441,7 +506,7 @@ msgstr ""
 "einen existierenden Emailserver (unterschiedlich vom localhost) in der "
 "lokalen Konfigurationsdatei eingetragen hat."
 
-#: .\models.py:307
+#: .\cirs\models.py:327
 msgid ""
 "If you choose mandatory languages besides the default one, don't forget to "
 "translate fields below. Further fields in publishable incidents have to be "
@@ -452,23 +517,23 @@ msgstr ""
 "publizierbaren Ereignisse übersetzt werden bevor sie veröffentlicht werden "
 "können!"
 
-#: .\models.py:317
+#: .\cirs\models.py:337
 msgid "URL for login info"
 msgstr "URL für die Anmeldedaten"
 
-#: .\models.py:320
+#: .\cirs\models.py:340
 msgid "Login info"
 msgstr "Anmeldeinformationen"
 
-#: .\models.py:321
+#: .\cirs\models.py:341
 msgid "Translate if there are multiple mandatory languages"
 msgstr "Bitte übersetzen wenn mehrere Sprachen ausgewählt wurden"
 
-#: .\models.py:322
+#: .\cirs\models.py:342
 msgid "Link text"
 msgstr "Linktext"
 
-#: .\models.py:323
+#: .\cirs\models.py:343
 msgid ""
 "Translate if there are multiple mandatory languages and you store infos at "
 "given URL"
@@ -476,11 +541,11 @@ msgstr ""
 "Bitte übersetzen wenn mehrere Sprachen ausgewählt wurden und eine URL "
 "eingegeben worden ist."
 
-#: .\models.py:327
+#: .\cirs\models.py:347
 msgid "Send notification"
 msgstr "Benachrichtigungen senden"
 
-#: .\models.py:329
+#: .\cirs\models.py:349
 msgid ""
 "Check if you wish to be informed about new incidents per email.<br>\n"
 "            IMPORTANT: Sender email has to exist and at least one recipient "
@@ -499,179 +564,211 @@ msgstr ""
 "            Erst danach kann das Senden von Benachrichtigungen aktiviert "
 "werden."
 
-#: .\models.py:336
+#: .\cirs\models.py:356
 msgid "Notification sender email address"
 msgstr "Absenderadresse für Benachrichtigungen"
 
-#: .\models.py:337
+#: .\cirs\models.py:357
 msgid "Enter a valid email address you want to use as a sender"
 msgstr "Bitte eine existierende Emailadresse als Absender eintragen"
 
-#: .\models.py:340
+#: .\cirs\models.py:360
 msgid "Notification recipients"
 msgstr "Benachrichtigungsempfänger"
 
-#: .\models.py:341
+#: .\cirs\models.py:361
 msgid "Choose recipients of the notification email"
 msgstr "Bitte einen Benachrichtigugnsempfänger wählen"
 
-#: .\models.py:343
+#: .\cirs\models.py:363
 msgid "Notification text"
 msgstr "Benachrichtigungstext"
 
-#: .\models.py:353 .\models.py:354
+#: .\cirs\models.py:373 .\cirs\models.py:374
 msgid "LabCIRS configuration"
 msgstr "LabCIRS-Einstellungen"
 
-#: .\models.py:362
+#: .\cirs\models.py:382
 msgid "You have to choose at least one notification recipient."
-msgstr "Sie müssen mindenstens einen Benachrichtigungsempfänger auswählen"
+msgstr "Sie müssen mindestens einen Benachrichtigungsempfänger auswählen."
 
-#: .\models.py:364
+#: .\cirs\models.py:384
 msgid "You have to enter valid sender email."
-msgstr "Sie müssen eine existierende Absenderrmailadresse eingeben"
+msgstr "Sie müssen eine existierende Absendermailadresse eingeben."
 
-#: .\models.py:370
+#: .\cirs\models.py:390
 #, python-format
 msgid "You have to reactivate %s as it is default language."
 msgstr "Sie müssen %s reaktivieren, weil es die voreingestellte Sprache ist."
 
-#: .\models.py:387
+#: .\cirs\models.py:407
 msgid "open"
 msgstr "offen"
 
-#: .\models.py:388
+#: .\cirs\models.py:408
 msgid "closed"
 msgstr "abgeschlossen"
 
-#: .\models.py:395
+#: .\cirs\models.py:415
 msgid "Author"
 msgstr "Autor"
 
-#: .\models.py:397
+#: .\cirs\models.py:417
 msgid "Created at"
 msgstr "Erstellt am"
 
-#: .\models.py:398
+#: .\cirs\models.py:418
 msgid "Text"
 msgstr "Text"
 
-#: .\models.py:400
+#: .\cirs\models.py:420
 msgid "Status of the comment"
 msgstr "Status des Kommentars"
 
-#: .\templates\cirs\base.html:10
-msgid "for"
-msgstr "für"
-
-#: .\templates\cirs\base.html:44 .\templates\cirs\success.html:17
+#: .\cirs\templates\cirs\base.html:16 .\cirs\templates\cirs\success.html:17
 msgid "View incidents"
 msgstr "Ereignisliste"
 
-#: .\templates\cirs\base.html:50
+#: .\cirs\templates\cirs\base.html:22
 msgid "Add incident"
 msgstr "Neues Ereignis"
 
-#: .\templates\cirs\base.html:63
-#: .\templates\cirs\criticalincident_detail.html:47
+#: .\cirs\templates\cirs\base.html:35
+#: .\cirs\templates\cirs\criticalincident_detail.html:47
 msgid "Comments"
 msgstr "Kommentare"
 
-#: .\templates\cirs\base.html:82
-msgid "Welcome,"
-msgstr "Wilkommen"
-
-#: .\templates\cirs\base.html:104 .\templates\cirs\success.html:15
-msgid "Log out"
-msgstr "Abmelden"
-
-#: .\templates\cirs\base.html:106 .\templates\cirs\login.html:20
-msgid "Log in"
-msgstr "Anmelden"
-
-#: .\templates\cirs\criticalincident_detail.html:13
-#: .\templates\cirs\publishableincident_list.html:27
+#: .\cirs\templates\cirs\criticalincident_detail.html:13
+#: .\cirs\templates\cirs\publishableincident_list.html:27
 msgid "Date"
 msgstr "Datum"
 
-#: .\templates\cirs\criticalincident_detail.html:25
+#: .\cirs\templates\cirs\criticalincident_detail.html:25
 msgid "Cause"
 msgstr "Grund"
 
-#: .\templates\cirs\criticalincident_detail.html:63
+#: .\cirs\templates\cirs\criticalincident_detail.html:63
 msgid "Your comment"
 msgstr "Ihr Kommentar"
 
-#: .\templates\cirs\criticalincident_detail.html:66
+#: .\cirs\templates\cirs\criticalincident_detail.html:66
 msgid "Save"
 msgstr "Sichern"
 
-#: .\templates\cirs\criticalincident_form.html:14
+#: .\cirs\templates\cirs\criticalincident_form.html:14
 msgid "Empty"
 msgstr "Leer"
 
-#: .\templates\cirs\criticalincident_form.html:19
+#: .\cirs\templates\cirs\criticalincident_form.html:19
 msgid ""
 "Anonymous report will be send. There is no possibility to change the report."
 msgstr ""
 "Anonymer Report wird verschickt. Es sind keine nachträglichen Änderungen "
 "möglich."
 
-#: .\templates\cirs\criticalincident_form.html:20
+#: .\cirs\templates\cirs\criticalincident_form.html:20
 msgid "Send"
 msgstr "Senden"
 
-#: .\templates\cirs\department_list.html:13
+#: .\cirs\templates\cirs\department_list.html:13
 msgid "Choose your department"
 msgstr "Bitte eigene Abteilung auswählen"
 
-#: .\templates\cirs\incident_search_form.html:9
+#: .\cirs\templates\cirs\incident_search_form.html:9
 msgid "Please enter the code which you received after submitting the incident."
 msgstr ""
 "Bitte den Kode eingeben, der nach Erstellung der Meldung angezeigt wurde."
 
-#: .\templates\cirs\incident_search_form.html:13
+#: .\cirs\templates\cirs\incident_search_form.html:13
 msgid "Search"
 msgstr "Suchen"
 
-#: .\templates\cirs\login.html:14
+#: .\cirs\templates\cirs\login.html:14
 msgid "Please log in..."
 msgstr "Bitte anmelden..."
 
-#: .\templates\cirs\login.html:18
+#: .\cirs\templates\cirs\login.html:18
 msgid "User name"
 msgstr "Benutzername"
 
-#: .\templates\cirs\login.html:19
+#: .\cirs\templates\cirs\login.html:19
 msgid "Password"
 msgstr "Passwort"
 
-#: .\templates\cirs\publishableincident_list.html:18
+#: .\cirs\templates\cirs\login.html:20
+msgid "Log in"
+msgstr "Anmelden"
+
+#: .\cirs\templates\cirs\login.html:27
+#, python-format
+msgid ""
+"There is apparently no login info for %(department)s. The resposible "
+"reviewer shold create it in the configuration!"
+msgstr ""
+"Scheinbar existiert keine Anmeldeinformation für %(department)s. Der "
+"verantwortliche Reviewer sollte es in den Einstellungen eintragen!"
+
+#: .\cirs\templates\cirs\login.html:29
+msgid ""
+"If you want to report an incident and don't know your login credentials, "
+"please go to the"
+msgstr ""
+"Wenn Sie über eine Ereignis berichten möchten aber die Zugangsdaten Ihrer "
+"Abteilung nicht kennen, dann gehen Sie bitte zu der"
+
+#: .\cirs\templates\cirs\login.html:30
+msgid "main page"
+msgstr "Hauptseite"
+
+#: .\cirs\templates\cirs\login.html:31
+msgid "and choose your department!"
+msgstr "und wählen den Link zur eigenen Abteilung!"
+
+#: .\cirs\templates\cirs\login.html:34
+msgid ""
+"If you are reviewer or administrator and forgot your password, please klick"
+msgstr ""
+"Wenn Sie Reviewer oder Administrator sind und Ihr Passwort vergessen haben, "
+"dann können Sie"
+
+#: .\cirs\templates\cirs\login.html:35 .\cirs\views.py:282
+msgid "here"
+msgstr "hier"
+
+#: .\cirs\templates\cirs\login.html:36
+msgid "to reset it."
+msgstr "um es zurückzusetzen."
+
+#: .\cirs\templates\cirs\publishableincident_list.html:18
 msgid "Critical incidents for"
 msgstr "Kritische Ereignise für"
 
-#: .\templates\cirs\publishableincident_list.html:29
+#: .\cirs\templates\cirs\publishableincident_list.html:29
 msgid "No. of comments"
 msgstr "Zahl der Kommentare"
 
-#: .\templates\cirs\publishableincident_list.html:42
-#: .\templates\cirs\publishableincident_list.html:73
+#: .\cirs\templates\cirs\publishableincident_list.html:42
+#: .\cirs\templates\cirs\publishableincident_list.html:73
 msgid "Sorry, this photo is missing"
 msgstr "Es tut uns leid, aber dieses Foto kann nicht dargestellt werden"
 
-#: .\templates\cirs\publishableincident_list.html:81
+#: .\cirs\templates\cirs\publishableincident_list.html:81
 msgid "Add new incident"
 msgstr "Neues Ereignis hinzufügen"
 
-#: .\templates\cirs\success.html:7
+#: .\cirs\templates\cirs\success.html:7
 msgid "Thank you!"
 msgstr "Danke!"
 
-#: .\templates\cirs\success.html:18
+#: .\cirs\templates\cirs\success.html:15
+msgid "Log out"
+msgstr "Abmelden"
+
+#: .\cirs\templates\cirs\success.html:18
 msgid "One more"
 msgstr "Noch eins"
 
-#: .\views.py:108
+#: .\cirs\views.py:112
 msgid ""
 "If you want comment on any incident, please click on the number of comments "
 "in the last column for published incidents or use the \"View on site\" link "
@@ -682,32 +779,55 @@ msgstr ""
 "oder benutzen Sie den \"Auf der Website anzeigen\" Link im administrativen "
 "Bereich!"
 
-#: .\views.py:177
+#: .\cirs\views.py:181
 msgid "You were redirected from {} to {}!"
 msgstr "Sie wurden von {} nach {} umgeleitet!"
 
-#: .\views.py:197
+#: .\cirs\views.py:231
 msgid ""
 "This is a valid account, but you are neither reporter, nor reviewer. Please "
 "contact the administrator!"
 msgstr ""
 "Ihr Zugang ist weder Reporter noch Reviewer. Bitte den Administrator "
-"kontaktieren."
+"kontaktieren!"
 
-#: .\views.py:200
+#: .\cirs\views.py:234
 msgid ""
 "Your account has no associated department! Please contact the administrator!"
 msgstr ""
-"Ihr Zugang gehört keiner Abteilung an. Bitte den Administrator kontaktieren."
+"Ihr Zugang gehört keiner Abteilung an. Bitte den Administrator kontaktieren!"
 
-#: .\views.py:236
+#. Translators: Please preserve the <br> tags for proper HTML line breaks!
+#: .\cirs\views.py:244
+msgid ""
+"Your username and/or password were incorrect.<br>If you want to report a new "
+"incident, please check the information below!<br>If you are reviewer or "
+"administrator and forgot your password, please klick"
+msgstr ""
+"Der Benutzername und/oder Passwort waren nicht korrekt.<br>Wenn Sie über ein "
+"neues Ereignis berichten möchten, dann überprüfen Sie die untenstehende "
+"Angaben!<br>Wenn Sie Reviewer oder Administrator sind und Ihr Passwort "
+"vergessen haben, dann klicken Sie bitte"
+
+#: .\cirs\views.py:279
 msgid "Your account is not active, please contact the admin."
 msgstr "Ihr Zugang ist nicht mehr aktiv. Bitte den Administrator kontaktieren."
 
-#: .\views.py:239
-msgid ""
-"Your username and/or password were incorrect.\n"
-"                        Please check the information below!"
-msgstr ""
-"Der Benutzername und/oder Passwort waren inkorrekt. Bitte die Informationen "
-"darunter lesen!"
+#~ msgid "Your username and/or password were incorrect."
+#~ msgstr "Der Benutzername und/oder Passwort waren inkorrekt."
+
+#~ msgid ""
+#~ "If you want to report a new incident, please check the information below!"
+#~ msgstr ""
+#~ "Wenn Sie über ein neues Ereignis berichten möchten, dann überprüfen Sie "
+#~ "die untenstehende Angaben!"
+
+#~ msgid "If you are an reviewer and forgot your password, please klick"
+#~ msgstr ""
+#~ "Wenn Sie Reviewer sind und Ihr Passwort vergessen haben, dann klicken Sie"
+
+#~ msgid "to reset your password"
+#~ msgstr "Ihr Passwort zurücksetzen"
+
+#~ msgid "Reporter name"
+#~ msgstr "Reportername"

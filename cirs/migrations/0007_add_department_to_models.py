@@ -6,8 +6,11 @@ from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import migrations, models
 import django.db.models.deletion
 
+DEPT_PK = 1
+
 # define checks
 def check(apps, schema_editor):  # @UnusedVariable
+    global DEPT_PK # have to set it here
     Department = apps.get_model('cirs', 'Department')
     CriticalIncident = apps.get_model('cirs', 'CriticalIncident')
     LabCIRSConfig = apps.get_model('cirs', 'LabCIRSConfig')
@@ -18,6 +21,8 @@ def check(apps, schema_editor):  # @UnusedVariable
     if dept_count > 1 or config_count > 1:
         raise MultipleObjectsReturned('There are to many departments or configurations. '
                                       'Only one is allowed before you can migrate!')
+    elif dept_count == 1:
+        DEPT_PK = Department.objects.first().pk
     # there has to be exactly one department if incidents and/or configuration are present
     if (ci_count > 0 or config_count > 0) & (dept_count == 0):
         raise ValidationError('There are incidents and/or configuration, but no department. '
@@ -27,14 +32,9 @@ def backwards(apps, schema_editor):  # @UnusedVariable
     pass
 
 def get_department_pk():
-    # might not work later if Department model changes!
-    # TODO:  Remove all migrations for version 5.
+    # TODO:  Remove all migrations for version 5.?
     # check for multiple departments is provided before...
-    from cirs.models import Department
-    if Department.objects.count() == 1:
-        return Department.objects.first().pk
-    else:
-        return 1
+    return DEPT_PK
     
 
 class Migration(migrations.Migration):

@@ -1,0 +1,223 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Sebastian Major <sebastian.major@charite.de>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: LabCIRS\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-05-22 15:01+0200\n"
+"PO-Revision-Date: 2019-05-22 15:00+0200\n"
+"Last-Translator: Sebastian Major <sebastian.major@charite.de>\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.2.3\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: .\templates\base.html:10
+msgid "for"
+msgstr "für"
+
+#: .\templates\base.html:40
+msgid "Register"
+msgstr "Registrieren"
+
+#: .\templates\base.html:51
+msgid "Welcome,"
+msgstr "Wilkommen,"
+
+#: .\templates\base.html:73
+msgid "Log out"
+msgstr "Abmelden"
+
+#: .\templates\base.html:75
+msgid "Log in"
+msgstr "Anmelden"
+
+#: .\templates\registration\activation_email.html:6
+#: .\templates\registration\admin_approve_email.html:6
+msgid "registration"
+msgstr "Registrierung"
+
+#: .\templates\registration\activation_email.html:11
+#: .\templates\registration\activation_email.txt:2
+msgid "You have asked to register a new LabCIRS account"
+msgstr "Sie möchten einen neuen LabCIRS-Account registrieren"
+
+#: .\templates\registration\activation_email.html:14
+#: .\templates\registration\activation_email.txt:4
+msgid "Username"
+msgstr "Benutzername"
+
+#: .\templates\registration\activation_email.html:17
+#: .\templates\registration\activation_email.txt:6
+#, python-format
+msgid ""
+"To activate this account, please click the following link within the next "
+"%(expiration_days)s days:"
+msgstr ""
+"Um diesen Account zu aktivieren klicken Sie bitte auf den folgenden Link "
+"innerhalb der nächsten %(expiration_days)s Tage:"
+
+#: .\templates\registration\activation_email.html:25
+#: .\templates\registration\activation_email.txt:10
+msgid ""
+"If this wasn't you, please ignore this email and your address will be "
+"removed from our records."
+msgstr ""
+"Falls Sie es nicht waren, ignorieren Sie diese E-Mail und Ihre Adresse wird "
+"aus unserem System gelöscht."
+
+#: .\templates\registration\activation_email.html:28
+#: .\templates\registration\activation_email.txt:12
+#, python-format
+msgid ""
+"\n"
+"Sincerely,\n"
+"%(ORGANIZATION)s - LabCIRS Management\n"
+msgstr ""
+"\n"
+"Mit freundlichen Grüßen,\n"
+"%(ORGANIZATION)s - LabCIRS Verwaltung\n"
+
+#: .\templates\registration\activation_email_subject.txt:1
+msgid "Account activation at"
+msgstr "Accountaktivierung"
+
+#: .\templates\registration\admin_approve_complete_email.html:6
+msgid "admin approval"
+msgstr "Admin Genehmigung"
+
+#: .\templates\registration\admin_approve_complete_email.html:11
+msgid "Your account is now approved. You can"
+msgstr "Ihr Account ist jetzt aktiviert. Sie können sich"
+
+#: .\templates\registration\admin_approve_complete_email.html:12
+msgid "log in."
+msgstr "anmelden."
+
+#: .\templates\registration\admin_approve_complete_email.html:15
+#: .\templates\registration\admin_approve_complete_email.txt:6
+msgid "Username for Reviewer"
+msgstr "Benutzername des Reviewers"
+
+#: .\templates\registration\admin_approve_complete_email.html:17
+#: .\templates\registration\admin_approve_complete_email.txt:7
+msgid "Username for Reporter"
+msgstr "Benutzername des Reporters"
+
+#: .\templates\registration\admin_approve_complete_email.html:20
+#: .\templates\registration\admin_approve_complete_email.txt:9
+msgid ""
+"IMPORTANT: The initial password for the reporter is equal to his user name "
+"but you can change it after login!"
+msgstr ""
+"WICHTIG: Das erste Passwort des Reporters gleicht seinem Benutzernamen, Sie "
+"können es aber nach dem Login ändern!"
+
+#: .\templates\registration\admin_approve_complete_email.html:23
+#: .\templates\registration\admin_approve_complete_email.txt:11
+msgid "Sincerely, LabCIRS Management"
+msgstr "Mit freundlichen Grüßen, LabCIRS Verwaltung"
+
+#: .\templates\registration\admin_approve_complete_email.txt:2
+msgid "Your account is now approved. You can log in using the following link"
+msgstr ""
+"Ihr Account ist jetzt aktiviert. Sie können sich anmelden in dem sie den "
+"folgenden Link nutzen"
+
+#: .\templates\registration\admin_approve_complete_email_subject.txt:1
+msgid "Account activation in"
+msgstr "Accountaktivierung"
+
+#: .\templates\registration\admin_approve_email.html:11
+#: .\templates\registration\admin_approve_email.txt:2
+msgid "A new user has asked to register an LabCIRS account"
+msgstr "Ein neuer Benutzer möchte einen neuen LabCIRS-Account registrieren"
+
+#: .\templates\registration\admin_approve_email.html:14
+#: .\templates\registration\admin_approve_email.txt:4
+msgid "User"
+msgstr "Benutzer"
+
+#: .\templates\registration\admin_approve_email.html:16
+#: .\templates\registration\admin_approve_email.txt:5
+msgid "Department"
+msgstr "Abteilung"
+
+#: .\templates\registration\admin_approve_email.html:19
+msgid "To approve this, please"
+msgstr "Um dies zu bestätigen, bitte"
+
+#: .\templates\registration\admin_approve_email.html:20
+msgid "click here"
+msgstr "hier klicken"
+
+#: .\templates\registration\admin_approve_email.txt:6
+msgid "To approve this, please click the following link"
+msgstr "Zur Bestätigung bitte auf den folgenden Link klicken"
+
+#: .\templates\registration\admin_approve_email_subject.txt:1
+msgid "Account approval for"
+msgstr "Accountgenehmigung für"
+
+#: .\templates\registration\registration_form.html:4
+msgid "Register for an LabCIRS account"
+msgstr "Registrierung eines LabCIRS-Accounts"
+
+#: .\templates\registration\registration_form.html:8
+msgid "Register new reviewer and new department"
+msgstr "Registrierung eines neues Benutzers und einer neuen Einrichtung"
+
+#: .\templates\registration\registration_form.html:11
+msgid ""
+"\n"
+"\t\tHere you can register a new department together  with new reviewer "
+"account.\n"
+"\t\t<br>\n"
+"\t\tTogether with the new depaertment a reporter user will be created. The "
+"password of the reporter\n"
+"\t\twill be the same as his username but you can change it after your "
+"account is activated.\n"
+"\t\t<br>\n"
+"\t\tPlease note that all user names have to be lowercase and will be "
+"converted if you enter capital letters!\n"
+"\t"
+msgstr ""
+"\n"
+"\t\tHier können Sie eine neue Abteilung und einen neuen Reviewer-Account "
+"registrieren.\n"
+"\t\t<br>\n"
+"\t\tFür die Abteilung wird auch ein Reporter-Benutzer erzeugt. Das Passwort "
+"wird gleich wie sein Benutzername lauten, aber Sie können es ändern, sobald "
+"Ihr Account aktiviert ist. \n"
+"\t\t<br>\n"
+"\t\tBitte beachten Sie, dass in Benutzernamen nur kleine Buchstaben benutzt "
+"werden dürfen. Großbuchstaben werden beim Anlegen der Benutzer entsprechend "
+"konvertiert.\n"
+"\t"
+
+#: .\templates\registration\registration_form.html:25
+msgid "Submit"
+msgstr "Abschicken"
+
+#: .\templates\registration\registration_form.html:27
+#: .\templates\registration\registration_form.html:40
+msgid "Terms of service"
+msgstr "AGB"
+
+#: .\templates\registration\registration_form.html:49
+msgid "Close"
+msgstr "Schließen"
+
+#~ msgid ""
+#~ "IMPORTANT: The initial password for the reporter user is equal to his "
+#~ "user name but you can change it after login!"
+#~ msgstr ""
+#~ "WICHTIG: Das erste Passwort des Reporters ist gleich wie sein "
+#~ "Benutzername, Sie können es aber nach dem Login ändern!"

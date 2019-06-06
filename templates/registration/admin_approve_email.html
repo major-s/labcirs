@@ -1,0 +1,24 @@
+{% load i18n %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>{{ ORGANIZATION }} - LabCIRS {% trans "registration" %}</title>
+</head>
+
+<body>
+	<p>
+		{% trans "A new user has asked to register an LabCIRS account" %}:
+	</p>
+	<p>
+		{% trans "User" %}: <strong>{{ user }}</strong> (<strong>{{ user.first_name }} {{ user.last_name }}</strong>)
+	<br>
+		{% trans "Department" %}: <strong>{{ user.reviewer.departments.get.label }}</strong> (<strong>{{ user.reviewer.departments.get.name }}</strong>)
+	</p>
+	<p>
+    	{% trans "To approve this, please" %}
+    	<a href="http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}"> {% trans "click here" %}</a>.
+	</p>
+</body>
+
+</html>
