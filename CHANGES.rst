@@ -1,8 +1,13 @@
 LabCIRS changelog
 =================
 
+5.2 (2019-06-XX)
+----------------
+
+* Simplified registration of new departments along with new reviewer and reporter accounts. 
+
 5.1 (2019-04-04)
-------------------
+----------------
 
 * Reviewer can now change the name and password of users who are reporters for his departments.
 

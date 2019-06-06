@@ -21,8 +21,6 @@ urlpatterns = [
     url(r'^demo_data.html$', TemplateView.as_view(), name='demo_login_data_page'),
 ]
 
-# TODO: has to change to construct commented below as this
-# syntax will be removed in next django version
 if settings.DEBUG:
     urlpatterns += [
         url(r'^media/(?P<path>.*)$', serve, {

@@ -1,7 +1,7 @@
 Information for new reviewers:
 
 LabCIRS stores user name, first name, last name and email from reviewers and administrators only.
-If you register new department and its ge tnever activated, your data will be deleted.
+If you register new department and it gets never activated, your data will be deleted.
 Otherwise the data has to be preserved, as it has to be clear who processed which incidents.
 
 Check the TOS box and proceede if your agree.
