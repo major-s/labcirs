@@ -54,8 +54,10 @@ def read_config(json_file):
 
 def write_config(config):
     '''Writes config to json file, restarts the wsgi server and returns config from file'''
+    # TODO: Backup old file before saving??
+    output = json.dumps(config, indent=4, ensure_ascii=False)
     with io.open(local_config_file, mode='w', encoding='utf-8') as f:
-            f.write(unicode(json.dumps(config, f, indent=4, ensure_ascii=False)))
+            f.write(output)
     Path(wsgi_file).touch()
     return read_config(local_config_file)
 
@@ -142,7 +144,7 @@ def add_or_modify_conf_entry(k, v):
                 elif value.lower() == 'true':
                     return True
             else:
-                return value
+                return value.decode('utf-8')
     elif type(v) is list:
         return add_to_conf_list(k, v)
     elif type(v) is OrderedDict:
