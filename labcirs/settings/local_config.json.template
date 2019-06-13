@@ -2,6 +2,7 @@
     "FILENAME": "local_config.json",
     "SECRET_KEY": "secret_key",
     "ALLOWED_HOSTS": [],
+    "_ROOT_URL": "Modify only if you don't run LabCIRS from the web server root",
     "ROOT_URL": "",
     "DB_ENGINE": "",
     "DB_NAME": "",
@@ -15,6 +16,7 @@
     "EMAIL_HOST_PASSWORD": "",
     "EMAIL_HOST_USER": "",
     "EMAIL_PORT": "",
+    "_LANGUAGES": "Enter 'short': 'long' language name as given for English.",
     "LANGUAGES": {
     	"en": "English"
     },
@@ -24,13 +26,13 @@
     "SESSION_COOKIE_SECURE": true,
     "ACCOUNT_ACTIVATION_DAYS": 1,
     "DEFAULT_FROM_EMAIL": "",
-    "_ADMINS": "Enter 'email': 'name' of the admin. More than one admin are possible",
+    "_ADMINS": "Enter 'email': 'name' of the admin. Email is the key! Multiple admins are possible", 
     "ADMINS": {},
     "REGISTRATION_OPEN": false,
     "_REGISTRATION_RESTRICT_USER_EMAIL": "If user emails are restricted, at least one domain has to be specified",
     "REGISTRATION_RESTRICT_USER_EMAIL": false,
     "REGISTRATION_EMAIL_DOMAINS": [],
     "_REGISTRATION_USE_TOS": "If new users have to agree to terms of service, you have to provide tos file for every used language",
-    "REGISTRATION_USE_TOS": true
+    "REGISTRATION_USE_TOS": false
  }
  

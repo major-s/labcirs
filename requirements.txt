@@ -1,5 +1,5 @@
-Django==1.11.20
-Pillow==5.4.1
+Django==1.11.21
+Pillow==6.0.0
 django-multiselectfield==0.1.8
 django-parler==1.9.2
 django-registration-redux==2.6

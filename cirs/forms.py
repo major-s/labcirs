@@ -121,7 +121,7 @@ class DivErrorList(forms.utils.ErrorList):
         return u'<div class="errorlist">%s</div>' % ''.join([u'<small class="text-danger form-text">%s</small>' % e for e in self])
 
 
-class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase):#, RegistrationFormUniqueEmail):
+class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase, RegistrationFormUniqueEmail):
     """
     Generates for to create department together with reviewer and reporter users
     """
@@ -157,7 +157,7 @@ class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase):#, Registration
         self.error_class = DivErrorList
 
     def clean_email(self):
-        #super(LabCIRSRegistrationForm, self).clean_email()
+        super(LabCIRSRegistrationForm, self).clean_email()
         if settings.REGISTRATION_RESTRICT_USER_EMAIL is True:
             allowed_domains = settings.REGISTRATION_EMAIL_DOMAINS
             allowed_list = ungettext('Only @%s is allowed!', 'Allowed domains are @%s',
