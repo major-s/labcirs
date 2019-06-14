@@ -1,10 +1,14 @@
 LabCIRS changelog
 =================
 
-5.2 (2019-06-XX)
+5.2 (2019-06-14)
 ----------------
 
-* Simplified registration of new departments along with new reviewer and reporter accounts. 
+* Added registration of new departments along with new reviewer and reporter accounts.
+  Uses django-registration-redux_.
+* Added setup.py which helps dealing with the local config file.
+.. _django-registration-redux: https://github.com/macropin/django-registration
+
 
 5.1 (2019-04-04)
 ----------------
@@ -16,9 +20,10 @@ LabCIRS changelog
 
 * Added support of multiple departments in one instalation. Script for joinig single department instances included.
 * Added support for setting translation language, or deactivate translations (by setting supported
-  languages to one). This functionality uses `django-parler`.
+  languages to one). This functionality uses django-parler_.
 * Dropped support for Django < 1.11
 * ``manage.py`` shows default behaviour again
+.. _django-parler: https://github.com/django-parler/django-parler
 
 4.1.1 (2018-08-07)
 ------------------
