@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import json
+import warnings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -32,9 +33,14 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                 else:
                     return setting_value
             except KeyError:
-                error_msg = "Set the {0} environment variable in {1}".format(
-                    setting_item, local_config_file)
-                raise ImproperlyConfigured(error_msg)
+                if default is not None:
+                    warnings.warn('The whole entry for {0} is missing in {1}'.format(
+                        setting_item, local_config_file), UserWarning)
+                    return default
+                else:
+                    error_msg = "Set the {0} environment variable in {1}".format(
+                        setting_item, local_config_file)
+                    raise ImproperlyConfigured(error_msg)
         except ValueError as (msg):
             raise Exception("JSON error: {0}".format(msg))
     except IOError as (errno, strerror):
@@ -59,7 +65,8 @@ ALLOWED_HOSTS = get_local_setting('ALLOWED_HOSTS')  # ['*',] #local
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'registration',
+    'django.contrib.admin.apps.SimpleAdminConfig',
     'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -88,7 +95,7 @@ ROOT_URLCONF = 'labcirs.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [join_path(BASE_DIR, 'templates'), ],  # local
+        'DIRS': [join_path(BASE_DIR, 'templates'), join_path(BASE_DIR, 'labcirs', 'tos')],  # local
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -185,3 +192,26 @@ if ALL_LANGUAGES_MANDATORY_DEFAULT is True:
     DEFAULT_MANDATORY_LANGUAGES = get_local_setting('PARLER_LANGUAGES')
 else:
     DEFAULT_MANDATORY_LANGUAGES = PARLER_DEFAULT_LANGUAGE_CODE
+
+# Registration
+REGISTRATION_OPEN = get_local_setting('REGISTRATION_OPEN', False)
+LOCALE_PATHS = [join_path(BASE_DIR, 'locale')]
+ACCOUNT_ACTIVATION_DAYS = get_local_setting('ACCOUNT_ACTIVATION_DAYS', 1)
+DEFAULT_FROM_EMAIL = get_local_setting('DEFAULT_FROM_EMAIL', '')
+REGISTRATION_USE_TOS = get_local_setting('REGISTRATION_USE_TOS', False)
+if REGISTRATION_USE_TOS is True:
+    REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationFormWithTOS'
+else:
+    REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
+# reverse order, email is better key than the name
+ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).iteritems())
+
+# Don't want to use sites app, so custom user email check is implemented.
+REGISTRATION_RESTRICT_USER_EMAIL = get_local_setting('REGISTRATION_RESTRICT_USER_EMAIL', False)
+REGISTRATION_EMAIL_DOMAINS = get_local_setting('REGISTRATION_EMAIL_DOMAINS', [])
+
+if REGISTRATION_RESTRICT_USER_EMAIL is True:
+    if len(REGISTRATION_EMAIL_DOMAINS) < 1:
+        raise ImproperlyConfigured('If you want to restrict email domains for registration, '
+                                   'specify at least one domain!')
+

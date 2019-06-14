@@ -1,0 +1,76 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Register for an LabCIRS account" %}{% endblock %}
+
+{% block content %}
+	<div class="container col-sm-7">
+	<h2>{% trans "Register new reviewer and new department" %}</h2>
+	{% if message|length > 0 %}
+		<div class="alert alert-{{ message_class }}">{{ message|safe }}</div>
+	{% else %}
+	<div class="alert alert-info">
+	<p>
+	{% blocktrans %}
+		Here you can register a new department together  with new reviewer account.
+		<br>
+		Together with the new depaertment a reporter user will be created. The password of the reporter
+		will be the same as his username but you can change it after your account is activated.
+		<br>
+		Please note that all user names have to be lowercase and will be converted if you enter capital letters!
+	{% endblocktrans %}
+	</p>
+	</div>
+	{% endif %}
+	<div>
+		<form method="post" action="">
+		<fieldset class="form-group"{% if disallow_registration %} disabled{% endif %}>
+    		{% csrf_token %}
+			{{ form.as_p }}
+    		<button type="submit" class="btn btn-danger" {% if disallow_registration %}disabled{% endif %}>{% trans "Submit" %}</button>
+    		{% if REGISTRATION_USE_TOS %}
+    		<!-- Button trigger modal -->
+    		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tosModal">
+  				{% trans "Terms of service" %}
+			</button>
+			{% endif %}
+		</fieldset>
+		</form>
+	</div>
+	</div>
+	
+
+{% if REGISTRATION_USE_TOS %}
+<!-- Modal -->
+<div class="modal fade" id="tosModal" tabindex="-1" role="dialog" aria-labelledby="tosModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tosModalTitle">{%trans "Terms of service" %}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      {% if tos_file %}
+      	{% include tos_file %}
+      {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Close" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block javascript %}
+				<script>
+					jQuery('.error').each( function( index ){
+                		jQuery( this ).children('input').addClass( "is-invalid" );
+            		});
+            		jQuery('.helptext').each( function( index ){
+            			jQuery( this ).replaceWith($('<small class="helptext form-text text-muted">' + this.innerHTML + '</small>'));
+            		});
+        		</script>
+{% endblock %}

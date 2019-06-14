@@ -27,6 +27,7 @@ from django.forms import TextInput, Textarea
 from django.utils.translation import ugettext_lazy as _
 
 from parler.admin import TranslatableAdmin, TranslatableTabularInline
+from registration.admin import RegistrationAdmin, RegistrationProfile
 
 from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
                          LabCIRSConfig, Department, Reporter, Reviewer)
@@ -247,3 +248,4 @@ admin_site.register(LabCIRSConfig, ConfigurationAdmin)
 admin_site.register(Department, DepartmentAdmin)
 admin_site.register(Reporter, RoleAdmin)
 admin_site.register(Reviewer, RoleAdmin)
+admin_site.register(RegistrationProfile, RegistrationAdmin)

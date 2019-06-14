@@ -13,14 +13,30 @@
 			{% endif %}
 			<h2 class="form-signin-heading">{%trans "Please log in..." %}</h2>
 			{% if message|length > 0 %}
-				<div class="alert alert-{{ message_class }}">{{ message }}</div>
+				<div class="alert alert-{{ message_class }}">{{ message|safe }}</div>
 			{% endif %}
 			<input class="form-control" type="text" name="username" value="{{ username }}" placeholder="{% trans "User name" %}" required="" autofocus="">
 			<input class="form-control" type="password" name="password" value="" placeholder="{% trans "Password" %}" required="">
 			<button class="btn btn-lg btn-danger btn-block" type="submit">{% trans "Log in" %}</button>
 			<br>
 			<div class="alert alert-success">
-				{{ labcirs_config.login_info }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text }}</a>
+				{% if labcirs_config.login_info %}
+					{{ labcirs_config.login_info }} <a href="{{ labcirs_config.login_info_url }}" target="_blank">{{ labcirs_config.login_info_link_text }}</a>
+				{% else %}
+					{% if department %}
+						{% blocktrans %}There is apparently no login info for {{ department }}. The resposible reviewer shold create it in the configuration!{% endblocktrans %}
+					{% else %}
+						{% trans "If you want to report an incident and don't know your login credentials, please go to the" %}
+						<a href="{% url 'labcirs_home' %}">{% trans "main page" %}</a>
+						{% trans "and choose your department!" %}
+						{% if message|length == 0 %}
+							<br>
+							{% trans "If you are reviewer or administrator and forgot your password, please klick" %}
+							<a href="{% url 'auth_password_reset' %}">{% trans "here" %}</a>
+							{% trans "to reset it." %}
+						{% endif %}
+					{% endif %}
+				{% endif %}
 			</div>
 		</form>	
 	</div>

@@ -19,14 +19,19 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 
-#from django import forms
+from django import forms
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.core import mail
-from django.forms import (Form, ModelForm, Textarea, TextInput, RadioSelect, 
-                          CharField, Select, ClearableFileInput, DateInput, ValidationError)
-from django.forms.utils import ErrorList
-from django.utils.translation import ugettext_lazy as _
+from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
+                          ClearableFileInput, DateInput, ValidationError)
+#from django.forms.utils import ErrorList
+from django.utils.translation import ugettext, ungettext, ugettext_lazy as _
 
-from .models import CriticalIncident, Comment, LabCIRSConfig
+from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
+                                RegistrationFormUniqueEmail)
+
+from .models import CriticalIncident, Comment, Department
 
 
 def notify_on_creation(form, department, subject='', excluded_user_id=None):
@@ -104,3 +109,90 @@ class CommentForm(ModelForm):
         notify_on_creation(self, department, 'New LabCIRS comment', self.instance.author.id)
         return result
 
+
+class DivErrorList(forms.utils.ErrorList):
+    
+    def __unicode__(self):
+        return self.as_divs()
+    
+    def as_divs(self):
+        if not self: return u''
+        # CSS classes from bootstrap
+        return u'<div class="errorlist">%s</div>' % ''.join([u'<small class="text-danger form-text">%s</small>' % e for e in self])
+
+
+class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase, RegistrationFormUniqueEmail):
+    """
+    Generates for to create department together with reviewer and reporter users
+    """
+    # reviewer is not anonymous, so first and last name should be provided
+    first_name = forms.CharField(
+        label=_('First name'), widget=forms.TextInput(attrs={'class': "form-control"}),
+        help_text=_('Please enter your first name'))
+    last_name = forms.CharField(
+        label=_('Last name'), widget=forms.TextInput(attrs={'class': "form-control"}),
+        help_text=_('Please enter your last name'))
+    # additional fields for department and reporter
+    department_label = forms.SlugField(
+        label=_('Department label'),
+        widget=forms.TextInput(attrs={'class': "form-control"}),
+                               help_text=_('Only letters, digits, - and _. No whitespace!'))
+    department_name = forms.CharField(
+        label=_('Department name'),
+        widget=forms.TextInput(attrs={'class': "form-control"}))
+    reporter_name = forms.SlugField(
+        label=_('User name for the reporter'),
+        widget=forms.TextInput(attrs={'class': "form-control"}),
+                               help_text=_('Only letters, digits, - and _. No whitespace! Lowercase only!'))
+    
+    field_order = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 
+                   'department_label', 'department_name', 'reporter_name']
+    
+    error_css_class = "error"
+    
+    def __init__(self, *args, **kwargs):
+        super(LabCIRSRegistrationForm, self).__init__(*args, **kwargs)
+        for field in ('username', 'email', 'password1', 'password2'):
+            self.fields[field].widget.attrs.update({'class': "form-control"})
+        self.error_class = DivErrorList
+
+    def clean_email(self):
+        super(LabCIRSRegistrationForm, self).clean_email()
+        if settings.REGISTRATION_RESTRICT_USER_EMAIL is True:
+            allowed_domains = settings.REGISTRATION_EMAIL_DOMAINS
+            allowed_list = ungettext('Only @%s is allowed!', 'Allowed domains are @%s',
+                                      len(allowed_domains)) % ', @'.join(allowed_domains)
+            error_message = ' '.join((ugettext('You cannot register with this email domain!'),
+                                      allowed_list))
+            
+            email_domain = self.cleaned_data['email'].split('@')[-1]
+            if email_domain not in allowed_domains:
+                raise forms.ValidationError(error_message, code='invalid_email')
+
+        return self.cleaned_data['email']
+
+    def clean_department_label(self):
+        department_label = self.cleaned_data['department_label']
+        if Department.objects.filter(label=department_label).exists():
+            raise forms.ValidationError(_('Department with this label already exists!'))
+        return department_label
+    
+    def clean_department_name(self):
+        department_name = self.cleaned_data['department_name']
+        if Department.objects.filter(name=department_name).exists():
+            raise forms.ValidationError(_('Department with this name already exists!'))
+        return department_name
+    
+    def clean_reporter_name(self):
+        reporter_name = self.cleaned_data['reporter_name']
+        if User.objects.filter(username=reporter_name).exists():
+            raise forms.ValidationError(_('This user already exists!'))
+        return reporter_name
+
+class LabCIRSRegistrationFormWithTOS(RegistrationFormTermsOfService, LabCIRSRegistrationForm):
+
+    def __init__(self, *args, **kwargs):
+        super(LabCIRSRegistrationFormWithTOS, self).__init__(*args, **kwargs)
+
+        self.fields['tos'].widget.attrs.update({'class': "form-check-input", 
+                                                'style': "margin-left:0.5rem"})

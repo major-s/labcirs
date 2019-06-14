@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2019 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -18,19 +18,25 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+import os
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
 from django.urls import resolve, get_script_prefix
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import get_language, ugettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
+from registration.backends.admin_approval.views import RegistrationView
 
-from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm    
-from .models import CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department
+from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm
+from .models import (CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department,
+                     Reporter, Reviewer)
 
 
 class RedirectMixin(object):
@@ -73,9 +79,10 @@ class DepartmentList(RedirectMixin, ListView):
         
     def get_queryset(self):
         if hasattr(self.request.user, 'reviewer'):
-            return self.request.user.reviewer.departments.all()
+            return self.request.user.reviewer.departments.filter(active=True)#all()
         else:
-            return super(DepartmentList, self).get_queryset()
+            return Department.objects.filter(active=True)
+            #return super(DepartmentList, self).get_queryset()
 
 
 class IncidentCreate(ContextAndRedirectMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -193,14 +200,72 @@ class PublishableIncidentList(ContextAndRedirectMixin, LoginRequiredMixin, ListV
         else:
             return PublishableIncident.objects.none()
         
+
+class RegistrationViewWithDepartment(RegistrationView):
+    """
+    Registers new user and new department and adds the new user as Reviewer for this new department 
+    """
+
+    def register(self, form_class):
+        department = Department()
+        department.label = form_class.cleaned_data['department_label']
+        department.name = form_class.cleaned_data['department_name']
+        reporter_name = form_class.cleaned_data['reporter_name'].lower()
+        reporter_user = User.objects.create_user(reporter_name, password=reporter_name, is_active=False)
+        department.reporter = Reporter.objects.create(user=reporter_user)
+        department.active = False
+        department.save()
+        if department.pk is not None:
+            new_user = super(RegistrationViewWithDepartment, self).register(form_class)
+            new_user.first_name = form_class.cleaned_data['first_name']
+            new_user.last_name = form_class.cleaned_data['last_name']
+            # in theory not necessary, because generation of reviewer saves the user, 
+            # but in case of eventual changes...
+            new_user.save()
+            reviewer = Reviewer.objects.create(user=new_user)
+            department.reviewers.add(reviewer)
+            return new_user
+        else:
+            # TODO: redirect to error message if department could not be saved
+            return False
+
+    def get_context_data(self, **kwargs):
+        context = super(RegistrationViewWithDepartment, self).get_context_data(**kwargs)
+        context['REGISTRATION_USE_TOS'] = settings.REGISTRATION_USE_TOS
+        # check if language tos file exist.
+        # but maybe providing default tos file might be enough?
+        if settings.REGISTRATION_USE_TOS is True:
+            # TODO: move to settings?
+            tos_dir = os.path.join(settings.BASE_DIR, 'labcirs', 'tos')
+            tos_file = 'tos_%s.html' % get_language()
+            if os.path.isfile(os.path.join(tos_dir, tos_file)):
+                context['tos_file'] = tos_file
+            else:
+                context['message'] = _('You are supposed to accept TOS but there is none provided '
+                                       'in the chosen language! Try another or contact the site '
+                                       'administrator!')
+                context['message_class'] = 'danger'
+                context['disallow_registration'] = True
+        return context
         
 MISSING_ROLE_MSG = _('This is a valid account, but you are neither reporter, '
                      'nor reviewer. Please contact the administrator!')
 
 MISSING_DEPARTMENT_MSG =_('Your account has no associated department! '
-                            'Please contact the administrator!')
+                          'Please contact the administrator!')
+
+# I would prefere to use join on <br> after translation, but lazy translation is not working this way
+# and translating in advance with ugettext does not show up in the browser.
+# NOT_AUTHENTICATED_MSG = '<br>'.join(
+#     (ugettext('Your username and/or password were incorrect.'), 
+#      ugettext('If you want to report a new incident, please check the information below!'),
+#      ugettext('If you are reviewer or administrator and forgot your password, please klick')))
 
 def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
+    # Translators: Please preserve the <br> tags for proper HTML line breaks!
+    NOT_AUTHENTICATED_MSG = _('Your username and/or password were incorrect.<br>' 
+        'If you want to report a new incident, please check the information below!<br>'
+        'If you are reviewer or administrator and forgot your password, please klick')
     username = password = message = ''
     message_class = 'danger'
     redirect_url = request.GET.get(redirect_field_name, '')
@@ -215,7 +280,7 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if user.is_active:
                 login(request, user)
                 if user.is_superuser:
-                    return redirect('admin:index')
+                    return redirect(redirect_url)#'admin:index')
                 elif hasattr(user, 'reviewer'):
                     if user.reviewer.departments.count() > 0:
                         return redirect('admin:index')
@@ -236,8 +301,8 @@ def login_user(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 message = _('Your account is not active, please contact the admin.')
                 message_class = 'warning'
         else:
-            message = _("""Your username and/or password were incorrect.
-                        Please check the information below!""")
+            reset_link = '<a href="{}">{}.</a>'.format(reverse_lazy('auth_password_reset'), _('here'))
+            message = NOT_AUTHENTICATED_MSG + " " + reset_link
 
     context = {'message': message,
                'message_class': message_class,

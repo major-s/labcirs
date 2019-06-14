@@ -14,138 +14,133 @@ Requirements
 ------------
 - Python 2.7
 - Django 1.11 (older versions may work too but are not tested any more)
-- Pillow 5.2.0
-- django-multiselectfield 0.1.8
-- django-parler 1.9.2
+- Pillow
+- django-multiselectfield
+- django-parler
+- django-registration-redux
 - any Django compatible database - tested in real life with MySQL and PostreSQL.
 - any web server capable running WSGI applications - template for Apache 2.4 configuration is provided
+
+Required versions of Python modules are specified in requirements.txt)
 
 Installation
 ------------
 Assuming usage of Apache, PostgreSQL and virtualenv on a Linux machine the installation steps are:
 
-1. Install Python, virtualenv, PostgreSQL and Apache (with mod_wsgi) if not already present. On Ubuntu 14.04 following packages are required:
-
-  .. code-block:: bash
+Install Python, virtualenv, PostgreSQL and Apache (with mod_wsgi) if not already present. On Ubuntu 14.04 following packages are required::
 
     apache2, libapache2-mod-wsgi, postgresql, libpq-dev, python, python-dev, python-virtualenv
 
-2. Create a database user, e.g.
-
-  .. code-block:: bash
+Create a database user, e.g.::
 
     sudo -u postgres createuser -P labcirs
     
-3. Create a database owned by the user created in the previous step, e.g.
-
-  .. code-block:: bash
+Create a database owned by the user created in the previous step, e.g.::
 
     sudo -u postgres createdb -O labcirs labcirs
     
-4. Create the main directory for all LabCIRS files, e.g.
+Create the main directory for all LabCIRS files::
+ 
+    mkdir /opt/labcirs
   
-  .. code-block:: bash
-  
-      mkdir /opt/labcirs
-  
-  and ``cd`` there.
+and ``cd`` there.
     
-5. Create virtual environment (I usually do it in the main directory), e.g.
-
-  .. code-block:: bash
+Create virtual environment (I usually do it in the main directory)::
 
     virtualenv venv_labcirs
     
-6. Create ``static`` and ``media`` directories.
+Create ``static`` and ``media`` directories.
 
-7. Make sure that the web server has write access to the ``media`` directory
+Make sure that the web server has write access to the ``media`` directory
 
-8. Clone LabCIRS from GitHub and ``cd`` to its directory 
+Clone LabCIRS from GitHub and ``cd`` to its directory::
 
-9. Activate the virtual environment, e.g.
+    git clone https://github.com/major-s/labcirs.git
+    cd labcirs
 
-  .. code-block:: bash
+Activate the virtual environment::
 
     source ../venv_labcirs/bin/activate
     
-10. Install Django and required Python packages with pip:
-
-  .. code-block:: bash
+Install Django and required Python packages with pip::
 
     pip install -r requirements.txt
     
-11. Install database adapter, e.g.
-
-  .. code-block:: bash
+Install database adapter, e.g.::
 
     pip install psycopg2
     
-12. Copy the template of local config file:
+Set the local configuration. This can be done eiter with ``setup.py``::
 
-  .. code-block:: bash
+    python setup.py
+
+or manually by copying the template, generation of secret key and manual editing, eg. with nano::
 
     cp labcirs/settings/local_config.json.template labcirs/settings/local_config.json
-    
-13. Generate the ``SECRET_KEY`` with provided management command
-
-  .. code-block:: bash
-
     python manage.py makesecretkey
-    
-14. Edit the local config file
-     * enter the values for the database access, usually ``DB_ENGINE``, ``DB_NAME``, ``DB_USER`` and ``DB_PASSWORD``.
-     * If you intend to serve LabCIRS from a subdirectory and not from the root of your web server 
-       then you have also to enter this subdirectory as ``ROOT_URL``.
-     * Add the domain of your web server to ``ALLOWED_HOSTS``
+    nano labcirs/settings/local_config.json
 
-15. Initialise the database :
+You should set following variables
 
-  .. code-block:: bash
+- Variables for the database access, usually ``DB_ENGINE``, ``DB_NAME``, ``DB_USER`` and ``DB_PASSWORD``.
+- If you intend to serve LabCIRS from a subdirectory and not from the root of your web server.
+  then you have also to enter this subdirectory as ``ROOT_URL``.
+- Add the domain of your web server to ``ALLOWED_HOSTS``.
+- If your site uses multiple languages set ``LANGUAGES`` ``PARLER*`` and ``ALL_LANGUAGES_MANDATORY_DEFAULT``.
+- If users can register new departments, set all ``REGISTRATION*`` and ``ACCOUNT_ACTIVATION_DAYS``.
+
+If registration is activated and users have to agree to any terms of service, you have to place a 
+``tos_LANGUAGE.html`` file for every language used in the ``labcirs/tos`` directory. For English 
+the file name will be ``tos_en.html``. See included ``tos_example.txt``.
+
+Initialise the database::
 
     python manage.py migrate
      
-16. Create superuser:
-
-  .. code-block:: bash
+Create superuser::
 
     python manage.py createsuperuser
     
-17. Copy the appropriate Apache configuration template:
-     * ``labcirs/labcirs.conf.root_template`` if you plan to serve LabCIRS from the root of the (virtual) web server.
-     * ``labcirs/labcirs.conf.template`` if you plan to serve LabCIRS from any subdirectory e.g. ``/labcirs``.
+Copy the appropriate Apache configuration template:
 
-18. Make your configuration file accessible by Apache, activate it or include in the configuration.
+- ``labcirs/labcirs.conf.root_template`` if you plan to serve LabCIRS from the root of the (virtual) web server.
+- ``labcirs/labcirs.conf.template`` if you plan to serve LabCIRS from any subdirectory e.g. ``/labcirs``.
 
-19. Restart Apache
+Make your configuration file accessible by Apache, activate it or include in the configuration.
+
+Restart Apache
 
 LabCIRS configuration
 ---------------------
 
-1. Visit the URL you serve LabCIRS from
+Visit the URL you serve LabCIRS from
 
-2. Login as the superuser you just created
+Login as the superuser you just created
 
-3. Click on the admin button at the top of the page
+Click on the admin button at the top of the page
 
-4. Add new department. In fresh installation there are neither reporters nor reviewers. You can add
-   them by clicking on the green cross next to the corresponding dialogue. You will have to add the 
-   new users during this procedure too:
+Add new department. In fresh installation there are neither reporters nor reviewers. You can add
+them by clicking on the green cross next to the corresponding dialogue. You will have to add the 
+new users during this procedure too:
    
-   * a reporter - an account for anonymous reporting of incidents
-   * a reviewer - an account for analysis, copy-editing and publication of the incidents. 
-     This account should have a valid email address specified.
+- a reporter - an account for anonymous reporting of incidents
+- a reviewer - an account for analysis, copy-editing and publication of the incidents. 
+  This account should have a valid email address specified.
        
-5. In the admin interface go to the `LabCIRS configuration` and choose the automatically created 
-   configuration for the new department. Here you can specify where the users can get the information 
-   about the reporter login. Further you can specify if email notifications should be sent to any 
-   reviewer upon creation of new incidents. This function can only be activated if you set a valid 
-   ``EMAIL_HOST`` in the local configuration file.
+In the admin interface go to the `LabCIRS configuration` and choose the automatically created 
+configuration for the new department. Here you can specify where the users can get the information 
+about the reporter login. Further you can specify if email notifications should be sent to any 
+reviewer upon creation of new incidents. This function can only be activated if you set a valid 
+``EMAIL_HOST`` in the local configuration file.
 
 Update
 -------
 
-Check which keys are missing in the local configuration file ``local_config.json``, add them and
-set values you need.
+With activated virtual environment run::
+    
+    pip install -r requirements.txt
+    python setup.py
+    python manage.py migrate
 
 If you want to join multiple single department installations use ``import_dept_to_org.py`` from the
 python shell after succesful update.

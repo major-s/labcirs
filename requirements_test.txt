@@ -1,0 +1,7 @@
+# Requirements file for testing LabCIRS (only cirs unit tests)
+
+# just the standard requirements
+-r requirements.txt
+parameterized==0.7.0
+model-mommy==1.6.0
+django-migration-testcase==0.0.14

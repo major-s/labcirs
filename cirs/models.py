@@ -94,6 +94,8 @@ class Department(models.Model):
     reporter = models.OneToOneField(Reporter, verbose_name=_("Reporter"), on_delete=models.PROTECT,
             help_text='Reporters assigned to other departments are not listed here!')
     reviewers = models.ManyToManyField(Reviewer, verbose_name=_("Reviewers"), related_name='departments')
+    active = models.BooleanField(_("Active"), 
+            help_text='Incidents can be created only if department is active.')
 
     class Meta:
         verbose_name = _('Department')
@@ -104,6 +106,23 @@ class Department(models.Model):
 
     def __unicode__(self):
         return self.label
+
+from registration.signals import user_approved
+
+@receiver(user_approved)
+def activate_department(sender, user, request, **kwargs):
+    if user.is_active and hasattr(user, 'reviewer'):
+        print user 
+        # proceed only if user has one dept
+        if user.reviewer.departments.count() == 1:
+            dept = user.reviewer.departments.get()
+            if dept.active is False:
+                dept.active = True
+                dept.save()
+            # activate inactive reporter
+            if dept.reporter.user.is_active is False:
+                dept.reporter.user.is_active = True
+                dept.reporter.user.save()
 
 
 FREQUENCY_CHOICES = (('singular case', _('singular case (for the first time)')),
