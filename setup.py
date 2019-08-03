@@ -34,7 +34,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 try:
     from labcirs.settings.base import local_config_file
 except:
-    print 'Import not possible. Using hardcoded version'
+    print('Import not possible. Using hardcoded version')
     local_config_file = os.path.join(BASE_DIR, 'labcirs', 'settings', 'local_config.json')
 
 MODIFIED = 'modified'
@@ -63,7 +63,7 @@ def write_config(config):
 
 def check_secret_key(local_config):
     if local_config['SECRET_KEY'] == config_template['SECRET_KEY']:
-        text = raw_input('Your config uses default secret_key. This is insecure!\n'
+        text = input('Your config uses default secret_key. This is insecure!\n'
                          'It is recommended to generate a new one (Y/n):')
         if not text.lower().startswith('n'):
             makesecretkey.Command().handle(local_config_file=local_config_file)
@@ -83,8 +83,8 @@ def check_missing_keys(local_config):
             try:
                 if key.startswith('_'):
                     if local_config[key] != config_template[key]:
-                        print 'Updating comment {} from:\n{}\nto:\n{}'.format(
-                            key, local_config[key], config_template[key])
+                        print('Updating comment {} from:\n{}\nto:\n{}'.format(
+                            key, local_config[key], config_template[key]))
                     new_config[key] = config_template[key]
                 else:
                     new_config[key] = local_config[key]
@@ -93,13 +93,13 @@ def check_missing_keys(local_config):
                     new_config[key] = config_template[key]
                 else:
                     new_config[key] = add_or_modify_conf_entry(key, config_template[key])
-                print 'Added {}: {}'.format(key, new_config[key])
+                print('Added {}: {}'.format(key, new_config[key]))
 
         return write_config(new_config)
 
 
 def add_to_conf_list(key, conf_list):
-    value = raw_input('%s: Append items to %s:' % (key, conf_list))
+    value = input('%s: Append items to %s:' % (key, conf_list))
     if value == '':
         return conf_list
     else:
@@ -107,13 +107,13 @@ def add_to_conf_list(key, conf_list):
         return add_to_conf_list(key, conf_list)
     
 def add_to_conf_dict(ord_dict):
-    new_key = raw_input('Enter the key. Single new line stops editing:')
+    new_key = input('Enter the key. Single new line stops editing:')
     if new_key == '':
         return ord_dict
     else:
-        value = raw_input('Enter value for %s:' % new_key)
+        value = input('Enter value for %s:' % new_key)
         ord_dict[new_key] = value
-        text = raw_input('Do you want to add more? (Y/n):')
+        text = input('Do you want to add more? (Y/n):')
         if text.lower().startswith('n'):
             return ord_dict
         else:
@@ -124,15 +124,15 @@ def add_or_modify_conf_entry(k, v):
     # Still needs improvement 
     try:
         # print comment/help if present
-        print local_config['_'+k]
+        print(local_config['_'+k])
     except:
         pass
-    if type(v) in [unicode, int, bool]:
+    if type(v) in [str, int, bool]:
         # TODO: check if works in Python 3 and remove after update
         try:
-            value = raw_input('%s (%s): [%s]:' % (k, type(v), v))
+            value = input('%s (%s): [%s]:' % (k, type(v), v))
         except UnicodeEncodeError:
-            value = raw_input('%s (%s) [%s] (non ASCII chars not displayed):' % (k, type(v), ''.join(i for i in v if ord(i)<128))).decode(sys.stdin.encoding)
+            value = input('%s (%s) [%s] (non ASCII chars not displayed):' % (k, type(v), ''.join(i for i in v if ord(i)<128))).decode(sys.stdin.encoding)
         if value == '':
             return v
         else:
@@ -152,20 +152,20 @@ def add_or_modify_conf_entry(k, v):
         return add_to_conf_list(k, v)
     elif type(v) is OrderedDict:
         if len(v.keys()) > 0:
-            print '{} has following items:'.format(k) 
-            for key, value in v.iteritems():
-                print '%s: %s' % (key, value)
-        text = raw_input('Do you want to add? (Y/n):')
+            print('{} has following items:'.format(k))
+            for key, value in v.items():
+                print('%s: %s' % (key, value))
+        text = input('Do you want to add? (Y/n):')
         if text.lower().startswith('n'):
             return v
         else:
             return add_to_conf_dict(v)
     else:
-        print 'Cannot recognize type {} for {}. Returning default ({})'.format(type(v), k, v)
+        print('Cannot recognize type {} for {}. Returning default ({})'.format(type(v), k, v))
         return v
 
 def check_whole_conf(local_config):
-    for k, v in local_config.iteritems():
+    for k, v in local_config.items():
         # skip comments
         if k.startswith('_'):
             continue
@@ -189,17 +189,17 @@ if __name__ == "__main__":
     
     # check if local config file exists
     if not os.path.isfile(local_config_file):
-        print 'Local configuration file is missing. Generating from template...'
+        print('Local configuration file is missing. Generating from template...')
         shutil.copyfile(config_template_file, local_config_file)
         local_config = read_config(local_config_file)
-        print 'Now check and modify settings according to your needs:'
+        print('Now check and modify settings according to your needs:')
         local_config = check_whole_conf(local_config)
     else:
         local_config = read_config(local_config_file)
         # check keys
         check_missing_keys(local_config)
         # check whole file if wanted
-        text = raw_input('All keys are present. Do you want to check all? (Y/n):')
+        text = input('All keys are present. Do you want to check all? (Y/n):')
         if not text.lower().startswith('n'):
             check_whole_conf(local_config)
     # alway check secret key 

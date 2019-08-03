@@ -519,7 +519,7 @@ class ConfigurationForDepartment(TestCase):
         
     def test_configurations_name_contains_dept_label(self):
         dept = mommy.make_recipe('cirs.department')
-        self.assertEqual(unicode(dept.labcirsconfig),
+        self.assertEqual(str(dept.labcirsconfig),
                          'LabCIRS configuration for {}'.format(dept.label))
         
     def test_reviewer_sees_only_config_of_his_organization(self):
