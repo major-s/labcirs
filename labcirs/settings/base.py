@@ -41,7 +41,7 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                     error_msg = "Set the {0} environment variable in {1}".format(
                         setting_item, local_config_file)
                     raise ImproperlyConfigured(error_msg)
-        except ValueError as (msg):
+        except ValueError as msg:
             raise Exception("JSON error: {0}".format(msg))
     except IOError as (errno, strerror):
         raise Exception("Cannot open {0}: {1}. ".format(config_file, strerror))
