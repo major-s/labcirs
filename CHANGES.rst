@@ -1,6 +1,12 @@
 LabCIRS changelog
 =================
 
+6.0 (2021-06-02)
+----------------
+
+* Migrated LabCIRS to Python 3 without functional changes. Dependencies will be updated in future versions.
+
+
 5.2 (2019-06-14)
 ----------------
 

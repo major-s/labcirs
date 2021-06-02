@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 Sebastian Major
+# Copyright (C) 2019-2021 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -26,8 +26,7 @@ import sys
 import shutil
 
 from collections import OrderedDict
-from pathlib2 import Path
-
+from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
