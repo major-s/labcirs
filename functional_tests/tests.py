@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2021 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -67,7 +67,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         super(CriticalIncidentListTest, self).setUp()
         create_role(Reporter, self.reporter)
         self.dept = mommy.make_recipe('cirs.department', reporter=self.reporter.reporter)
-        self.dept.labcirsconfig.mandatory_languages=['de']
+        self.dept.labcirsconfig.mandatory_languages=['en']
         self.dept.labcirsconfig.save()
     
     @override_settings(DEBUG=True)
