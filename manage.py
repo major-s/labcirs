@@ -25,7 +25,7 @@ if __name__ == "__main__":
         if not text.lower().startswith('y'):
             exit()
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "labcirs.settings.dev")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "labcirs.settings.production")
 
     from django.core.management import execute_from_command_line
 
