@@ -47,7 +47,7 @@ class Role(models.Model):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
 
@@ -104,7 +104,7 @@ class Department(models.Model):
     def get_absolute_url(self):
         return reverse('incidents_for_department', kwargs={'dept': self.label})
 
-    def __unicode__(self):
+    def __str__(self):
         return self.label
 
 from registration.signals import user_approved
@@ -112,7 +112,7 @@ from registration.signals import user_approved
 @receiver(user_approved)
 def activate_department(sender, user, request, **kwargs):
     if user.is_active and hasattr(user, 'reviewer'):
-        print user 
+        #print user 
         # proceed only if user has one dept
         if user.reviewer.departments.count() == 1:
             dept = user.reviewer.departments.get()
@@ -231,7 +231,7 @@ class CriticalIncident(models.Model):
     def get_absolute_url(self):
         return reverse('incident_detail', kwargs={'dept': self.department.label, 'pk':self.id})
     
-    def __unicode__(self):
+    def __str__(self):
         info = (self.incident[:25] + '..') if len(self.incident) > 25 else self.incident
         return info
     
@@ -308,13 +308,13 @@ class PublishableIncident(TranslationStatusMixin, TranslatableModel):
             raise ValidationError(_("The reporter did not agreed to publish this incident!"))
         if self.publish is True:
             languages =  ", ".join(
-                [unicode(get_language_title(lang)) for lang in self.mandatory_languages])
+                [str(get_language_title(lang)) for lang in self.mandatory_languages])
             missing_message = _(
                 "All text fields in mandatory languages (%s) has to be filled before 'publish' can be checked!") % languages
             if self.translation_status == 'incomplete':
                 raise ValidationError({'publish': missing_message})
 
-    def __unicode__(self):
+    def __str__(self):
         return self.incident
 
 
@@ -384,7 +384,7 @@ class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
                 raise ValidationError(_('You have to enter valid sender email.'))
         # default language
         default_lang = settings.PARLER_DEFAULT_LANGUAGE_CODE
-        verbose_lang = unicode(get_language_title(default_lang))
+        verbose_lang = str(get_language_title(default_lang))
         if default_lang not in self.mandatory_languages:
             raise ValidationError(
                 _('You have to reactivate %s as it is default language.') % verbose_lang)
@@ -395,7 +395,7 @@ class LabCIRSConfig(TranslationStatusMixin, TranslatableModel):
         else:
             return super(LabCIRSConfig, self).get_mandatory_fields()
             
-    def __unicode__(self):
+    def __str__(self):
         return 'LabCIRS configuration for {}'.format(self.department.label)
 
 @receiver(post_save, sender=Department)
@@ -420,5 +420,5 @@ class Comment(models.Model):
         _("Status"), help_text=_("Status of the comment"), max_length=255,
         choices=COMMENT_STATUS_CHOICES, default=COMMENT_STATUS_CHOICES[0][0])
     
-    def __unicode__(self):
+    def __str__(self):
         return self.text[:64]

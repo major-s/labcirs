@@ -45,7 +45,7 @@ def create_reporter(models):
     permission = get_permission('add_criticalincident', models)
     try:
         reporter = models.User.objects.get(user_permissions=permission)
-        print 'Assigning {} as reporter'.format(reporter.username)
+        print('Assigning {} as reporter'.format(reporter.username))
         models.Reporter.objects.create(user=reporter)
     except models.User.DoesNotExist:
         if models.CriticalIncident.objects.count() > 0:
@@ -71,7 +71,7 @@ def create_reviewers(models):
             if review_user.reporter.user == review_user:
                 raise ValidationError('{} cannot be reporter and reviewer. Please correct permissions and migrate again'.format(review_user.username))
         except models.Reporter.DoesNotExist:
-            print 'Assigning {} as reviewer'.format(review_user.username)
+            print('Assigning {} as reviewer'.format(review_user.username))
             models.Reviewer.objects.create(user = review_user)
 
 

@@ -185,7 +185,7 @@ class AdminObjectMixin(object):
 
 class ConfigurationAdmin(AdminObjectMixin, TranslatableAdmin):
     
-    list_display = ('__unicode__', 'translation_status')
+    list_display = ('__str__', 'translation_status')
     filter_horizontal = ('notification_recipients',)
     fieldsets = (
         (_('Languages'), {

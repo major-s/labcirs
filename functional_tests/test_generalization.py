@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2021 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -74,7 +74,7 @@ class EmailSettingsInBackend(FunctionalTest):
         self.dept.reviewers.add(reviewer)
          
         self.config = self.dept.labcirsconfig
-        self.config.create_translation('de', login_info="English")
+        self.config.create_translation('en', login_info="English")
         self.config.save()
         
         admin_url = reverse('admin:cirs_labcirsconfig_change', args=(self.config.pk,))
@@ -102,7 +102,7 @@ class EmailSettingsInBackend(FunctionalTest):
             self.browser.find_element_by_id('id_notification_recipients_from'))
         options = [opt.text for opt in recipient_select.options]
         expected = [rev.user.username for rev in self.dept.reviewers.all()]
-        self.assertItemsEqual(options, expected,
+        self.assertListEqual(options, expected,
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
         
     @override_settings(EMAIL_HOST='smtp.example.com')

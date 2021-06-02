@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 Sebastian Major
+# Copyright (C) 2019-2021 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -35,7 +35,14 @@ from registration.models import SupervisedRegistrationProfile
 from cirs.models import Reporter
 
 
-@override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False) 
+@override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False,
+                            REGISTRATION_OPEN=True,
+                            REGISTRATION_USE_TOS=True, # unfortunatelly it does not work if settings in json file are set to false!!!
+                            DEBUG=True,
+                            ADMINS = {
+                                FrontendBaseTest.ADMIN_EMAIL: FrontendBaseTest.ADMIN
+                            }
+) 
 class SelfRegistrationTest(FrontendBaseTest):
     """
     Tests for self registration of reviewer and department
@@ -47,7 +54,7 @@ class SelfRegistrationTest(FrontendBaseTest):
         else:
             my_url = reverse(view, args=args)
         self.browser.get(self.live_server_url + my_url)
-    
+
     def test_new_reviewer_can_register_new_department(self):
         # New user visits the LabCIRS page 
         self.browser.get(self.live_server_url)
@@ -74,11 +81,11 @@ class SelfRegistrationTest(FrontendBaseTest):
 
         # and lands on the success page
         self.assertCurrentUrlIs(reverse('registration_complete'))
-        
+
         # User clicks on the confirmation link in the email
         self.go_to_view('registration_activate',
                         SupervisedRegistrationProfile.objects.last().activation_key)
-        
+
         # Then admin activates the accounts and the department 
         self.quick_backend_login()
         self.go_to_view('registration_admin_approve',
@@ -88,7 +95,7 @@ class SelfRegistrationTest(FrontendBaseTest):
         # now the new department label is in the list
         labels = self.get_column_from_table_as_list('table_departments')
         self.assertIn('dept', labels)
-        #time.sleep(5)
+
         # we do not need to test everything, but
         
     # TODO: Add tests for double entries which should be unique

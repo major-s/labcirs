@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2019 Sebastian Major
+# Copyright (C) 2018-2021 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -104,7 +104,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         select = Select(self.browser.find_element_by_id('id_user'))
         options = [opt.text for opt in select.options]
         # there is also an empty choice
-        self.assertItemsEqual(options, [self.user.username, '---------'])
+        self.assertListEqual(options, ['---------', self.user.username])
 
 
     def test_admin_can_set_department(self):
@@ -135,10 +135,10 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
         select = Select(self.browser.find_element_by_id(elem_id))
         options = [opt.text for opt in select.options]
-        expected = [role, '---------']
+        expected = ['---------', role]
         if role == 'reviewer':
             expected = [role]
-        self.assertItemsEqual(options, expected,
+        self.assertListEqual(options, expected,
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
 
 
@@ -150,8 +150,8 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
         select = Select(self.browser.find_element_by_id('id_reporter'))
         options = [opt.text for opt in select.options]
-        expected = [str(new_reporter), '---------']
-        self.assertItemsEqual(options, expected,
+        expected = ['---------', str(new_reporter)]
+        self.assertListEqual(options, expected,
             'found {} instead {}'.format(', '.join(options), ', '.join(expected)))
 
     def test_admin_can_modify_departments_name(self):

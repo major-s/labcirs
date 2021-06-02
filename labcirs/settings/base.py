@@ -41,10 +41,10 @@ def get_local_setting(setting_item, default=None, config_file=local_config_file)
                     error_msg = "Set the {0} environment variable in {1}".format(
                         setting_item, local_config_file)
                     raise ImproperlyConfigured(error_msg)
-        except ValueError as msg:
-            raise Exception("JSON error: {0}".format(msg))
-    except IOError as (errno, strerror):
-        raise Exception("Cannot open {0}: {1}. ".format(config_file, strerror))
+        except ValueError as v_err:
+            raise Exception("JSON error: {0}".format(v_err))
+    except IOError as io_err:
+        raise Exception("Cannot open {0}: {1}. ".format(config_file, io_err))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # The secret key has to be generated separately for each server, e.g. in the django shell
@@ -153,7 +153,7 @@ TIME_ZONE = get_local_setting('TIME_ZONE', 'UTC')
 STATICFILES_DIRS = (join_path(BASE_DIR, 'static'),)
 
 
-LANGUAGES = tuple((k, _(v)) for k, v in get_local_setting('LANGUAGES').iteritems())
+LANGUAGES = tuple((k, _(v)) for k, v in get_local_setting('LANGUAGES').items())
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60 * 60 # one hour, not logged out users will leave a ghost session in db!
@@ -204,7 +204,7 @@ if REGISTRATION_USE_TOS is True:
 else:
     REGISTRATION_FORM = 'cirs.forms.LabCIRSRegistrationForm'
 # reverse order, email is better key than the name
-ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).iteritems())
+ADMINS = tuple((v, k) for k, v in get_local_setting('ADMINS', {}).items())
 
 # Don't want to use sites app, so custom user email check is implemented.
 REGISTRATION_RESTRICT_USER_EMAIL = get_local_setting('REGISTRATION_RESTRICT_USER_EMAIL', False)

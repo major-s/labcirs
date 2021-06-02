@@ -12,7 +12,7 @@ A demo installation can be visited and tested at http://labcirs-demo.charite.de.
 
 Requirements
 ------------
-- Python 2.7
+- Python 3.8 (older versions of Python 3 might work but are not tested)
 - Django 1.11 (older versions may work too but are not tested any more)
 - Pillow
 - django-multiselectfield
@@ -169,7 +169,7 @@ The copyright of these software packages is hold by its respective owners.
 License
 -------
 
-Copyright (C) 2016-2019 Sebastian Major <sebastian.major@charite.de>
+Copyright (C) 2016-2021 Sebastian Major <sebastian.major@charite.de>
 
 LabCIRS is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
