@@ -32,7 +32,7 @@ from registration.models import SupervisedRegistrationProfile
 from cirs.models import  Department, Reporter, Reviewer
 
       
-@override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False) 
+@override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False, REGISTRATION_OPEN=True) 
 class SelfRegistrationTest(TestCase):
     
     def setUp(self):
@@ -98,6 +98,7 @@ class SelfRegistrationTest(TestCase):
         ('department',),
         ('reporter',),
     ])
+    @override_settings(ADMINS=('admin', 'admin@localhost'))
     def test_user_activation_activates_also(self, obj):
         # new reviewer registers new department
         self.client.post(

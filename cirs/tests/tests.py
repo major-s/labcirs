@@ -43,7 +43,7 @@ class CriticalIncidentModelTest(TestCase):
         self.first_incident = mommy.make(CriticalIncident, public=True, category = ['other'])
     
     def test_saving_and_retriving_incidents(self):
-        self.first_incident.photo = File(open("cirs/tests/test.jpg"))
+        self.first_incident.photo = File(open("./cirs/tests/test.jpg", 'rb'))
         self.first_incident.save()
 
         p = CriticalIncident.objects.get(id=1).photo.path
@@ -211,7 +211,7 @@ def generate_three_incidents(department):
     """generate three incidents with different dates in order 2,3,1 and names c, a, b"""
     
     # override default settings in B
-    lang_code = 'de'
+    lang_code = 'en'
     department.labcirsconfig.mandatory_languages = [lang_code]
     department.labcirsconfig.save()
     

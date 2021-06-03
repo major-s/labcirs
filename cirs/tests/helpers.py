@@ -36,7 +36,7 @@ def create_role(role_cls, name):
     if (role_cls != Reporter) and (role_cls != Reviewer):
         raise TypeError('This function can be used with Reporter or Reviewer '
                         'models only. Instead {} was used!'.format(role_cls))
-    if type(name) in (str, unicode):
+    if type(name) == str:
         role = role_cls.objects.create(user=create_user(name))
     elif type(name) == User:
         role = role_cls.objects.create(user=name)
