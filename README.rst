@@ -3,17 +3,21 @@ LabCIRS
 
 LabCIRS is a lightweight anonymous Critical Incident Reporting System (CIRS) developed for research laboratories/departments.
 
-Background informations can be found in
+Background information can be found in
 `A Laboratory Critical Incident and Error Reporting System for Experimental Biomedicine <https://doi.org/10.1371/journal.pbio.2000705>`_ published in `PLOS Biology <http://journals.plos.org/plosbiology/>`_
 
-LabCIRS builds upon the `Django <http://www.djangoproject.com>`_ framework as a stand alone web application and is not intended to be a reusable app.
+LabCIRS builds upon the `Django <http://www.djangoproject.com>`_ framework as a stand-alone web application and is not intended to be a reusable app.
 
 A demo installation can be visited and tested at http://labcirs-demo.charite.de.
+
+IMPORTANT
+------------
+As of version 6.0, LabCIRS works only with Python 3. Users of older versions have to create a new virtual environment with an appropriate Python version and install the correct version of mod_wsgi if LabCIRS is used with Apache.
 
 Requirements
 ------------
 - Python 3.8 (older versions of Python 3 might work but are not tested)
-- Django 1.11 (older versions may work too but are not tested any more)
+- Django 1.11 (older versions may work too but are not tested anymore)
 - Pillow
 - django-multiselectfield
 - django-parler
@@ -25,11 +29,11 @@ Required versions of Python modules are specified in requirements.txt)
 
 Installation
 ------------
-Assuming usage of Apache, PostgreSQL and virtualenv on a Linux machine the installation steps are:
+Assuming usage of Apache, PostgreSQL and virtualenv on a Linux (Windows and MacOS should work too) machine, the installation steps are:
 
 Install Python, virtualenv, PostgreSQL and Apache (with mod_wsgi) if not already present. On Ubuntu 14.04 following packages are required::
 
-    apache2, libapache2-mod-wsgi, postgresql, libpq-dev, python, python-dev, python-virtualenv
+    apache2, libapache2-mod-wsgi-py3, postgresql, libpq-dev, python, python-dev, python-virtualenv
 
 Create a database user, e.g.::
 
@@ -45,7 +49,7 @@ Create the main directory for all LabCIRS files::
   
 and ``cd`` there.
     
-Create virtual environment (I usually do it in the main directory)::
+Create a virtual environment (I usually do it in the main directory)::
 
     virtualenv venv_labcirs
     
@@ -70,11 +74,11 @@ Install database adapter, e.g.::
 
     pip install psycopg2
     
-Set the local configuration. This can be done eiter with ``setup.py``::
+Set the local configuration. This can be done either with ``setup.py``::
 
     python setup.py
 
-or manually by copying the template, generation of secret key and manual editing, eg. with nano::
+or manually by copying the template, generation of the secret key and manual editing, e.g. with nano::
 
     cp labcirs/settings/local_config.json.template labcirs/settings/local_config.json
     python manage.py makesecretkey
@@ -86,7 +90,7 @@ You should set following variables
 - If you intend to serve LabCIRS from a subdirectory and not from the root of your web server.
   then you have also to enter this subdirectory as ``ROOT_URL``.
 - Add the domain of your web server to ``ALLOWED_HOSTS``.
-- If your site uses multiple languages set ``LANGUAGES`` ``PARLER*`` and ``ALL_LANGUAGES_MANDATORY_DEFAULT``.
+- If your site uses multiple languages, set ``LANGUAGES`` ``PARLER*`` and ``ALL_LANGUAGES_MANDATORY_DEFAULT``.
 - If users can register new departments, set all ``REGISTRATION*`` and ``ACCOUNT_ACTIVATION_DAYS``.
 
 If registration is activated and users have to agree to any terms of service, you have to place a 
@@ -100,6 +104,10 @@ Initialise the database::
 Create superuser::
 
     python manage.py createsuperuser
+
+Copy static files to the ``static`` directory
+
+    python manage.py collectstatic
     
 Copy the appropriate Apache configuration template:
 
@@ -119,7 +127,7 @@ Login as the superuser you just created
 
 Click on the admin button at the top of the page
 
-Add new department. In fresh installation there are neither reporters nor reviewers. You can add
+Add new department. In the fresh installation, there are neither reporters nor reviewers. You can add
 them by clicking on the green cross next to the corresponding dialogue. You will have to add the 
 new users during this procedure too:
    
@@ -129,8 +137,8 @@ new users during this procedure too:
        
 In the admin interface go to the `LabCIRS configuration` and choose the automatically created 
 configuration for the new department. Here you can specify where the users can get the information 
-about the reporter login. Further you can specify if email notifications should be sent to any 
-reviewer upon creation of new incidents. This function can only be activated if you set a valid 
+about the reporter login. Further, you can specify if email notifications should be sent to any 
+reviewer upon creating new incidents. This function can only be activated if you set a valid 
 ``EMAIL_HOST`` in the local configuration file.
 
 Update
@@ -141,6 +149,7 @@ With activated virtual environment run::
     pip install -r requirements.txt
     python setup.py
     python manage.py migrate
+    python manage.py collectstatic
 
 If you want to join multiple single department installations use ``import_dept_to_org.py`` from the
 python shell after succesful update.
