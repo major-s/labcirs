@@ -23,6 +23,7 @@
     "PARLER_DEFAULT_LANGUAGE_CODE": "en",
     "PARLER_LANGUAGES": ["en"],
     "ALL_LANGUAGES_MANDATORY_DEFAULT": true,
+    "_SESSION_COOKIE_SECURE": "Should always be set 'true' unless you are testing an unsecure http server",
     "SESSION_COOKIE_SECURE": true,
     "ACCOUNT_ACTIVATION_DAYS": 1,
     "DEFAULT_FROM_EMAIL": "",
