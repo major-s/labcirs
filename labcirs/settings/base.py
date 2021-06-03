@@ -23,7 +23,7 @@ local_config_file = join_path(BASE_DIR, "labcirs/settings/local_config.json")
 
 def get_local_setting(setting_item, default=None, config_file=local_config_file):
     try:
-        f = open(config_file)
+        f = open(config_file, encoding='utf-8')
         try:
             local_config = json.loads(f.read())
             try:

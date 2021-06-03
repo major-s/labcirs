@@ -143,10 +143,11 @@ def add_or_modify_conf_entry(k, v):
                 elif value.lower() == 'true':
                     return True
             else:
-                if type(value) is str:
-                    return value.decode('utf-8')
-                else:
-                    return value
+                # in Python 3 input strings don't need to be decoded
+                # if type(value) is str:
+                #     return value.decode('utf-8')
+                # else:
+                return value
     elif type(v) is list:
         return add_to_conf_list(k, v)
     elif type(v) is OrderedDict:
