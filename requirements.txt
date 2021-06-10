@@ -1,4 +1,4 @@
-Django==1.11.29
+Django==2.2.24
 Pillow==6.2.2
 django-multiselectfield==0.1.12
 django-parler==2.0.1
