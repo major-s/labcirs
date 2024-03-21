@@ -34,8 +34,8 @@ class Command(BaseCommand):
         chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
         secret_key = get_random_string(50, chars)
         # use OrderedDict to preserve the order of the keys in the json file
-        with open(local_config_file, 'r') as f:
+        with open(local_config_file, 'r', encoding='utf-8') as f:
             local_config = json.loads(f.read(), object_pairs_hook=OrderedDict)
         local_config['SECRET_KEY'] = secret_key
-        with open(local_config_file, 'w') as f:
-            json.dump(local_config, f, indent=4)
+        with open(local_config_file, 'w', encoding='utf-8') as f:
+            json.dump(local_config, f, indent=4, ensure_ascii=False)
