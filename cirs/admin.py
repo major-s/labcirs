@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2019 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -102,7 +102,8 @@ class CommentInline(admin.TabularInline):
     extra = 0
     readonly_fields = ('author', 'text',)
     
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, *args, **kwargs):
+        # TODO: write tests. Reviewer should not add comments in the admin inline view
         return False
 
 class CriticalIncidentAdmin(admin.ModelAdmin):
