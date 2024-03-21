@@ -101,6 +101,7 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.find_input_and_enter_text('password', rep1.user.username, By.NAME)
         self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)
         
+        self.wait.until(EC.url_to_be(self.live_server_url + dept1.get_absolute_url()))
         incidents = self.get_column_from_table_as_list('tableIncidents')
     
         # and sees table with published incident from his department, but not from another

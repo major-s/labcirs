@@ -471,7 +471,7 @@ class CriticalIncidentWithDepartment(TestCase):
     def test_critical_incident_inherits_department_from_creating_reporter(self):
         reporter = create_role(Reporter, 'reporter')
         dept = mommy.make(Department, reporter=reporter)
-        ci = mommy.prepare(CriticalIncident, public=True)
+        ci = mommy.prepare(CriticalIncident, public=True, id=1, photo='', department=dept, _fill_optional=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
         self.client.post(reverse('create_incident', kwargs={'dept': dept.label}), data=ci.__dict__)
 
