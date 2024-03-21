@@ -18,8 +18,6 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from __future__ import unicode_literals
-
 import time
 
 from django.test import TestCase, override_settings

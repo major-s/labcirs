@@ -18,8 +18,6 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.exceptions import MultipleObjectsReturned, ValidationError

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
-
-from __future__ import unicode_literals
 
 from django.contrib.auth.models import User, Permission
 
