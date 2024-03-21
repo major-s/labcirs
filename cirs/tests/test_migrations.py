@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
+from django.test import tag
 from django_migration_testcase import MigrationTest
 from django_migration_testcase.base import idempotent_transaction
 from model_mommy import mommy
@@ -32,7 +33,7 @@ from cirs.models import Reporter, Reviewer
 
 from .helpers import create_user_with_perm
 
-
+@tag('migration')
 class DataMigrationForDepartment(MigrationTest):
     
     app_name = 'cirs'
@@ -147,6 +148,7 @@ class DataMigrationForDepartment(MigrationTest):
         self.assertIn(reviewer.username, [rev.user.username for rev in dept.reviewers.all()])
 
 
+@tag('migration')
 class TestBeforeAddingOrganizationToIncidents(MigrationTest):
     
     app_name = 'cirs'
