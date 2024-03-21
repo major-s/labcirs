@@ -282,7 +282,8 @@ class TranslationStatusMixin(object):
 
 class PublishableIncident(TranslationStatusMixin, TranslatableModel):
     critical_incident = models.OneToOneField(CriticalIncident,
-                                             verbose_name=_("Critical incident"))
+                                             verbose_name=_("Critical incident"),
+                                             on_delete=models.CASCADE)
    
     translations = TranslatedFields(
         incident=models.CharField(_("Incident"), max_length=255),
