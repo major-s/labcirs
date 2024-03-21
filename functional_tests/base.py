@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2019 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,7 +23,7 @@ import os
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By

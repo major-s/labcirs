@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import include, url
+from django.urls import include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
@@ -8,22 +8,22 @@ from cirs.admin import admin_site
 
 
 urlpatterns = [
-    url(r'^$', DepartmentList.as_view(), name='labcirs_home'),
-    url(r'^incidents/', include('cirs.urls')),
-    url(r'^admin/logout/$', logout_user, name='logout_admin'),
-    url(r'^admin/', include(admin_site.urls)),
-    url(r'^login/$',  login_user, name='login'),
-    url(r'^logout/$', logout_user, name='logout'),
-    url(r'^i18n/', include('django.conf.urls.i18n')),
-    url(r'^accounts/register/$', RegistrationViewWithDepartment.as_view(), name='registration_register'),
-    url(r'^accounts/', include('registration.backends.admin_approval.urls')),
-    #url(r'^docs/', include('docs.urls')),
-    url(r'^demo_data.html$', TemplateView.as_view(), name='demo_login_data_page'),
+    re_path(r'^$', DepartmentList.as_view(), name='labcirs_home'),
+    re_path(r'^incidents/', include('cirs.urls')),
+    re_path(r'^admin/logout/$', logout_user, name='logout_admin'),
+    re_path(r'^admin/', admin_site.urls),
+    re_path(r'^login/$',  login_user, name='login'),
+    re_path(r'^logout/$', logout_user, name='logout'),
+    re_path(r'^i18n/', include('django.conf.urls.i18n')),
+    re_path(r'^accounts/register/$', RegistrationViewWithDepartment.as_view(), name='registration_register'),
+    re_path(r'^accounts/', include('registration.backends.admin_approval.urls')),
+    #re_path(r'^docs/', include('docs.urls')),
+    re_path(r'^demo_data.html$', TemplateView.as_view(), name='demo_login_data_page'),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
-        url(r'^media/(?P<path>.*)$', serve, {
+        re_path(r'^media/(?P<path>.*)$', serve, {
             'document_root': settings.MEDIA_ROOT,
         }),
     ]

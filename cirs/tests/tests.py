@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -24,7 +24,7 @@ from django.contrib.admin.sites import AdminSite
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase, override_settings
 
 from model_mommy import mommy

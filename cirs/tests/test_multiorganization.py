@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2019 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,7 +23,7 @@ import itertools
 from django.contrib import admin, auth
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import IntegrityError
 from django.test import TestCase, RequestFactory
 from model_mommy import mommy

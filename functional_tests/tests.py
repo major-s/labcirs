@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2021 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -22,7 +22,7 @@ import time
 
 from datetime import date
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import override_settings
 from model_mommy import mommy
 from selenium.webdriver.common.by import By

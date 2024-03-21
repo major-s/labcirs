@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 Sebastian Major
+# Copyright (C) 2019-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -25,7 +25,7 @@ import time
 from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from parameterized import parameterized
 from registration.models import SupervisedRegistrationProfile
 

@@ -1,8 +1,5 @@
-Django==1.11.29
-Pillow==6.2.2
+Django<4
+Pillow==10.2.0
 django-multiselectfield==0.1.12
-django-parler==2.0.1
-django-registration-redux==2.8
-#  following was necessary on Ubuntu 14.04 with Python 2 to run setup
-# scandir
-#pathlib2
+django-parler==2.3
+django-registration-redux==2.13

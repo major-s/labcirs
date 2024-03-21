@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2019 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -26,7 +26,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.urls import resolve, get_script_prefix
 from django.utils.translation import get_language, ugettext_lazy as _
