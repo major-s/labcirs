@@ -1,6 +1,13 @@
 LabCIRS changelog
 =================
 
+6.1 (2024-03-24)
+----------------
+
+* Updated Django to 3.2 and the dependencies to most recent versions. This caused few code changes.
+* Updated bundled Bootstrap 4.6 , JQuery, JQueryUI and DataTables to most recent versions.
+
+
 6.0 (2021-06-02)
 ----------------
 

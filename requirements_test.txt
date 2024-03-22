@@ -4,4 +4,4 @@
 -r requirements.txt
 parameterized==0.7.0
 model-mommy==1.6.0
-django-migration-testcase==0.0.14
+django-migration-testcase==0.0.15

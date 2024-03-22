@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2019 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,11 +23,13 @@ import os
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
@@ -53,9 +55,11 @@ class FunctionalTest(StaticLiveServerTestCase):
             cls.browser = webdriver.Chrome(
                 executable_path=chrome_driver_location, chrome_options=options)
         elif settings.BROWSER == 'Firefox':
-            profile = webdriver.FirefoxProfile()
+            options = Options()
+            profile = FirefoxProfile()
             profile.set_preference('intl.accept_languages', 'en')
-            cls.browser = webdriver.Firefox(profile)
+            options.profile = profile
+            cls.browser = webdriver.Firefox(options=options)
 
         cls.browser.implicitly_wait(DEFAULT_WAIT)
         cls.maxDiff = None

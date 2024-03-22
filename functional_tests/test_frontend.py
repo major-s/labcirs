@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -17,14 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
-from __future__ import unicode_literals
 
 import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import override_settings
 from model_mommy import mommy
 from parameterized import parameterized
@@ -101,6 +100,7 @@ class FrontendWithDepartments(FrontendBaseTest):
         self.find_input_and_enter_text('password', rep1.user.username, By.NAME)
         self.find_input_and_enter_text('password', Keys.RETURN, By.NAME)
         
+        self.wait.until(EC.url_to_be(self.live_server_url + dept1.get_absolute_url()))
         incidents = self.get_column_from_table_as_list('tableIncidents')
     
         # and sees table with published incident from his department, but not from another

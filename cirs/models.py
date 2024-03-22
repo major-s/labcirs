@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2019 Sebastian Major
+# Copyright (C) 2016-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,7 +23,7 @@ from datetime import date
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -282,7 +282,8 @@ class TranslationStatusMixin(object):
 
 class PublishableIncident(TranslationStatusMixin, TranslatableModel):
     critical_incident = models.OneToOneField(CriticalIncident,
-                                             verbose_name=_("Critical incident"))
+                                             verbose_name=_("Critical incident"),
+                                             on_delete=models.CASCADE)
    
     translations = TranslatedFields(
         incident=models.CharField(_("Incident"), max_length=255),

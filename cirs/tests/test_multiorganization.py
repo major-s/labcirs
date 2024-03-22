@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2019 Sebastian Major
+# Copyright (C) 2018-2024 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,7 +23,7 @@ import itertools
 from django.contrib import admin, auth
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import IntegrityError
 from django.test import TestCase, RequestFactory
 from model_mommy import mommy
@@ -471,7 +471,7 @@ class CriticalIncidentWithDepartment(TestCase):
     def test_critical_incident_inherits_department_from_creating_reporter(self):
         reporter = create_role(Reporter, 'reporter')
         dept = mommy.make(Department, reporter=reporter)
-        ci = mommy.prepare(CriticalIncident, public=True)
+        ci = mommy.prepare(CriticalIncident, public=True, id=1, photo='', department=dept, _fill_optional=True)
         self.client.login(username=reporter.user.username, password=reporter.user.username)
         self.client.post(reverse('create_incident', kwargs={'dept': dept.label}), data=ci.__dict__)
 
