@@ -17,7 +17,7 @@ As of version 6.0, LabCIRS works only with Python 3. Users of older versions hav
 Requirements
 ------------
 - Python 3.8 (older versions of Python 3 might work but are not tested)
-- Django 1.11 (older versions may work too but are not tested anymore)
+- Django 3.2 (older versions may work too but are not supported and not tested anymore)
 - Pillow
 - django-multiselectfield
 - django-parler
@@ -31,7 +31,7 @@ Installation
 ------------
 Assuming usage of Apache, PostgreSQL and virtualenv on a Linux (Windows and MacOS should work too) machine, the installation steps are:
 
-Install Python, virtualenv, PostgreSQL and Apache (with mod_wsgi) if not already present. On Ubuntu 14.04 following packages are required::
+Install Python, virtualenv, PostgreSQL and Apache (with mod_wsgi) if not already present. On Ubuntu 18.04 following packages are required::
 
     apache2, libapache2-mod-wsgi-py3, postgresql, libpq-dev, python, python-dev, python-virtualenv
 
@@ -157,7 +157,7 @@ python shell after succesful update.
 Acknowledgements
 ----------------
 
-Current development of LabCIRS is sponsored by the `Stiftung Charité <http://www.stiftung-charite.de>`_
+The development of multitenant LabCIRS version was sponsored by the `Stiftung Charité <http://www.stiftung-charite.de>`_
 
 Thanks to Claudia Kurreck, Nikolas Offenhauser, Ingo Przesdzing for ideas and testing. 
 
@@ -178,7 +178,7 @@ The copyright of these software packages is hold by its respective owners.
 License
 -------
 
-Copyright (C) 2016-2021 Sebastian Major <sebastian.major@charite.de>
+Copyright (C) 2016-2024 Sebastian Major <sebastian.major@charite.de>
 
 LabCIRS is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
