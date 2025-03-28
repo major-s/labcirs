@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -26,7 +26,7 @@ from django.core import mail
 from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
                           ClearableFileInput, DateInput, ValidationError)
 #from django.forms.utils import ErrorList
-from django.utils.translation import ugettext, ungettext, ugettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
                                 RegistrationFormUniqueEmail)
@@ -160,9 +160,12 @@ class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase, RegistrationFor
         super(LabCIRSRegistrationForm, self).clean_email()
         if settings.REGISTRATION_RESTRICT_USER_EMAIL is True:
             allowed_domains = settings.REGISTRATION_EMAIL_DOMAINS
-            allowed_list = ungettext('Only @%s is allowed!', 'Allowed domains are @%s',
-                                      len(allowed_domains)) % ', @'.join(allowed_domains)
-            error_message = ' '.join((ugettext('You cannot register with this email domain!'),
+            allowed_list = ""
+            if len(allowed_domains) == 1:
+                allowed_list = gettext(f"Only @{allowed_domains[0]} is allowed!")
+            elif len(allowed_domains) > 1:
+                allowed_list = gettext(f"Allowed domains are @{', @'.join(allowed_domains)}")
+            error_message = ' '.join((gettext('You cannot register with this email domain!'),
                                       allowed_list))
             
             email_domain = self.cleaned_data['email'].split('@')[-1]

@@ -27,9 +27,9 @@
 
 	{% get_current_language as LANGUAGE_CODE %}
 	
-	{% ifnotequal LANGUAGE_CODE "en" %}
+	{% if LANGUAGE_CODE != "en" %}
 		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.datepicker-{{ LANGUAGE_CODE }}.js"></script>
-	{% endifnotequal %}
+	{% endif %}
 	
 	<script type="text/javascript">
 	    $(document).ready(function(){
