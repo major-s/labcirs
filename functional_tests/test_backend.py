@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -22,6 +22,7 @@ from django.contrib.auth.models import User
 from django.urls.base import reverse
 from model_mommy import mommy
 from parameterized import parameterized
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
 from cirs.models import Reviewer
@@ -43,9 +44,9 @@ class CriticalIncidentBackendTest(FunctionalTest):
         self.quick_login(self.reviewer, admin_url)
         # uncollapse the review panel
         self.click_link_with_text('Show')
-        Select(self.browser.find_element_by_id(
+        Select(self.browser.find_element(By.ID,
             'id_status')).select_by_value("in process")
-        self.browser.find_element_by_id('id_category')
+        self.browser.find_element(By.ID, 'id_category')
     
     
 
@@ -67,12 +68,12 @@ class ConfigurationInBackend(FunctionalTest):
         self.find_input_and_enter_text('id_login_info', self.LOGIN_INFO)
         self.find_input_and_enter_text('id_login_info_url', login_url)
         self.find_input_and_enter_text('id_login_info_link_text', self.LINK_TEXT)
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.NAME, '_save').click()
         self.logout()
         self.browser.get(self.live_server_url + dept.get_absolute_url())
-        current_login_info = self.browser.find_element_by_class_name('alert-success').text
+        current_login_info = self.browser.find_element(By.CLASS_NAME, 'alert-success').text
         self.assertIn(self.LOGIN_INFO, current_login_info)
-        self.browser.find_element_by_link_text(self.LINK_TEXT)
+        self.browser.find_element(By.LINK_TEXT, self.LINK_TEXT)
 
 
 class AccessRestriction(FunctionalTest):
@@ -101,7 +102,7 @@ class AccessRestriction(FunctionalTest):
     def test_reviewer_can_change_only_username_and_password_of_reporter_user(self, input_name):
         target = get_admin_url(self.dept.reporter.user)
         self.quick_login(self.rev.user, target)
-        inputs = self.browser.find_elements_by_tag_name('input')
+        inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         input_names  = [inpt.get_attribute('name') for inpt in inputs]
         self.assertIn(input_name, input_names)
 
@@ -109,14 +110,14 @@ class AccessRestriction(FunctionalTest):
     def test_reviewer_cannot_see_important_fields_of_reporter_user(self, input_name):
         target = get_admin_url(self.dept.reporter.user)
         self.quick_login(self.rev.user, target)
-        inputs = self.browser.find_elements_by_tag_name('input')
+        inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         input_names  = [inpt.get_attribute('name') for inpt in inputs]
         self.assertNotIn(input_name, input_names)
         
     def test_reviewer_cannot_see_select_boxes_in_reporter_user_change_page(self):
         target = get_admin_url(self.dept.reporter.user)
         self.quick_login(self.rev.user, target)
-        selects = self.browser.find_elements_by_tag_name('select')
+        selects = self.browser.find_elements(By.TAG_NAME, 'select')
         self.assertEqual(len(selects), 0)
         
     def test_reviewer_cannot_access_unlisted_users_by_direct_link(self):

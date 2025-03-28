@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -87,9 +87,9 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         self.click_link_with_text(class_name)
         self.click_link_case_insensitive('Add {}'.format(role))
         Select(
-            self.browser.find_element_by_id('id_user')
+            self.browser.find_element(By.ID, 'id_user')
         ).select_by_visible_text(self.user.username)
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.NAME, '_save').click()
         self.wait.until(
             EC.element_to_be_clickable((By.LINK_TEXT, self.user.username)),
             message=('could not find %s' % self.user.username)
@@ -101,7 +101,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
     @parameterized.expand([('reporter',), ('reviewer',)])
     def test_only_user_without_role_in_select(self, role):
         self.browser.get(self.live_server_url + '/admin/cirs/{}/add/'.format(role))
-        select = Select(self.browser.find_element_by_id('id_user'))
+        select = Select(self.browser.find_element(By.ID, 'id_user'))
         options = [opt.text for opt in select.options]
         # there is also an empty choice
         self.assertListEqual(options, ['---------', self.user.username])
@@ -115,13 +115,13 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         self.find_input_and_enter_text('id_label', self.en_dict['label'])
         self.find_input_and_enter_text('id_name', self.en_dict['name'])
         Select(
-            self.browser.find_element_by_id('id_reporter')
+            self.browser.find_element(By.ID, 'id_reporter')
         ).select_by_visible_text(str(self.en_dict['reporter']))
         Select(
-            self.browser.find_element_by_id('id_reviewers_from')
+            self.browser.find_element(By.ID, 'id_reviewers_from')
         ).select_by_visible_text('reviewer')
-        self.browser.find_element_by_id('id_reviewers_add_link').click()
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.ID, 'id_reviewers_add_link').click()
+        self.browser.find_element(By.NAME, '_save').click()
         # The name of the department is equal to the label set
         self.wait.until(
             EC.element_to_be_clickable((By.LINK_TEXT, self.en_dict['label'])),
@@ -133,7 +133,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
     def test_only_role_user_in_role_select_for(self, role, elem_id):
         # In the select dialogs only users assigned to roles are visible
         self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
-        select = Select(self.browser.find_element_by_id(elem_id))
+        select = Select(self.browser.find_element(By.ID, elem_id))
         options = [opt.text for opt in select.options]
         expected = ['---------', role]
         if role == 'reviewer':
@@ -148,7 +148,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         Department.objects.create(**self.en_dict)
         new_reporter = create_role(Reporter, 'new_reporter')
         self.browser.get(self.live_server_url + '/admin/cirs/department/add/')
-        select = Select(self.browser.find_element_by_id('id_reporter'))
+        select = Select(self.browser.find_element(By.ID, 'id_reporter'))
         options = [opt.text for opt in select.options]
         expected = ['---------', str(new_reporter)]
         self.assertListEqual(options, expected,
@@ -159,7 +159,7 @@ class AddRolesAndDepartmentBackendTest(FunctionalTest):
         dept.reviewers.add(self.reviewer)
         self.browser.get(self.live_server_url + get_admin_url(dept))
         self.find_input_and_enter_text('id_name', 'The best lab in the world')
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.NAME, '_save').click()
         self.wait.until(
             EC.element_to_be_clickable((By.LINK_TEXT, self.en_dict['label'])),
             message=('could not find {}'.format(self.en_dict['label']))
@@ -192,7 +192,7 @@ class SecurityFrontendTest(FunctionalTest):
         self.assertEqual(error_alert.text, MISSING_ROLE_MSG)
         
         with self.assertRaises(NoSuchElementException):
-            nav = self.browser.find_element_by_id('navbarMenu')
+            nav = self.browser.find_element(By.ID, 'navbarMenu')
             self.assertNotIn('View incidents', nav.text)
 
     
@@ -210,7 +210,7 @@ class SecurityFrontendTest(FunctionalTest):
         self.assertEqual(error_alert.text, MISSING_DEPARTMENT_MSG)
         
         with self.assertRaises(NoSuchElementException):
-            self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element(By.ID, 'navbarMenu')
 
     def test_reporter_with_department_is_redirected_to_incident_list(self):
         reporter = create_role(Reporter, 'rep')
@@ -260,14 +260,14 @@ class SecurityFrontendDirectAccessTest(FunctionalTest):
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
         self.assertIn(target_url, self.browser.current_url)
         with self.assertRaises(NoSuchElementException):
-            self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element(By.ID, 'navbarMenu')
         
     def test_anonymous_cannot_access_create_incident_view(self):
         self.browser.get('{}{}'.format(self.live_server_url, self.create_url))
         target_url = '{}{}'.format(self.live_server_url, reverse('login'))
         self.assertIn(target_url, self.browser.current_url)
         with self.assertRaises(NoSuchElementException):
-            self.browser.find_element_by_id('navbarMenu')
+            self.browser.find_element(By.ID, 'navbarMenu')
 
 # TODO: Reviewer should not see departments and reviewers(?). Probably also not reporters
 # although he should may change reporter password for own department

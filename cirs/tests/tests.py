@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -49,7 +49,7 @@ class CriticalIncidentModelTest(TestCase):
         p = CriticalIncident.objects.get(id=1).photo.path
 
         # TODO: not really working. Compare files
-        self.failUnless(open(p), 'file not found')
+        self.assertTrue(open(p), 'file not found')
         # TODO: move category testing to another test
         my_incident = CriticalIncident.objects.first()
         self.assertIn('other', my_incident.category)

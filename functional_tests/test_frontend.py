@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -45,7 +45,7 @@ class FrontendBaseTest(FunctionalTest):
         self.assertEqual(self.browser.current_url, target_url)
         
     def assertBrandIs(self, label):
-        brand = self.browser.find_element_by_class_name('navbar-brand')
+        brand = self.browser.find_element(By.CLASS_NAME, 'navbar-brand')
         self.assertEqual(brand.text, '{} / {}'.format(settings.ORGANIZATION, label))
 
 
@@ -67,7 +67,7 @@ class FrontendWithDepartments(FrontendBaseTest):
             self.assertIn(dept.label, labels)
             
         # At the top of the page he sees the name of the organization
-        brand = self.browser.find_element_by_class_name('navbar-brand')
+        brand = self.browser.find_element(By.CLASS_NAME, 'navbar-brand')
         self.assertEqual(brand.text, settings.ORGANIZATION)
         
         # he clicks on one of the links and is redirected to the login page
@@ -270,7 +270,7 @@ class CorrectDepartmentInURL(FrontendBaseTest):
         #time.sleep(1)
         self.assertCurrentUrlIs(dept1.get_absolute_url())
         self.assertBrandIs(dept1.label)
-        heading1 = self.browser.find_element_by_tag_name('h2')
+        heading1 = self.browser.find_element(By.TAG_NAME, 'h2')
         self.assertIn(dept1.label, heading1.text)
         # check also for message
         #self.assertIn

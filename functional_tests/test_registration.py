@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019-2024 Sebastian Major
+# Copyright (C) 2019-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -18,11 +18,9 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from django.core import mail
-from django.contrib.auth.models import User
 from django.test import override_settings
 from django.urls.base import reverse
-from model_mommy import mommy
+from selenium.webdriver.common.by import By
 from parameterized import parameterized
 
 from .test_frontend import FrontendBaseTest
@@ -30,8 +28,8 @@ from .test_multiorganization import get_admin_url
 
 import time
 from registration.models import SupervisedRegistrationProfile
-from cirs.models import Reporter
 
+from django.conf import settings
 
 @override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False,
                             REGISTRATION_OPEN=True,
@@ -54,6 +52,8 @@ class SelfRegistrationTest(FrontendBaseTest):
         self.browser.get(self.live_server_url + my_url)
 
     def test_new_reviewer_can_register_new_department(self):
+        print(f"registration: {settings.REGISTRATION_OPEN}")
+
         # New user visits the LabCIRS page 
         self.browser.get(self.live_server_url)
         # He cannot find his department 
@@ -71,11 +71,14 @@ class SelfRegistrationTest(FrontendBaseTest):
         self.find_input_and_enter_text('id_department_label', 'dept')
         self.find_input_and_enter_text('id_department_name', 'Dept')
         self.find_input_and_enter_text('id_reporter_name', 'rep')
-        self.browser.find_element_by_id("id_tos").click()
+        # FIXME: This works only if json settings are set to true:
+        # This has to be changed, but the best course is to move
+        # settings to .env
+        self.browser.find_element(By.ID, "id_tos").click()
 
         # finally he clicks on the "Submit" button
         # TODO: Change to "Register"?
-        self.browser.find_element_by_class_name("btn-danger").click()
+        self.browser.find_element(By.CLASS_NAME, "btn-danger").click()
 
         # and lands on the success page
         self.assertCurrentUrlIs(reverse('registration_complete'))
