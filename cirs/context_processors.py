@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import cirs
 from django.conf import settings
 
