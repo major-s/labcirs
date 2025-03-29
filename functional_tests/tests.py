@@ -27,7 +27,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import CriticalIncident, Department, Reviewer, Reporter
+from cirs.models import Reviewer, Reporter
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 

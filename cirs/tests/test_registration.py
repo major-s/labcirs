@@ -16,11 +16,8 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-import time
-
 from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
-from django.core import mail
 from django.urls import reverse
 from parameterized import parameterized
 from registration.models import SupervisedRegistrationProfile

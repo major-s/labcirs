@@ -22,9 +22,7 @@ from selenium.webdriver.common.by import By
 from parameterized import parameterized
 
 from .test_frontend import FrontendBaseTest
-from .test_multiorganization import get_admin_url
 
-import time
 from registration.models import SupervisedRegistrationProfile
 
 from django.conf import settings
