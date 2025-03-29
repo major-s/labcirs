@@ -101,7 +101,7 @@ class CriticalIncidentListTest(FunctionalTestWithBackendLogin):
         headers1 = self.browser.find_elements(By.TAG_NAME, 'h1')
         self.assertIn("Select Critical incident to change", [header1.text for header1 in headers1])
         # logout and check as normal user if photo is visible
-        self.logout()
+        self.logout_backend()
         self.quick_login_reporter(self.dept.get_absolute_url())
         # check if all expected fields are present in the table
         table = self.wait.until(EC.presence_of_element_located((By.ID, 'tableIncidents')))

@@ -143,6 +143,17 @@ class FunctionalTest(StaticLiveServerTestCase):
     def logout(self):
         self.click_link_case_insensitive("Log out")
 
+    def logout_backend(self):
+        # Wait for the logout button to be clickable.
+        # Django 4.2 admin app logout changed from link to form with button
+        logout_button = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//form[@id='logout-form']//button[@type='submit']")
+            ),
+            message="Logout button not clickable",
+        )
+        logout_button.click()
+
     def enter_test_incident(self, with_photo=False, wait_for_success=False):
         # usable on incident create page
         self.find_input_and_enter_text('id_date', "07/24/2015")
