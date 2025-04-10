@@ -1,5 +1,6 @@
-import cirs
 from django.conf import settings
+
+import cirs
 
 
 def cirs_data(request):

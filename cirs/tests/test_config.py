@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -17,8 +17,8 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 from django.contrib.auth.models import User
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 

@@ -16,16 +16,15 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+from django.conf import settings
 from django.test import override_settings
 from django.urls.base import reverse
-from selenium.webdriver.common.by import By
 from parameterized import parameterized
+from registration.models import SupervisedRegistrationProfile
+from selenium.webdriver.common.by import By
 
 from .test_frontend import FrontendBaseTest
 
-from registration.models import SupervisedRegistrationProfile
-
-from django.conf import settings
 
 @override_settings(REGISTRATION_RESTRICT_USER_EMAIL=False,
                             REGISTRATION_OPEN=True,

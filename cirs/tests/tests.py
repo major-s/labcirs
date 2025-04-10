@@ -19,16 +19,16 @@
 from datetime import date, timedelta
 
 from django.contrib.admin.sites import AdminSite
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.core import mail
-from django.urls import reverse
 from django.test import TestCase, override_settings
-
+from django.urls import reverse
 from model_mommy import mommy
 
 from cirs.admin import CriticalIncidentAdmin
-from cirs.models import CriticalIncident, PublishableIncident, LabCIRSConfig, Department, Reporter
+from cirs.models import (CriticalIncident, Department, LabCIRSConfig,
+                         PublishableIncident, Reporter)
 from cirs.views import IncidentCreateForm
 
 from .helpers import create_role, create_user, create_user_with_perm

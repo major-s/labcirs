@@ -17,22 +17,21 @@
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
 import time
-
 from datetime import date
+
 from django.core import mail
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import Reviewer, Reporter
+from cirs.models import Reporter, Reviewer
 from cirs.tests.helpers import create_role
 from cirs.tests.tests import generate_three_incidents
 
 from .base import FunctionalTest
-
 
 DEFAULT_WAIT = 5
 

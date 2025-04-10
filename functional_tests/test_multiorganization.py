@@ -19,18 +19,18 @@
 import time
 from unittest import skip
 
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
+from parameterized import param, parameterized
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from cirs.models import (Reporter, Reviewer, Department, CriticalIncident, PublishableIncident,
-                        LabCIRSConfig)
+from cirs.models import (CriticalIncident, Department, LabCIRSConfig,
+                         PublishableIncident, Reporter, Reviewer)
 from cirs.tests.helpers import create_role, create_user
-from parameterized import parameterized, param
 
 from .base import FunctionalTest
 
@@ -199,7 +199,8 @@ class SecurityFrontendTest(FunctionalTest):
         ('rev', Reviewer)
     ])
     def test_log_out_and_error_message_for_role_without_department(self, name, role_cls):
-        from cirs.views import MISSING_DEPARTMENT_MSG  # necessary only here so far
+        # necessary only here so far
+        from cirs.views import MISSING_DEPARTMENT_MSG  
         role = create_role(role_cls, name)
         self.login_to_department(role.user)
 

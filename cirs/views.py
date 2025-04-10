@@ -20,21 +20,22 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
+from django.contrib.auth import (REDIRECT_FIELD_NAME, authenticate, login,
+                                 logout)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
-from django.urls import resolve, get_script_prefix
-from django.utils.translation import get_language, gettext_lazy as _
+from django.shortcuts import redirect, render
+from django.urls import get_script_prefix, resolve, reverse_lazy
+from django.utils.translation import get_language
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 from registration.backends.admin_approval.views import RegistrationView
 
-from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm
-from .models import (CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department,
-                     Reporter, Reviewer)
+from .forms import CommentForm, IncidentCreateForm, IncidentSearchForm
+from .models import (Comment, CriticalIncident, Department, LabCIRSConfig,
+                     PublishableIncident, Reporter, Reviewer)
 
 
 class RedirectMixin(object):

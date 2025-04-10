@@ -1,7 +1,8 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 
-from cirs.views import IncidentCreate, PublishableIncidentList, IncidentSearch, IncidentDetailView, DepartmentList
+from cirs.views import (DepartmentList, IncidentCreate, IncidentDetailView,
+                        IncidentSearch, PublishableIncidentList)
 
 urlpatterns = [
     re_path(r'^$', DepartmentList.as_view(), name='departments_list'),

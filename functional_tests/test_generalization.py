@@ -18,8 +18,8 @@
 
 import time
 
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -28,7 +28,6 @@ from selenium.webdriver.support.ui import Select
 from cirs.models import LabCIRSConfig
 
 from .base import FunctionalTest
-
 
 DEFAULT_WAIT = 5
 

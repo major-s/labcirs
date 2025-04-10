@@ -21,15 +21,16 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
-                          ClearableFileInput, DateInput, ValidationError)
-#from django.forms.utils import ErrorList
-from django.utils.translation import gettext, gettext_lazy as _
+from django.forms import (CharField, ClearableFileInput, DateInput, Form,
+                          ModelForm, RadioSelect, Select, Textarea,
+                          ValidationError)
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
+from registration.forms import (RegistrationFormTermsOfService,
+                                RegistrationFormUniqueEmail,
+                                RegistrationFormUsernameLowercase)
 
-from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
-                                RegistrationFormUniqueEmail)
-
-from .models import CriticalIncident, Comment, Department
+from .models import Comment, CriticalIncident, Department
 
 
 def notify_on_creation(form, department, subject='', excluded_user_id=None):

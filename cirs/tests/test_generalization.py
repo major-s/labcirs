@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -16,11 +16,11 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-import os
 import json
+import os
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from labcirs.settings.base import get_local_setting
 

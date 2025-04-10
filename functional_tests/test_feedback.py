@@ -16,19 +16,20 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
+import time
+
 from django.core import mail
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, Department, Reporter, Reviewer
+from cirs.models import (Comment, CriticalIncident, Department, Reporter,
+                         Reviewer)
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-import time
-
 
 DEFAULT_WAIT = 5
 

@@ -21,19 +21,19 @@ import time
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Department, Reporter, PublishableIncident, Reviewer, CriticalIncident
+from cirs.models import (CriticalIncident, Department, PublishableIncident,
+                         Reporter, Reviewer)
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-
 
 
 class FrontendBaseTest(FunctionalTest):

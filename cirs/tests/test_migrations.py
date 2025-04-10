@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -28,6 +28,7 @@ from parameterized import parameterized
 from cirs.models import Reporter, Reviewer
 
 from .helpers import create_user_with_perm
+
 
 @tag('migration')
 class DataMigrationForDepartment(MigrationTest):
