@@ -67,7 +67,7 @@ class ConfigurationInBackend(FunctionalTest):
         self.find_input_and_enter_text('id_login_info_url', login_url)
         self.find_input_and_enter_text('id_login_info_link_text', self.LINK_TEXT)
         self.browser.find_element(By.NAME, '_save').click()
-        self.logout()
+        self.logout_backend()
         self.browser.get(self.live_server_url + dept.get_absolute_url())
         current_login_info = self.browser.find_element(By.CLASS_NAME, 'alert-success').text
         self.assertIn(self.LOGIN_INFO, current_login_info)
