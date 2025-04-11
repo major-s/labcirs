@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -18,7 +16,7 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 
 from cirs.models import Reporter, Reviewer
 

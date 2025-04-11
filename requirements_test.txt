@@ -2,7 +2,7 @@
 
 # just the standard requirements
 -r requirements.txt
-parameterized==0.7.0
+parameterized==0.9.0
 model-mommy==2.0.0
 django-migration-testcase==0.0.15
-selenium<4
+selenium==4.30.0

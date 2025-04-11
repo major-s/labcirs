@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -18,11 +16,12 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from __future__ import unicode_literals
+from model_mommy.recipe import Recipe, foreign_key, seq
 
-from model_mommy.recipe import Recipe, seq, foreign_key
-from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter, PublishableIncidentTranslation
 from cirs.models import Department
+
+from .models import (CriticalIncident, PublishableIncident,
+                     PublishableIncidentTranslation, Reporter, Reviewer)
 
 REPORTER_NAME = 'rep'
 

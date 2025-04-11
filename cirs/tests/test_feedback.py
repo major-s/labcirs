@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -23,8 +21,8 @@ import random
 import string
 
 from django.core import mail
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 from model_mommy import mommy
 
 from cirs.forms import CommentForm

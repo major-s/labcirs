@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -18,20 +16,21 @@
 # along with LabCIRS.
 # If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
 
-from __future__ import unicode_literals
 from datetime import date
+
 from django.conf import settings
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.html import format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from multiselectfield import MultiSelectField
-from parler.models import TranslatableModel, TranslatedFields, TranslationDoesNotExist
+from parler.models import (TranslatableModel, TranslatedFields,
+                           TranslationDoesNotExist)
 from parler.utils import get_language_title
 
 
@@ -108,6 +107,7 @@ class Department(models.Model):
         return self.label
 
 from registration.signals import user_approved
+
 
 @receiver(user_approved)
 def activate_department(sender, user, request, **kwargs):

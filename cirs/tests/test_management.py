@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -20,6 +18,7 @@
 
 import json
 from collections import OrderedDict
+
 from django.core.management import call_command
 from django.test import TestCase
 

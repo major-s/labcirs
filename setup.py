@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2019-2021 Sebastian Major
+# Copyright (C) 2019-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
@@ -22,9 +20,8 @@
 import io
 import json
 import os
-import sys
 import shutil
-
+import sys
 from collections import OrderedDict
 from pathlib import Path
 
