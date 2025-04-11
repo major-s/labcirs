@@ -16,8 +16,8 @@ As of version 6.0, LabCIRS works only with Python 3. Users of older versions hav
 
 Requirements
 ------------
-- Python 3.8 (older versions of Python 3 might work but are not tested)
-- Django 3.2 (older versions may work too but are not supported and not tested anymore)
+- Python 3.12 (older versions of Python 3 might work but are not tested)
+- Django 4.2 (older versions may work too but are not supported and not tested anymore)
 - Pillow
 - django-multiselectfield
 - django-parler
@@ -178,7 +178,7 @@ The copyright of these software packages is hold by its respective owners.
 License
 -------
 
-Copyright (C) 2016-2024 Sebastian Major <sebastian.major@charite.de>
+Copyright (C) 2016-2025 Sebastian Major <sebastian.major@charite.de>
 
 LabCIRS is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

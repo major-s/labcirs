@@ -1,6 +1,12 @@
 LabCIRS changelog
 =================
 
+7.0 (2025-04-11)
+----------------
+
+* Updated Django to 4.2. Tested with Python 3.12.
+
+
 6.1 (2024-03-24)
 ----------------
 
