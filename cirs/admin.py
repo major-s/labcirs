@@ -1,36 +1,33 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
-from django.forms import TextInput, Textarea
-from django.utils.translation import ugettext_lazy as _
-
+from django.forms import Textarea, TextInput
+from django.utils.translation import gettext_lazy as _
 from parler.admin import TranslatableAdmin, TranslatableTabularInline
 from registration.admin import RegistrationAdmin, RegistrationProfile
 
-from cirs.models import (Comment, CriticalIncident, PublishableIncident, 
-                         LabCIRSConfig, Department, Reporter, Reviewer)
+from cirs.models import (Comment, CriticalIncident, Department, LabCIRSConfig,
+                         PublishableIncident, Reporter, Reviewer)
 
 
 class LabCIRSAdminSite(admin.AdminSite):

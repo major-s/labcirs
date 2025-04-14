@@ -1,6 +1,15 @@
 LabCIRS changelog
 =================
 
+7.0 (2025-04-14)
+----------------
+
+* Updated Django to 4.2. Tested with Python 3.12.
+* Squashed old migrations
+* Removed migration tool for from single to multi tenant version. It was still written with Python 2.7 and not used anymore.
+* Changed the license to AGPLv3
+
+
 6.1 (2024-03-24)
 ----------------
 

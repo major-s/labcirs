@@ -1,42 +1,41 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login, logout
+from django.contrib.auth import (REDIRECT_FIELD_NAME, authenticate, login,
+                                 logout)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
-from django.urls import resolve, get_script_prefix
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.shortcuts import redirect, render
+from django.urls import get_script_prefix, resolve, reverse_lazy
+from django.utils.translation import get_language
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, FormView
 from registration.backends.admin_approval.views import RegistrationView
 
-from .forms import  IncidentCreateForm, IncidentSearchForm, CommentForm
-from .models import (CriticalIncident, Comment, PublishableIncident, LabCIRSConfig, Department,
-                     Reporter, Reviewer)
+from .forms import CommentForm, IncidentCreateForm, IncidentSearchForm
+from .models import (Comment, CriticalIncident, Department, LabCIRSConfig,
+                     PublishableIncident, Reporter, Reviewer)
 
 
 class RedirectMixin(object):

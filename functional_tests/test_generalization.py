@@ -1,27 +1,25 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 import time
 
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -30,7 +28,6 @@ from selenium.webdriver.support.ui import Select
 from cirs.models import LabCIRSConfig
 
 from .base import FunctionalTest
-
 
 DEFAULT_WAIT = 5
 
@@ -46,7 +43,7 @@ class OrganizationNameTest(FunctionalTest):
     def test_default_organization_name(self):
         self.browser.get(self.live_server_url)
         # assume default name is LabCIRS
-        organization = self.browser.find_element_by_class_name(
+        organization = self.browser.find_element(By.CLASS_NAME, 
             'navbar-brand').text
         self.assertEqual(organization, "LabCIRS")
 
@@ -57,7 +54,7 @@ class OrganizationNameTest(FunctionalTest):
     def test_custom_organization_name(self):
         self.browser.get(self.live_server_url)
         # assume default name is LabCIRS
-        organization = self.browser.find_element_by_class_name(
+        organization = self.browser.find_element(By.CLASS_NAME, 
             'navbar-brand').text
         self.assertEqual(organization, self.ORGANIZATION)
 
@@ -90,8 +87,8 @@ class EmailSettingsInBackend(FunctionalTest):
         and differs from localhost.
         """
 
-        self.browser.find_element_by_id('id_send_notification').click()
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.ID, 'id_send_notification').click()
+        self.browser.find_element(By.NAME, '_save').click()
         error_msg = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         # could also import the errormessage and check for equality
@@ -99,7 +96,7 @@ class EmailSettingsInBackend(FunctionalTest):
 
     def test_only_reviewers_in_the_recipient_list(self):
         recipient_select = Select(
-            self.browser.find_element_by_id('id_notification_recipients_from'))
+            self.browser.find_element(By.ID, 'id_notification_recipients_from'))
         options = [opt.text for opt in recipient_select.options]
         expected = [rev.user.username for rev in self.dept.reviewers.all()]
         self.assertListEqual(options, expected,
@@ -107,8 +104,8 @@ class EmailSettingsInBackend(FunctionalTest):
         
     @override_settings(EMAIL_HOST='smtp.example.com')
     def test_no_notifications_if_no_recipient(self):
-        self.browser.find_element_by_id('id_send_notification').click()
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.ID, 'id_send_notification').click()
+        self.browser.find_element(By.NAME, '_save').click()
         error_msg = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         self.assertIn('at least one notification recipient', error_msg.text)
@@ -117,22 +114,22 @@ class EmailSettingsInBackend(FunctionalTest):
     def test_no_notifications_if_no_sender(self):
         self.config.notification_recipients.add(self.reviewer)
         self.config.save()
-        self.browser.find_element_by_id('id_send_notification').click()
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.ID, 'id_send_notification').click()
+        self.browser.find_element(By.NAME, '_save').click()
         error_msg = self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'errorlist')))
         self.assertIn('sender email', error_msg.text)
 
     def test_enter_sender_email(self):
         self.find_input_and_enter_text('id_notification_sender_email', 'a@test.edu')
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.NAME, '_save').click()
         time.sleep(2)
         config = LabCIRSConfig.objects.first()
         self.assertEqual(config.notification_sender_email, "a@test.edu")
 
     def test_reviewer_can_enter_notification_text(self):
         self.find_input_and_enter_text('id_notification_text', "New incident")
-        self.browser.find_element_by_name('_save').click()
+        self.browser.find_element(By.NAME, '_save').click()
         time.sleep(2)
         config = LabCIRSConfig.objects.first()
         self.assertEqual(config.notification_text, "New incident")

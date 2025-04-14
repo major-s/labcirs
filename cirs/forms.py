@@ -1,37 +1,36 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.forms import (Form, ModelForm, Textarea, RadioSelect, CharField, Select, 
-                          ClearableFileInput, DateInput, ValidationError)
-#from django.forms.utils import ErrorList
-from django.utils.translation import ugettext, ungettext, ugettext_lazy as _
+from django.forms import (CharField, ClearableFileInput, DateInput, Form,
+                          ModelForm, RadioSelect, Select, Textarea,
+                          ValidationError)
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
+from registration.forms import (RegistrationFormTermsOfService,
+                                RegistrationFormUniqueEmail,
+                                RegistrationFormUsernameLowercase)
 
-from registration.forms import (RegistrationFormTermsOfService, RegistrationFormUsernameLowercase,
-                                RegistrationFormUniqueEmail)
-
-from .models import CriticalIncident, Comment, Department
+from .models import Comment, CriticalIncident, Department
 
 
 def notify_on_creation(form, department, subject='', excluded_user_id=None):
@@ -160,9 +159,12 @@ class LabCIRSRegistrationForm(RegistrationFormUsernameLowercase, RegistrationFor
         super(LabCIRSRegistrationForm, self).clean_email()
         if settings.REGISTRATION_RESTRICT_USER_EMAIL is True:
             allowed_domains = settings.REGISTRATION_EMAIL_DOMAINS
-            allowed_list = ungettext('Only @%s is allowed!', 'Allowed domains are @%s',
-                                      len(allowed_domains)) % ', @'.join(allowed_domains)
-            error_message = ' '.join((ugettext('You cannot register with this email domain!'),
+            allowed_list = ""
+            if len(allowed_domains) == 1:
+                allowed_list = gettext(f"Only @{allowed_domains[0]} is allowed!")
+            elif len(allowed_domains) > 1:
+                allowed_list = gettext(f"Allowed domains are @{', @'.join(allowed_domains)}")
+            error_message = ' '.join((gettext('You cannot register with this email domain!'),
                                       allowed_list))
             
             email_domain = self.cleaned_data['email'].split('@')[-1]

@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
+from django.conf import settings
 
 import cirs
-from django.conf import settings
 
 
 def cirs_data(request):

@@ -1,41 +1,39 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Department, Reporter, PublishableIncident, Reviewer, CriticalIncident
+from cirs.models import (CriticalIncident, Department, PublishableIncident,
+                         Reporter, Reviewer)
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-
 
 
 class FrontendBaseTest(FunctionalTest):
@@ -45,7 +43,7 @@ class FrontendBaseTest(FunctionalTest):
         self.assertEqual(self.browser.current_url, target_url)
         
     def assertBrandIs(self, label):
-        brand = self.browser.find_element_by_class_name('navbar-brand')
+        brand = self.browser.find_element(By.CLASS_NAME, 'navbar-brand')
         self.assertEqual(brand.text, '{} / {}'.format(settings.ORGANIZATION, label))
 
 
@@ -67,7 +65,7 @@ class FrontendWithDepartments(FrontendBaseTest):
             self.assertIn(dept.label, labels)
             
         # At the top of the page he sees the name of the organization
-        brand = self.browser.find_element_by_class_name('navbar-brand')
+        brand = self.browser.find_element(By.CLASS_NAME, 'navbar-brand')
         self.assertEqual(brand.text, settings.ORGANIZATION)
         
         # he clicks on one of the links and is redirected to the login page
@@ -270,7 +268,7 @@ class CorrectDepartmentInURL(FrontendBaseTest):
         #time.sleep(1)
         self.assertCurrentUrlIs(dept1.get_absolute_url())
         self.assertBrandIs(dept1.label)
-        heading1 = self.browser.find_element_by_tag_name('h2')
+        heading1 = self.browser.find_element(By.TAG_NAME, 'h2')
         self.assertIn(dept1.label, heading1.text)
         # check also for message
         #self.assertIn

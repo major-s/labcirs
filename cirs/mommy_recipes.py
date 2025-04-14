@@ -1,28 +1,27 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from model_mommy.recipe import Recipe, foreign_key, seq
 
-from model_mommy.recipe import Recipe, seq, foreign_key
-from .models import CriticalIncident, PublishableIncident, Reviewer, Reporter, PublishableIncidentTranslation
 from cirs.models import Department
+
+from .models import (CriticalIncident, PublishableIncident,
+                     PublishableIncidentTranslation, Reporter, Reviewer)
 
 REPORTER_NAME = 'rep'
 

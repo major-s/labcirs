@@ -1,36 +1,35 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
+
+import time
 
 from django.core import mail
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from cirs.models import Comment, CriticalIncident, Department, Reporter, Reviewer
+from cirs.models import (Comment, CriticalIncident, Department, Reporter,
+                         Reviewer)
 from cirs.tests.helpers import create_role
 
 from .base import FunctionalTest
-import time
-
 
 DEFAULT_WAIT = 5
 
@@ -74,18 +73,18 @@ class CommentTest(FunctionalTest):
         self.quick_login_reporter()
         self.click_link_with_text('Comments')
         self.find_input_and_enter_text('id_incident_code', self.incident.comment_code)
-        self.browser.find_element_by_class_name("btn-info").click()
+        self.browser.find_element(By.CLASS_NAME, "btn-info").click()
 
     def create_comment(self, comment_text=None):
         # wait until text field present, enter text
         self.find_input_and_enter_text('id_text', comment_text)
         # and clicks the "Save" button.
-        self.browser.find_element_by_class_name("btn-danger").click()
+        self.browser.find_element(By.CLASS_NAME, "btn-danger").click()
 
     def check_if_comment_in_the_last_row(self, comment_text=None):
         table = self.wait.until(
             EC.presence_of_element_located((By.ID, "id_comment_table")))
-        rows = table.find_elements_by_tag_name('tr')
+        rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn(comment_text, rows[-1].text)
 
     @override_settings(DEBUG=True)        
@@ -174,7 +173,7 @@ class SecurityTest(FunctionalTest):
     def test_reporter_can_access_incident_with_correct_comment_code(self):
         self.quick_login(self.incident.department.reporter.user, self.search_url)
         self.find_input_and_enter_text('id_incident_code', self.incident.comment_code)
-        self.browser.find_element_by_class_name("btn-info").click()
+        self.browser.find_element(By.CLASS_NAME, "btn-info").click()
         self.assertEqual(self.browser.current_url, self.absolute_incident_url)
 
     def test_reviewer_can_access_incident_without_code(self):
@@ -190,7 +189,7 @@ class SecurityTest(FunctionalTest):
         # Reporter logs in and enters a code which does not exist
         self.quick_login(self.incident.department.reporter.user, self.search_url)
         self.find_input_and_enter_text('id_incident_code', 'abc')
-        self.browser.find_element_by_class_name("btn-info").click()
+        self.browser.find_element(By.CLASS_NAME, "btn-info").click()
 
         # After submitting he lands again on the search page
         self.wait.until(EC.presence_of_element_located((By.ID, "id_incident_code")))

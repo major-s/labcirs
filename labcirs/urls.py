@@ -3,9 +3,9 @@ from django.urls import include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
-from cirs.views import login_user, logout_user, DepartmentList, RegistrationViewWithDepartment
 from cirs.admin import admin_site
-
+from cirs.views import (DepartmentList, RegistrationViewWithDepartment,
+                        login_user, logout_user)
 
 urlpatterns = [
     re_path(r'^$', DepartmentList.as_view(), name='labcirs_home'),

@@ -1,40 +1,40 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2018-2024 Sebastian Major
+# Copyright (C) 2018-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 import itertools
 
 from django.contrib import admin, auth
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.db import IntegrityError
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 
-from cirs.models import Department, Reporter, Reviewer, CriticalIncident, LabCIRSConfig, PublishableIncident
-from cirs.admin import (admin_site, DepartmentAdmin, RoleAdmin, CriticalIncidentAdmin,
-                        PublishableIncidentAdmin, ConfigurationAdmin, LabCIRSUserAdmin)
-from cirs.views import PublishableIncidentList, IncidentCreate
+from cirs.admin import (ConfigurationAdmin, CriticalIncidentAdmin,
+                        DepartmentAdmin, LabCIRSUserAdmin,
+                        PublishableIncidentAdmin, RoleAdmin, admin_site)
+from cirs.models import (CriticalIncident, Department, LabCIRSConfig,
+                         PublishableIncident, Reporter, Reviewer)
+from cirs.views import IncidentCreate, PublishableIncidentList
 
-from .helpers import create_user, create_role
+from .helpers import create_role, create_user
 
 
 class AdminRegistration(TestCase):
@@ -287,7 +287,8 @@ class SecurityTest(TestCase):
     
     @parameterized.expand(gen_test_role_classes)     
     def test_role_without_department_sees_error_message(self, name, role_cls):
-        from cirs.views import MISSING_DEPARTMENT_MSG  # necessary only here so far
+        from cirs.views import \
+            MISSING_DEPARTMENT_MSG  # necessary only here so far
         role = create_role(role_cls, name)
         response = self.client.post(
             reverse('login'), 

@@ -1,38 +1,37 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2024 Sebastian Major
+# Copyright (C) 2016-2025 Sebastian Major
 #
 # This file is part of LabCIRS.
 #
 # LabCIRS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # LabCIRS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
+# You should have received a copy of the GNU Affero General Public License
 # along with LabCIRS.
-# If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+# If not, see <https://www.gnu.org/licenses/>.
 
 import os
 
 from django.conf import settings
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+# TODO: might be necessary or better if geckodriver is not in the path
+# from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
-
 
 DEFAULT_WAIT = 8
 
@@ -53,12 +52,10 @@ class FunctionalTest(StaticLiveServerTestCase):
             options = webdriver.ChromeOptions()
             options.add_argument('--lang=en')
             cls.browser = webdriver.Chrome(
-                executable_path=chrome_driver_location, chrome_options=options)
+                service=ChromeService(chrome_driver_location), options=options)
         elif settings.BROWSER == 'Firefox':
             options = Options()
-            profile = FirefoxProfile()
-            profile.set_preference('intl.accept_languages', 'en')
-            options.profile = profile
+            options.set_preference('intl.accept_languages', 'en')
             cls.browser = webdriver.Firefox(options=options)
 
         cls.browser.implicitly_wait(DEFAULT_WAIT)
@@ -112,10 +109,12 @@ class FunctionalTest(StaticLiveServerTestCase):
             self.click_link_with_text(link_text.upper())
 
     def find_input_and_enter_text(self, identifier, text, method=By.ID):
-        self.wait.until(
+        element = self.wait.until(
             EC.presence_of_element_located((method, identifier)),
-            message=('could not find {} {}'.format(identifier, method))
-        ).send_keys(text)
+            message=("could not find {} {}".format(identifier, method)),
+        )
+        self.browser.execute_script("arguments[0].scrollIntoView(true);", element)
+        element.send_keys(text)
 
     def quick_login(self, user, target_url=''):
         self.client.force_login(user)
@@ -143,21 +142,32 @@ class FunctionalTest(StaticLiveServerTestCase):
     def logout(self):
         self.click_link_case_insensitive("Log out")
 
+    def logout_backend(self):
+        # Wait for the logout button to be clickable.
+        # Django 4.2 admin app logout changed from link to form with button
+        logout_button = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//form[@id='logout-form']//button[@type='submit']")
+            ),
+            message="Logout button not clickable",
+        )
+        logout_button.click()
+
     def enter_test_incident(self, with_photo=False, wait_for_success=False):
         # usable on incident create page
         self.find_input_and_enter_text('id_date', "07/24/2015")
         self.find_input_and_enter_text('id_incident', "A strang incident happened")
         self.find_input_and_enter_text('id_reason', "No one knows")
         self.find_input_and_enter_text('id_immediate_action', "No action possible")
-        Select(self.browser.find_element_by_id(
+        Select(self.browser.find_element(By.ID,
             'id_preventability')).select_by_value("indistinct")
-        self.browser.find_element_by_id('id_public_0').click()  # true
+        self.browser.find_element(By.ID, 'id_public_0').click()  # true
         # upload photo
         if with_photo is True:
             self.find_input_and_enter_text('id_photo',
                 os.path.join(os.getcwd(), "cirs", "tests", "test.jpg"))
         # submit
-        for button in self.browser.find_elements_by_class_name("btn-danger"):
+        for button in self.browser.find_elements(By.CLASS_NAME, "btn-danger"):
             if "Send" in button.text:
                 button.click()
         if wait_for_success:
@@ -170,15 +180,15 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.quick_backend_login(user, admin_url)
         self.wait.until(EC.url_contains(admin_url))
         if present:
-            self.browser.find_element_by_link_text(present)
+            self.browser.find_element(By.LINK_TEXT, present)
         if absent:
             with self.assertRaises(NoSuchElementException):
-                self.browser.find_element_by_link_text(absent)
+                self.browser.find_element(By.LINK_TEXT, absent)
 
     def get_rows_from_table(self, table_id):
         table = self.wait.until(EC.presence_of_element_located((By.ID, table_id)))
-        return table.find_elements_by_tag_name('tr')
-    
+        return table.find_elements(By.TAG_NAME, 'tr')
+
     def get_column_from_table_as_list(self, table_id, column=0, start_row=1):
         """Returns text content of one column of given table as list.
         
@@ -187,4 +197,4 @@ class FunctionalTest(StaticLiveServerTestCase):
         :param start_row: default is row 1 for tables with header, if there is no header, use 0
         """
         rows = self.get_rows_from_table(table_id)
-        return [row.find_elements_by_tag_name("td")[column].text for row in rows[start_row:]]
+        return [row.find_elements(By.TAG_NAME, "td")[column].text for row in rows[start_row:]]

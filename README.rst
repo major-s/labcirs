@@ -16,8 +16,8 @@ As of version 6.0, LabCIRS works only with Python 3. Users of older versions hav
 
 Requirements
 ------------
-- Python 3.8 (older versions of Python 3 might work but are not tested)
-- Django 3.2 (older versions may work too but are not supported and not tested anymore)
+- Python 3.12 (older versions of Python 3 might work but are not tested)
+- Django 4.2 (older versions may work too but are not supported and not tested anymore)
 - Pillow
 - django-multiselectfield
 - django-parler
@@ -151,8 +151,6 @@ With activated virtual environment run::
     python manage.py migrate
     python manage.py collectstatic
 
-If you want to join multiple single department installations use ``import_dept_to_org.py`` from the
-python shell after succesful update.
 
 Acknowledgements
 ----------------
@@ -178,18 +176,18 @@ The copyright of these software packages is hold by its respective owners.
 License
 -------
 
-Copyright (C) 2016-2024 Sebastian Major <sebastian.major@charite.de>
+Copyright (C) 2016-2025 Sebastian Major <sebastian.major@charite.de>
 
 LabCIRS is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 
 LabCIRS is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GNU Affero General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU Affero General Public License
 along with LabCIRS.
-If not, see <http://www.gnu.org/licenses/old-licenses/gpl-2.0>.
+If not, see <https://www.gnu.org/licenses/>.
