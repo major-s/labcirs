@@ -20,7 +20,9 @@
 import io
 import json
 import os
+import secrets
 import shutil
+import string
 import sys
 from collections import OrderedDict
 from pathlib import Path
@@ -57,12 +59,19 @@ def write_config(config):
     Path(wsgi_file).touch()
     return read_config(local_config_file)
 
+def generate_secret_key():
+    """Generate a secure Django SECRET_KEY."""
+    chars = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(chars) for _ in range(50))
+
 def check_secret_key(local_config):
     if local_config['SECRET_KEY'] == config_template['SECRET_KEY']:
         text = input('Your config uses default secret_key. This is insecure!\n'
                          'It is recommended to generate a new one (Y/n):')
         if not text.lower().startswith('n'):
-            makesecretkey.Command().handle(local_config_file=local_config_file)
+            new_secret_key = generate_secret_key()
+            local_config['SECRET_KEY'] = new_secret_key
+            write_config(local_config)
             Path(wsgi_file).touch()
 
     return read_config(local_config_file)
@@ -200,7 +209,6 @@ if __name__ == "__main__":
         if not text.lower().startswith('n'):
             check_whole_conf(local_config)
     # alway check secret key 
-    from cirs.management.commands import makesecretkey
     local_config = check_secret_key(local_config)
     
 
