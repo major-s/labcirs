@@ -26,10 +26,10 @@ LICENSE
 README.md
 
 # local files and paths
+labcirs/tos
 secrets
 proxy
 CHANGES.rst
 README.rst
 db.sqlite3
 geckodriver.log
-import_dept_to_org.py

@@ -4,7 +4,7 @@ include:
 
 
 services:
-  labcirs_server:
+  app:
     depends_on:
       db:
         condition: service_healthy

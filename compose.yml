@@ -1,5 +1,5 @@
 services:
-  labcirs_server:
+  app:
     init: true
     build:
       context: .
@@ -14,6 +14,7 @@ services:
         target: /media
       - staticfiles:/static
       - ./labcirs/settings/local_config.json:/app/labcirs/settings/local_config.json
+      - ./labcirs/tos:/app/labcirs/tos:ro
 
     healthcheck:
       test: "curl --fail -o /dev/null http://localhost:8000/ || exit 1"
@@ -40,7 +41,7 @@ services:
         protocol: tcp
         mode: host
     depends_on:
-      labcirs_server:
+      app:
         condition: service_healthy
 
 volumes:
