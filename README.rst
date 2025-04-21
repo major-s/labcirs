@@ -25,7 +25,39 @@ Requirements
 - any Django compatible database - tested in real life with MySQL and PostreSQL.
 - any web server capable running WSGI applications - template for Apache 2.4 configuration is provided
 
-Required versions of Python modules are specified in requirements.txt)
+(Required versions of Python modules are specified in requirements.txt)
+
+Installation in Docker (**NEW**)
+----------------------
+LabCIRS can be installed in Docker. The installation is based on the `Dockerfile` and `compose.yml` files provided in the repository.
+The installation is done in the following steps:
+1. Clone the repository and create the `.env` file:
+   ```bash
+   git clone https://github.com/major-s/labcirs.git
+   cd labcirs
+   cp .env.example .env
+   ```
+2. Edit the `.env` file to set the desired configuration options.
+3. If you want to use dockerized PostgreSQL, then copy the example `compose.override.yml` file:
+   ```bash
+   cp compose.override.dockerdb-example.yml compose.override.yml
+   ```
+4. Run the setup script to create the json configuration file:
+   ```bash
+   python setup.py
+   ```
+   The default database server is `db`, the database and database user `labcirsdb`, the database port is `5432`, the database password 
+   the same you already set in the `.env` file. Set other variables as described below.
+5. Create the TOS files if necessary. The TOS directory will be mountend in the container.
+6. Build the image and run the Docker containers:
+   ```bash
+    docker compose up -d --build
+    ```
+7. Create the superuser (LabCIRS admin):
+   ```bash
+   docker compose exec app python manage.py createsuperuser
+   ```
+8. The application should be available at `http://localhost:8080` (or the port you specified in the `.env` file as LABCIRS_PROXY_PORT).
 
 Installation
 ------------
