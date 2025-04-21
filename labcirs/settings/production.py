@@ -2,9 +2,10 @@ from .base import *
 
 DEBUG = False
 
+DB_ENGINE = get_local_setting('DB_ENGINE', 'sqlite3')
 DATABASES = {
     'default': {
-        'ENGINE': get_local_setting('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'ENGINE': f'django.db.backends.{DB_ENGINE}',
         'NAME': get_local_setting('DB_NAME', join_path(BASE_DIR, 'db.sqlite3')),
         # The following settings are not used with sqlite3:
         'USER': get_local_setting('DB_USER'),

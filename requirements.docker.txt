@@ -1,0 +1,4 @@
+# Additional packages for Docker
+-r requirements.txt
+gunicorn<22
+psycopg[binary]<3.2

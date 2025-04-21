@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:15
+    init: true
+    restart: ${LABCIRS_RESTART_POLICY:-always}
+    environment:
+      TZ: ${TZ:-Europe/Berlin}
+      POSTGRES_PASSWORD: ${LABCIRS_DB_PASSWORD}
+      POSTGRES_USER: ${LABCIRS_DB_USER:-labcirsdb}
+      POSTGRES_DB: ${LABCIRS_DB_NAME:-labcirsdb}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data:

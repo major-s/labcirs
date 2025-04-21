@@ -1,0 +1,10 @@
+# Include db service you prefer
+include:
+  - ./compose/compose.postgres.yml
+
+
+services:
+  labcirs_server:
+    depends_on:
+      db:
+        condition: service_healthy
