@@ -3,3 +3,4 @@ Pillow==10.3
 django-multiselectfield==0.1.13
 django-parler==2.3
 django-registration-redux==2.13
+sentry-sdk[django]==2.26.1

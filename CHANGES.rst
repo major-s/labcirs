@@ -1,6 +1,12 @@
 LabCIRS changelog
 =================
 
+current development version
+--------------------------
+* Dockerized version of LabCIRS with optional dockerized PostgreSQL support.
+* Improved the setup script to generate the secret key without installed Django.
+* Added optional Sentry support for error tracking (local installation at Charité).
+
 7.0 (2025-04-14)
 ----------------
 

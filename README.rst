@@ -49,7 +49,10 @@ Run the setup script to create the json configuration file::
    python setup.py
 
 The default database server is ``db``, the database and database user ``labcirsdb``, the database port is ``5432``, the database password 
-the same you already set in the ``.env`` file. Set other variables as described below.
+the same you already set in the ``.env`` file.
+If you want send crash reports to us, set ``USE_SENTRY`` to True (true if setting this manually in the json file).
+If you want to send user data to Sentry, set ``SEND_USER_TO_SENTRY`` to True . This is not recommended in production environment!
+Set other variables as described below.
 
 Create the TOS files if necessary. The TOS directory will be mountend in the container.
 Build the image and run the Docker containers::

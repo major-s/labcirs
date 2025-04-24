@@ -216,3 +216,18 @@ if REGISTRATION_RESTRICT_USER_EMAIL is True:
         raise ImproperlyConfigured('If you want to restrict email domains for registration, '
                                    'specify at least one domain!')
 
+
+USE_SENTRY = get_local_setting('USE_SENTRY', False)
+if USE_SENTRY:
+    # import only if used
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from cirs import __version__
+    SEND_USER_TO_SENTRY = get_local_setting('SEND_USER_TO_SENTRY', False)
+    sentry_sdk.init(
+        dsn="https://84984e34b7f749e0a945afc8c19384e2@sentry.charite.de/3",
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=SEND_USER_TO_SENTRY,
+        release=f"labcirs@{__version__}",
+    )

@@ -34,6 +34,10 @@
     "REGISTRATION_RESTRICT_USER_EMAIL": false,
     "REGISTRATION_EMAIL_DOMAINS": [],
     "_REGISTRATION_USE_TOS": "If new users have to agree to terms of service, you have to provide tos file for every used language",
-    "REGISTRATION_USE_TOS": false
+    "REGISTRATION_USE_TOS": false,
+    "_USE_SENTRY": "If you want send software errors to Sentry at Charité, set it to True",
+    "USE_SENTRY": false,
+    "_SEND_USER_TO_SENTRY": "If you want to send user data to Sentry at Charité, set it to True. This is not recommended in production!",
+    "SEND_USER_TO_SENTRY": false
  }
  
