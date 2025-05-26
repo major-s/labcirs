@@ -61,6 +61,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = get_local_setting('ALLOWED_HOSTS')  # ['*',] #local
 
+# Fill CSRF_TRUSTED_ORIGINS with ALLOWED_HOSTS
+CSRF_TRUSTED_ORIGINS = []
+for host in ALLOWED_HOSTS:
+    # Skip wildcard entries — not allowed in CSRF_TRUSTED_ORIGINS
+    if "*" in host:
+        continue
+    if host.startswith("localhost") or host.startswith("127.") or host == "[::1]":
+        CSRF_TRUSTED_ORIGINS.append(f"http://{host}")
+    else:
+        CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
 
 # Application definition
 
